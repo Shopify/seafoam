@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'seafoam'
+
+# This is the 'seafoam' command line entry point.
+
+begin
+  # Load configuraiton.
+  config = Seafoam::Config.new
+  config.load_config
+
+  # Run the command line.
+  commands = Seafoam::Commands.new($stdout, config)
+  commands.run(*ARGV)
+rescue StandardError => e
+  if $DEBUG
+    # Re-raise the exception so the user sees it, it debugging is
+    # enabled (ruby -d).
+    raise e
+  else
+    # Otherwise, just print the message.
+    warn "seafoam: #{e.message}"
+  end
+end
