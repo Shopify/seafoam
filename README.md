@@ -27,9 +27,9 @@ Admittedly, Seafoam does not yet have:
 
 ## Seafoam compared to IGV
 
-<p style="text-align: center">
-<img src="docs/images/seafoam.png" style="max-width: 45%">
-<img src="docs/images/igv.png" style="max-width: 45%">
+<p>
+<img src="docs/images/seafoam.png" width="350">
+<img src="docs/images/igv.png" width="350">
 </p>
 
 ## Installation
@@ -167,9 +167,9 @@ the IGV feature of gradually revealing nodes.
 $ seafoam render examples/fib-java.bgv:0 --spotlight 13,20
 ```
 
-<p style="text-align: center">
-<img src="docs/images/spotlight-seafoam.png" style="max-width: 45%">
-<img src="docs/images/spotlight-igv.png" style="max-width: 45%">
+<p>
+<img src="docs/images/spotlight-seafoam.png" width="200">
+<img src="docs/images/spotlight-igv.png" width="350">
 </p>
 
 ## Options for GraalVM graphs
