@@ -1,6 +1,6 @@
-# Seamfoam
+# Seafoam
 
-*Seamfoam* is a tool for working with compiler graphs. It's designed primarily
+*Seafoam* is a tool for working with compiler graphs. It's designed primarily
 for working with the graph files dumped by the GraalVM compiler, such as in
 TruffleRuby, but it could be used with other compilers and graph dump file
 formats.
@@ -37,7 +37,7 @@ Admittedly, Seafoam does not yet have:
 ```
 $ brew install graphviz
 $ gem install seafoam
-$ seamfoam --version
+$ seafoam --version
 seafoam 0.1
 ````
 
