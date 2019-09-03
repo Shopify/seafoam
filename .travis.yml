@@ -1,0 +1,19 @@
+os:
+  - linux
+  - osx
+
+language: ruby
+
+addons:
+  apt:
+    packages:
+      - graphviz
+  homebrew:
+    packages:
+      - graphviz
+
+rvm:
+  - 2.6.4
+
+script:
+  - bundle exec rspec
