@@ -4,13 +4,8 @@ os:
 
 language: ruby
 
-addons:
-  apt:
-    packages:
-      - graphviz
-  homebrew:
-    packages:
-      - graphviz
+before_install:
+  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install graphviz; else brew install graphviz; fi
 
 rvm:
   - 2.6
