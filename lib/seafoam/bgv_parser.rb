@@ -309,6 +309,14 @@ module Seafoam
           @reader.read_sint32.times.map do
             read_pool_object
           end
+        when PROPERTY_INT
+          @reader.read_sint32.times.map do
+            @reader.read_sint32
+          end
+        when PROPERTY_DOUBLE
+          @reader.read_sint32.times.map do
+            @reader.read_float64
+          end
         else
           raise EncodingError, "unknown BGV property array type 0x#{type.to_s(16)}"
         end
