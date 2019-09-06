@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'bundler/setup'
 require 'seafoam'
 
 # This is the 'seafoam' command line entry point.

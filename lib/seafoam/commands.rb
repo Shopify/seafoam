@@ -24,6 +24,8 @@ module Seafoam
         props(*args)
       when 'render'
         render(*args)
+      when 'decompile'
+        decompile(*args)
       when 'debug'
         debug(*args)
       when nil, 'help', '-h', '--help', '-help'
@@ -327,6 +329,16 @@ module Seafoam
           parser.skip_graph_header
           graph = parser.read_graph
           Annotators.apply graph, annotator_options
+
+          graph.nodes.each do |_id, node|
+            Decompiler.decompile(node)
+          end
+
+          graph.nodes.each_value do |node|
+            node.props[:label] = "#{node.props[:label]} | #{node.props[:decompiled]}"
+          end
+          # require 'pry'; binding.pry
+
           if spotlight_nodes
             spotlight = Spotlight.new(graph)
             spotlight_nodes.each do |node_id|
@@ -393,6 +405,108 @@ module Seafoam
         rescue StandardError => e
           @out.puts "#{e} before byte #{stream.tell}"
           @out.puts e.backtrace
+        end
+      end
+    end
+
+    def decompile(*args)
+      files = []
+      args.each do |arg|
+        files << arg unless arg.start_with?('-')
+      end
+      annotator_options = {
+        hide_frame_state: true,
+        hide_floating: false,
+        reduce_edges: false
+      }
+      files.each do |file|
+        file, graph_index, *rest = parse_name(file)
+        raise ArgumentError, 'decompile needs at least a graph' unless graph_index
+        raise ArgumentError, 'decompile only works with a single graph' unless rest == [nil, nil]
+
+        with_graph(file, graph_index) do |parser|
+          parser.skip_graph_header
+          graph = parser.read_graph
+          Annotators.apply graph, annotator_options
+
+          # graph.nodes.each_pair do |index, node|
+          #   p [index, node]
+          # end
+
+          graph.nodes.each do |_id, node|
+            Decompiler.decompile(node)
+          end
+          require 'pry'; binding.pry
+          p graph.nodes[11].props[:decompiled]
+          p graph.nodes[8].props[:decompiled]
+          p graph.nodes[5].props[:decompiled]
+          p graph.nodes[6].props[:decompiled]
+
+          # node.edges.each do |edge|
+          #   if edge.to == node
+          #     p edge
+          #   end
+          # end
+          # require 'pry'
+          # binding.pry
+        end
+      end
+    end
+
+
+    class Decompiler
+      DECOMPILED_PROP = :decompiled
+      def self.decompile(node)
+        return if node.props[DECOMPILED_PROP]
+        # detect binary operands
+        node_class = node.props.dig(:node_class, :node_class)
+        # require 'pry'
+        # binding.pry
+        if node_class.is_a?(String)
+          last_part = node_class.split('.').last
+          case last_part
+          when "ConstantNode"
+            node.props[DECOMPILED_PROP] = node.props["rawvalue"]
+          when "ParameterNode"
+            node.props[DECOMPILED_PROP] = "arg#{node.props["index"]}"
+          when "IfNode"
+            condition_edge = node.edges.find do |edge|
+              edge.props[:type] == "Condition"
+            end
+            raise "condition input not found for if node" unless condition_edge
+            decompile(condition_edge.from)
+
+            node.props[DECOMPILED_PROP] = "if #{condition_edge.from.props[DECOMPILED_PROP]}"
+          when "MethodCallTargetNode"
+            target_name = node.props.dig("targetMethod", :method_name)
+            raise "can't find target name" unless target_name
+            decompiled_arguments = node.inputs.map do |edge|
+              next nil unless edge.props[:name] == "arguments"
+              decompile(edge.from)
+              edge.from.props[DECOMPILED_PROP]
+              # TODO: we are assuming that the arguments show up in the order they are listed in Node#inputs.
+              # not sure if this is an okay assumption
+            end.compact
+
+            node.props[DECOMPILED_PROP] = "#{target_name}(#{decompiled_arguments.join(', ')})"
+          when "InvokeNode"
+            call_target_edge = node.inputs.find do |edge|
+              edge.props[:name] == "callTarget"
+            end
+            raise "can't find call target from InvokeNode" unless call_target_edge
+            decompile(call_target_edge.from)
+
+            node.props[DECOMPILED_PROP] = call_target_edge.from.props[DECOMPILED_PROP]
+          end
+
+          return if node.props[DECOMPILED_PROP]
+        end
+        if node.props[:kind] == "op" && node.inputs.size == 2
+          # TODO: ordering. inputs doesn't necessarily have x as the first element
+          x, y = node.inputs
+          decompile(x.from)
+          decompile(y.from)
+          node.props[DECOMPILED_PROP] = "#{x.from.props[DECOMPILED_PROP]} #{node.props.dig(:node_class, :name_template)} #{y.from.props[DECOMPILED_PROP]}"
         end
       end
     end
