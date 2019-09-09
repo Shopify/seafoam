@@ -44,20 +44,26 @@ class Fib {
     } else {
       int hoho = fib(n - 1) + fib(n - 2) + (n > 15 ? n : 39) + 234;
       noop(hoho, 34);
-      bosh = hoho;
+      bosh = 100;
+      // bosh = hoho;
     }
 
     switch(n) {
-      case 3:
-        result = 99;
-        break;
       case 4:
         result = 120;
-        bosh = 39;
         break;
       case 5:
         result = 200 * n;
         break;
+      case 3:
+        result = 99;
+        bosh = 39;
+        break;
+      case 6:
+        result = 100;
+        break;
+      default:
+        bosh = 999;
     }
 
     if (n <= 3) {
