@@ -337,7 +337,7 @@ module Seafoam
           graph.nodes.each_value do |node|
             node.props[:label] = "#{node.props[:label]} | #{node.props[Decompiler::DECOMPILED_PROP]}"
           end
-          # puts decompiler.collect
+          puts decompiler.collect
 
           if spotlight_nodes
             spotlight = Spotlight.new(graph)
@@ -456,8 +456,9 @@ module Seafoam
 
 
     class Decompiler
-      DECOMPILED_PROP = :decop_decompiled
+      DECOMPILED_PROP = :decomp_decompiled
       MAX_VARIABLE_PROP = :decomp_max_variable
+      SKIP_DURING_COLLECTION_PROP = :decomp_skip_during_collection
       def initialize(graph)
         @graph = graph
         @max_var_id = 0
@@ -515,6 +516,7 @@ module Seafoam
               @graph.create_edge(assignment, node, kind: 'control')
 
               node.props[DECOMPILED_PROP] = "#{var_name}"
+              node.props[SKIP_DURING_COLLECTION_PROP] = true
             end
           when "ValuePhiNode"
             phi = node
@@ -535,14 +537,12 @@ module Seafoam
             ends = merge.inputs.select { |e| e.props[:name] == 'ends' }.map(&:from)
             raise "number of ends don't match number of phi inputs" unless ends.size == phi_inputs.size
             phi_inputs.zip(ends) do |rhs_assignment, end_node|
-              end_node.props[DECOMPILED_PROP] ||= ''
-              prefix = if end_node.props[DECOMPILED_PROP].empty?
-                ''
-              else
-                "\n"
+              end_node.props[DECOMPILED_PROP] ||= []
+              if end_node.props[DECOMPILED_PROP].is_a?(String)
+                end_node.props[DECOMPILED_PROP] = [end_node.props[DECOMPILED_PROP]]
               end
 
-              end_node.props[DECOMPILED_PROP] += "#{prefix}#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
+              end_node.props[DECOMPILED_PROP] << "#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
             end
             phi.props[DECOMPILED_PROP] = phi_varaible_name
           when "FixedGuardNode"
@@ -552,6 +552,9 @@ module Seafoam
 
             decompile(condition)
             node.props[DECOMPILED_PROP] = "raise unless #{condition.props[DECOMPILED_PROP]}"
+          when "ReturnNode"
+            data_input = node.inputs.find { |edge| edge.props[:kind] == "data" }
+            node.props[DECOMPILED_PROP] = "return #{data_input.from.props[DECOMPILED_PROP]}"
           end
 
           return if node.props[DECOMPILED_PROP]
@@ -566,6 +569,103 @@ module Seafoam
           node.props[DECOMPILED_PROP] = "#{x.from.props[DECOMPILED_PROP]} #{node.props.dig(:node_class, :name_template)} #{y.from.props[DECOMPILED_PROP]}"
         end
       end
+
+      class Collector
+        def initialize
+          @lines = []
+          @indent = 0
+        end
+
+        def collect(node)
+          collect_until_merge(node)
+
+          @lines.join("\n")
+        end
+
+        private
+
+        def collect_until_merge(node, put_reason: false)
+          loop do
+            next_node = collect_one(node)
+            return if next_node == :done
+            if next_node == :next
+              edge = node.outputs.find { |edge| edge.props[:kind] == "control" }
+              unless edge
+                node_class = node.props.dig(:node_class, :node_class)
+                add_line("# stopped at #{node.inspect} node class: #{node_class}") unless node_class&.end_with?("ReturnNode")
+                return
+              end
+              next_node = edge.to
+            end
+
+            return next_node if next_node&.props&.dig(:node_class, :node_class)&.end_with?("MergeNode")
+
+            node = next_node
+          end
+        end
+
+        def collect_one(node)
+          last_part = node.props.dig(:node_class, :node_class)&.split('.')&.last
+          return :next if node.props[SKIP_DURING_COLLECTION_PROP]
+          case last_part
+          when "IfNode"
+            true_branch = node.outputs.find { |edge| edge.props[:name] == "trueSuccessor" }
+            false_branch = node.outputs.find { |edge| edge.props[:name] == "falseSuccessor" }
+            raise "need true branch" unless true_branch
+            raise "need false branch" unless false_branch
+
+            merge = nil
+            false_branch_merge = nil
+            add_decompiled_code(node)
+            indent { merge = collect_until_merge(true_branch.to) }
+            add_line("else")
+            indent { false_branch_merge = collect_until_merge(false_branch.to) }
+            add_line("end")
+
+            next_node = merge || false_branch_merge
+
+            if next_node
+              next_node
+            else
+              :done
+            end
+          else
+            add_decompiled_code(node)
+
+            :next
+          end
+        end
+
+        def add_line(line)
+          return unless line
+          @lines << "#{' ' * @indent}#{line}"
+        end
+
+        def add_decompiled_code(node)
+          decompiled = node.props[DECOMPILED_PROP]
+          case decompiled
+          when Array
+            decompiled.each { |line| add_line("#{line} # from #{node.inspect}") }
+          when String
+            add_line("#{decompiled} # from #{node.inspect}")
+          end
+        end
+
+        def indent
+          @indent += 2
+          yield
+          @indent -= 2
+        end
+      end
+
+      # a final pass to assemble the final output
+      def collect
+        node = @graph.nodes[0]
+        raise "expected node[0] to be a start node" unless node.props.dig(:node_class, :node_class)&.end_with?("StartNode")
+        Collector.new.collect(node)
+      end
+
+      private
 
       def new_var_id
         id = @max_var_id
