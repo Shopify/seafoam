@@ -330,14 +330,14 @@ module Seafoam
           graph = parser.read_graph
           Annotators.apply graph, annotator_options
 
-          graph.nodes.each do |_id, node|
-            Decompiler.decompile(node)
+          decompiler = Decompiler.new(graph)
+          graph.nodes.values.each do |node|
+            decompiler.decompile(node)
           end
-
           graph.nodes.each_value do |node|
-            node.props[:label] = "#{node.props[:label]} | #{node.props[:decompiled]}"
+            node.props[:label] = "#{node.props[:label]} | #{node.props[Decompiler::DECOMPILED_PROP]}"
           end
-          # require 'pry'; binding.pry
+          # puts decompiler.collect
 
           if spotlight_nodes
             spotlight = Spotlight.new(graph)
@@ -433,8 +433,9 @@ module Seafoam
           #   p [index, node]
           # end
 
-          graph.nodes.each do |_id, node|
-            Decompiler.decompile(node)
+          decompiler = Decompiler.new(graph)
+          graph.nodes.values.each do |node|
+            decompiler.decompile(node)
           end
           require 'pry'; binding.pry
           p graph.nodes[11].props[:decompiled]
@@ -455,8 +456,14 @@ module Seafoam
 
 
     class Decompiler
-      DECOMPILED_PROP = :decompiled
-      def self.decompile(node)
+      DECOMPILED_PROP = :decop_decompiled
+      MAX_VARIABLE_PROP = :decomp_max_variable
+      def initialize(graph)
+        @graph = graph
+        @max_var_id = 0
+      end
+
+      def decompile(node)
         return if node.props[DECOMPILED_PROP]
         # detect binary operands
         node_class = node.props.dig(:node_class, :node_class)
@@ -497,17 +504,73 @@ module Seafoam
             decompile(call_target_edge.from)
 
             node.props[DECOMPILED_PROP] = call_target_edge.from.props[DECOMPILED_PROP]
+
+            has_data_output = node.outputs.find { |e| e.props[:kind] == 'data' }
+            if has_data_output
+              # make a temporary varaible for the return value this call node
+              var_name = "ret#{new_var_id}"
+              control_input = node.inputs.find { |e| e.props[:kind] == 'control' }
+              assignment = @graph.create_node(@graph.nodes.keys.max + 1, DECOMPILED_PROP => "#{var_name} = #{node.props[DECOMPILED_PROP]}")
+              @graph.replace_edge_destination(control_input, assignment)
+              @graph.create_edge(assignment, node, kind: 'control')
+
+              node.props[DECOMPILED_PROP] = "#{var_name}"
+            end
+          when "ValuePhiNode"
+            phi = node
+            merge = phi.inputs.find { |e| e.from.props.dig(:node_class,:node_class).end_with?("MergeNode") }
+            unless merge
+              $stderr.puts "seafoam: warning: skipping phi node that doen't succeed a merge node" if $DEBUG
+              return
+            end
+            merge = merge.from
+
+            phi_inputs = phi.inputs.select { |edge| edge.props[:name] == 'values' }.map!(&:from)
+            phi_inputs.each do |input_node|
+              decompile(input_node)
+            end
+
+            phi_varaible_name = "temp#{new_var_id}"
+
+            ends = merge.inputs.select { |e| e.props[:name] == 'ends' }.map(&:from)
+            raise "number of ends don't match number of phi inputs" unless ends.size == phi_inputs.size
+            phi_inputs.zip(ends) do |rhs_assignment, end_node|
+              end_node.props[DECOMPILED_PROP] ||= ''
+              prefix = if end_node.props[DECOMPILED_PROP].empty?
+                ''
+              else
+                "\n"
+              end
+
+              end_node.props[DECOMPILED_PROP] += "#{prefix}#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
+            end
+            phi.props[DECOMPILED_PROP] = phi_varaible_name
+          when "FixedGuardNode"
+            condition = node.inputs.find { |edge| edge.props[:name] == 'condition' }
+            raise "no condition edge" unless condition
+            condition = condition.from
+
+            decompile(condition)
+            node.props[DECOMPILED_PROP] = "raise unless #{condition.props[DECOMPILED_PROP]}"
           end
 
           return if node.props[DECOMPILED_PROP]
         end
-        if node.props[:kind] == "op" && node.inputs.size == 2
-          # TODO: ordering. inputs doesn't necessarily have x as the first element
-          x, y = node.inputs
+
+        data_input_edges = node.inputs.select { |edge| edge.props[:kind] == "data" }
+        if node.props[:kind] == "op" && data_input_edges.size == 2
+          # TODO: ordering. are we sure that x is always the first edge?
+          x, y = data_input_edges
           decompile(x.from)
           decompile(y.from)
           node.props[DECOMPILED_PROP] = "#{x.from.props[DECOMPILED_PROP]} #{node.props.dig(:node_class, :name_template)} #{y.from.props[DECOMPILED_PROP]}"
         end
+      end
+
+      def new_var_id
+        id = @max_var_id
+        @max_var_id += 1
+        id
       end
     end
 

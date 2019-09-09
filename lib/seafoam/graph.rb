@@ -25,6 +25,15 @@ module Seafoam
       to.inputs.push edge
       edge
     end
+
+    def replace_edge_destination(edge, new_destination)
+      return if edge.to == new_destination
+      new_edge = Edge.new(edge.from, new_destination, edge.props)
+      @edges[@edges.find_index(edge)] = new_edge
+      edge.from.outputs[edge.from.outputs.find_index(edge)] = new_edge
+      edge.to.inputs.delete(edge)
+      new_edge
+    end
   end
 
   # A node, with properties, input edges, and output edges.

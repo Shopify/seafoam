@@ -42,11 +42,16 @@ class Fib {
     if (n <= 1) {
       result = n;
     } else {
+      fib(n - 1);
       int hoho = fib(n - 1) + fib(n - 2) + (n > 15 ? n : 39) + 234;
       noop(hoho, 34);
+      noop(9, 34);
+      noop(2, 1);
       bosh = 100;
       // bosh = hoho;
     }
+
+    if (n < 5) bosh = 1000;
 
     switch(n) {
       case 4:
