@@ -551,10 +551,49 @@ module Seafoam
             condition = condition.from
 
             decompile(condition)
-            node.props[DECOMPILED_PROP] = "raise unless #{condition.props[DECOMPILED_PROP]}"
+            node.props[DECOMPILED_PROP] = "raise #{node.props["reason"]} unless #{condition.props[DECOMPILED_PROP]}"
           when "ReturnNode"
             data_input = node.inputs.find { |edge| edge.props[:kind] == "data" }
-            node.props[DECOMPILED_PROP] = "return #{data_input.from.props[DECOMPILED_PROP]}"
+            if data_input
+              decompile(data_input.from)
+              node.props[DECOMPILED_PROP] = "return #{data_input.from.props[DECOMPILED_PROP]}"
+            else
+              node.props[DECOMPILED_PROP] = "return"
+            end
+          when "PiArrayNode"
+            # it looks like this node is for storing the length of an input array?
+            array_input = node.inputs.find { |edge| edge.props[:name] == "object" }
+            raise "missing object input" unless array_input
+            decompile(array_input.from)
+            node.props[DECOMPILED_PROP] = array_input.from.props[DECOMPILED_PROP]
+          when "PiNode"
+            object_input = node.inputs.find { |edge| edge.props[:name] == "object" }
+            raise "missing object input" unless object_input
+            decompile(object_input.from)
+            node.props[DECOMPILED_PROP] = object_input.from.props[DECOMPILED_PROP]
+          when "LoadIndexedNode"
+            array_input = node.inputs.find { |edge| edge.props[:name] == "array" }
+            raise "missing array input" unless array_input
+            index_input = node.inputs.find { |edge| edge.props[:name] == "index" }
+            raise "missing index input" unless index_input
+            decompile(array_input.from)
+            decompile(index_input.from)
+
+            node.props[DECOMPILED_PROP] = "#{array_input.from.props[DECOMPILED_PROP]}[#{index_input.from.props[DECOMPILED_PROP]}]"
+          when "UnboxNode"
+            value_input = node.inputs.find { |edge| edge.props[:name] == "value" }
+            raise "missing value input" unless value_input
+            decompile(value_input.from)
+
+            node.props[SKIP_DURING_COLLECTION_PROP] = true
+            node.props[DECOMPILED_PROP] = "Unbox(#{value_input.from.props[DECOMPILED_PROP]})"
+          when "BoxNode"
+            value_input = node.inputs.find { |edge| edge.props[:name] == "value" }
+            raise "missing value input" unless value_input
+            decompile(value_input.from)
+
+            node.props[SKIP_DURING_COLLECTION_PROP] = true
+            node.props[DECOMPILED_PROP] = "Box(#{value_input.from.props[DECOMPILED_PROP]})"
           end
 
           return if node.props[DECOMPILED_PROP]
@@ -577,14 +616,16 @@ module Seafoam
         end
 
         def collect(node)
-          collect_until_merge(node)
+          while node
+            node = collect_until_merge(node)
+          end
 
           @lines.join("\n")
         end
 
         private
 
-        def collect_until_merge(node, put_reason: false)
+        def collect_until_merge(node)
           loop do
             next_node = collect_one(node)
             return if next_node == :done
