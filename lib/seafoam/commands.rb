@@ -591,32 +591,38 @@ module Seafoam
               node.props[SKIP_DURING_COLLECTION_PROP] = true
             end
           when "ValuePhiNode"
+            # I'm very unsure about whether this node is implemented correctly. Through a some quick search, I couldn't find
+            # explicit documentation on the the correct way to use other nodes to reconstruct the full picture. This code was
+            # written by writing different programs and observing the output graph.
             phi = node
-            merge = phi.inputs.find { |e| e.from.node_class.end_with?("MergeNode") }
-            unless merge
-              node.failure_reason = "expected phi to be a successor of a merge node"
-              return
-            end
-            merge = merge.from
+            case
+            when (merge = phi.inputs.find { |e| e.from.node_class.end_with?("MergeNode") })
+              merge = merge.from
 
-            phi_inputs = phi.inputs.select { |edge| edge.props[:name] == 'values' }.map!(&:from)
-            phi_inputs.each do |input_node|
-              decompile_body(input_node)
-            end
-
-            phi_varaible_name = "temp#{new_var_id}"
-
-            ends = merge.inputs.select { |e| e.props[:name] == 'ends' }.map(&:from)
-            raise "number of ends don't match number of phi inputs" unless ends.size == phi_inputs.size
-            phi_inputs.zip(ends) do |rhs_assignment, end_node|
-              end_node.decompiled ||= []
-              if end_node.decompiled.is_a?(String)
-                end_node.decompiled = [end_node.decompiled]
+              phi_inputs = phi.inputs.select { |edge| edge.props[:name] == 'values' }.map!(&:from)
+              phi_inputs.each do |input_node|
+                decompile_body(input_node)
               end
 
-              end_node.decompiled << "#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
+              phi_varaible_name = "temp#{new_var_id}"
+
+              ends = merge.inputs.select { |e| e.props[:name] == 'ends' }.map(&:from)
+              raise "number of ends don't match number of phi inputs" unless ends.size == phi_inputs.size
+              phi_inputs.zip(ends) do |rhs_assignment, end_node|
+                end_node.decompiled ||= []
+                if end_node.decompiled.is_a?(String)
+                  end_node.decompiled = [end_node.decompiled]
+                end
+
+                end_node.decompiled << "#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
+              end
+              phi.decompiled = phi_varaible_name
+            when (loop_begin = phi.inputs.find { |edge| edge.from.node_class.end_with?("LoopBeginNode") })
+              # basically sink the assignment to the loop variable as low as possible inside the loop
+              p 'hu heu huehe uehue he ueh u'
+            else
+              node.failure_reason = "could not find known input edge type for phi"
             end
-            phi.props[DECOMPILED_PROP] = phi_varaible_name
           when "FixedGuardNode"
             condition = input_edge_or_unwind(node, :name, 'condition')
             decompile_body(condition.from)
@@ -660,7 +666,9 @@ module Seafoam
             node.decompiled = "#{value_edge.from.decompiled} == null"
           when "InstanceOfNode"
             # willfully ignore these nodes
-            node.decompiled = ''
+            value_edge = input_edge_or_unwind(node, :name, "value")
+            decompile_body(value_edge.from)
+            node.decompiled = "InstanceOf('#{node.props["checkedStamp"]}', #{value_edge.from.decompiled})"
           end
 
           return if node.decompiled
@@ -792,7 +800,7 @@ module Seafoam
 
         def add_line(line, node = nil)
           return unless line
-          line += " from #{node}" if node
+          line += " # from #{node}" if node && $DEBUG
           @lines << "#{' ' * @indent}#{line}"
         end
 
