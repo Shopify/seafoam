@@ -479,21 +479,58 @@ module Seafoam
 
       private
 
+      module DecompilerRefinements
+        # for notational convinience: node.whatever instead of whatever(node)
+        refine Node do
+          def to_s
+            klass = node_class
+            node_class_str = if klass
+              klass.split('.').last
+            end
+            "<#{node_class_str}##{self.id}>"
+          end
+
+          def decompiled
+            props[DECOMPILED_PROP]
+          end
+
+          def decompiled=(value)
+            props[DECOMPILED_PROP] = value
+          end
+
+          def failure_reason
+            props[FAILURE_REASON_PROP]
+          end
+
+          def failure_reason=(value)
+            props[FAILURE_REASON_PROP] = value
+          end
+
+          def node_class
+            props.dig(:node_class, :node_class)
+          end
+        end
+      end
+      using DecompilerRefinements
+
       def decompile_body(node, unwind_on_failure: true)
-        decompiled_source = node.props[DECOMPILED_PROP]
+
+        decompiled_source = node.decompiled
         return decompiled_source if decompiled_source
 
         begin
           decompile_one(node, unwind_on_failure: unwind_on_failure)
           if unwind_on_failure
-            success = !!node.props[DECOMPILED_PROP]
+            success = !!node.decompiled
           end
         rescue Unwind => unwind
           if unwind_on_failure
             unwind.could_not_satisfy_dependency(node)
             raise
           else
-            node.props[FAILURE_REASON_PROP] = "Node##{node.id} depends on unhandleable Node##{unwind.unsatisfied_dependency.first.id}"
+            first_failure = unwind.unsatisfied_dependency.first
+
+            node.failure_reason = "#{node} depends on unhandleable #{first_failure}: #{first_failure.props[FAILURE_REASON_PROP]}"
           end
         end
 
@@ -509,9 +546,9 @@ module Seafoam
           last_part = node_class.split('.').last
           case last_part
           when "ConstantNode"
-            node.props[DECOMPILED_PROP] = node.props["rawvalue"]
+            node.decompiled = node.props["rawvalue"]
           when "ParameterNode"
-            node.props[DECOMPILED_PROP] = "arg#{node.props["index"]}"
+            node.decompiled = "arg#{node.props["index"]}"
           when "IfNode"
             condition_edge = node.edges.find do |edge|
               edge.props[:type] == "Condition"
@@ -519,7 +556,7 @@ module Seafoam
             raise "condition input not found for if node" unless condition_edge
             decompile_body(condition_edge.from)
 
-            node.props[DECOMPILED_PROP] = "if #{condition_edge.from.props[DECOMPILED_PROP]}"
+            node.decompiled = "if #{condition_edge.from.props[DECOMPILED_PROP]}"
           when "MethodCallTargetNode"
             target_name = node.props.dig("targetMethod", :method_name)
             raise "can't find target name" unless target_name
@@ -531,7 +568,7 @@ module Seafoam
               # not sure if this is an okay assumption
             end.compact
 
-            node.props[DECOMPILED_PROP] = "#{target_name}(#{decompiled_arguments.join(', ')})"
+            node.decompiled = "#{target_name}(#{decompiled_arguments.join(', ')})"
           when "InvokeNode"
             call_target_edge = node.inputs.find do |edge|
               edge.props[:name] == "callTarget"
@@ -539,25 +576,25 @@ module Seafoam
             raise "can't find call target from InvokeNode" unless call_target_edge
             decompile_body(call_target_edge.from)
 
-            node.props[DECOMPILED_PROP] = call_target_edge.from.props[DECOMPILED_PROP]
+            node.decompiled = call_target_edge.from.props[DECOMPILED_PROP]
 
             has_data_output = node.outputs.find { |e| e.props[:kind] == 'data' }
             if has_data_output
-              # make a temporary varaible for the return value this call node
+              # make a temporary varaible for the return value of this call node
               var_name = "ret#{new_var_id}"
               control_input = node.inputs.find { |e| e.props[:kind] == 'control' }
-              assignment = @graph.create_node(@graph.nodes.keys.max + 1, DECOMPILED_PROP => "#{var_name} = #{node.props[DECOMPILED_PROP]}")
+              assignment = @graph.create_node(@graph.nodes.keys.max + 1, DECOMPILED_PROP => "#{var_name} = #{node.decompiled}")
               @graph.replace_edge_destination(control_input, assignment)
               @graph.create_edge(assignment, node, kind: 'control')
 
-              node.props[DECOMPILED_PROP] = "#{var_name}"
+              node.decompiled = "#{var_name}"
               node.props[SKIP_DURING_COLLECTION_PROP] = true
             end
           when "ValuePhiNode"
             phi = node
-            merge = phi.inputs.find { |e| e.from.props.dig(:node_class,:node_class).end_with?("MergeNode") }
+            merge = phi.inputs.find { |e| e.from.node_class.end_with?("MergeNode") }
             unless merge
-              $stderr.puts "seafoam: warning: skipping phi node that doen't succeed a merge node" if $DEBUG
+              node.failure_reason = "expected phi to be a successor of a merge node"
               return
             end
             merge = merge.from
@@ -572,66 +609,61 @@ module Seafoam
             ends = merge.inputs.select { |e| e.props[:name] == 'ends' }.map(&:from)
             raise "number of ends don't match number of phi inputs" unless ends.size == phi_inputs.size
             phi_inputs.zip(ends) do |rhs_assignment, end_node|
-              end_node.props[DECOMPILED_PROP] ||= []
-              if end_node.props[DECOMPILED_PROP].is_a?(String)
-                end_node.props[DECOMPILED_PROP] = [end_node.props[DECOMPILED_PROP]]
+              end_node.decompiled ||= []
+              if end_node.decompiled.is_a?(String)
+                end_node.decompiled = [end_node.decompiled]
               end
 
-              end_node.props[DECOMPILED_PROP] << "#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
+              end_node.decompiled << "#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
             end
             phi.props[DECOMPILED_PROP] = phi_varaible_name
           when "FixedGuardNode"
-            condition = node.inputs.find { |edge| edge.props[:name] == 'condition' }
-            raise "no condition edge" unless condition
-            condition = condition.from
-
-            decompile_body(condition)
-            node.props[DECOMPILED_PROP] = "raise #{node.props["reason"]} unless #{condition.props[DECOMPILED_PROP]}"
+            condition = input_edge_or_unwind(node, :name, 'condition')
+            decompile_body(condition.from)
+            node.decompiled = "raise #{node.props["reason"]} unless #{condition.from.decompiled}"
           when "ReturnNode"
             data_input = node.inputs.find { |edge| edge.props[:kind] == "data" }
             if data_input
               decompile_body(data_input.from)
-              node.props[DECOMPILED_PROP] = "return #{data_input.from.props[DECOMPILED_PROP]}"
+              node.decompiled = "return #{data_input.from.props[DECOMPILED_PROP]}"
             else
-              node.props[DECOMPILED_PROP] = "return"
+              node.decompiled = "return"
             end
           when "PiArrayNode"
             # it looks like this node is for storing the length of an input array?
-            array_input = node.inputs.find { |edge| edge.props[:name] == "object" }
-            raise "missing object input" unless array_input
+            array_input = input_edge_or_unwind(node, :name, "object")
             decompile_body(array_input.from)
-            node.props[DECOMPILED_PROP] = array_input.from.props[DECOMPILED_PROP]
+            node.decompiled = array_input.from.props[DECOMPILED_PROP]
           when "PiNode"
-            object_input = node.inputs.find { |edge| edge.props[:name] == "object" }
-            raise "missing object input" unless object_input
+            object_input = input_edge_or_unwind(node, :name, "object")
             decompile_body(object_input.from)
-            node.props[DECOMPILED_PROP] = object_input.from.props[DECOMPILED_PROP]
+            node.decompiled = object_input.from.props[DECOMPILED_PROP]
           when "LoadIndexedNode"
-            array_input = node.inputs.find { |edge| edge.props[:name] == "array" }
-            raise "missing array input" unless array_input
-            index_input = node.inputs.find { |edge| edge.props[:name] == "index" }
-            raise "missing index input" unless index_input
+            array_input = input_edge_or_unwind(node, :name, "array")
+            index_input = input_edge_or_unwind(node, :name, "index")
             decompile_body(array_input.from)
             decompile_body(index_input.from)
-
-            node.props[DECOMPILED_PROP] = "#{array_input.from.props[DECOMPILED_PROP]}[#{index_input.from.props[DECOMPILED_PROP]}]"
+            node.decompiled = "#{array_input.from.decompiled}[#{index_input.from.decompiled}]"
           when "UnboxNode"
-            value_input = node.inputs.find { |edge| edge.props[:name] == "value" }
-            raise "missing value input" unless value_input
+            value_input = input_edge_or_unwind(node, :name, "value")
             decompile_body(value_input.from)
-
             node.props[SKIP_DURING_COLLECTION_PROP] = true
-            node.props[DECOMPILED_PROP] = "Unbox(#{value_input.from.props[DECOMPILED_PROP]})"
+            node.decompiled = "Unbox(#{value_input.from.decompiled})"
           when "BoxNode"
-            value_input = node.inputs.find { |edge| edge.props[:name] == "value" }
-            raise "missing value input" unless value_input
+            value_input = input_edge_or_unwind(node, :name, "value")
             decompile_body(value_input.from)
-
             node.props[SKIP_DURING_COLLECTION_PROP] = true
-            node.props[DECOMPILED_PROP] = "Box(#{value_input.from.props[DECOMPILED_PROP]})"
+            node.decompiled = "Box(#{value_input.from.decompiled})"
+          when "IsNullNode"
+            value_edge = input_edge_or_unwind(node, :name, "value")
+            decompile_body(value_edge.from)
+            node.decompiled = "#{value_edge.from.decompiled} == null"
+          when "InstanceOfNode"
+            # willfully ignore these nodes
+            node.decompiled = ''
           end
 
-          return if node.props[DECOMPILED_PROP]
+          return if node.decompiled
         end
 
         # detect binary operands
@@ -641,11 +673,29 @@ module Seafoam
           x, y = data_input_edges
           decompile_body(x.from)
           decompile_body(y.from)
-          node.props[DECOMPILED_PROP] = "#{x.from.props[DECOMPILED_PROP]} #{node.props.dig(:node_class, :name_template)} #{y.from.props[DECOMPILED_PROP]}"
+          node.decompiled = "#{x.from.decompiled} #{node.props.dig(:node_class, :name_template)} #{y.from.decompiled}"
         end
       end
 
       private
+
+      def input_edge_or_unwind(node, prop_key, prop_value)
+        if (item = node.inputs.find { |edge| edge.props[prop_key] == prop_value })
+          item
+        else
+          node.failure_reason = "Failed to find input edge with #{prop_key}=#{prop_value}"
+          raise Unwind.new(node)
+        end
+      end
+
+      def output_edge_or_unwind(node, prop_key, prop_value)
+        if (item = node.outputs.find { |edge| edge.props[prop_key] == prop_value })
+          item
+        else
+          node.failure_reason = "Failed to find output edge with #{prop_key}=#{prop_value}"
+          raise Unwind.new(node)
+        end
+      end
 
       def new_var_id
         id = @max_var_id
@@ -699,15 +749,14 @@ module Seafoam
         end
 
         def finish_line(node)
-          node_class = node.props.dig(:node_class, :node_class)
-          add_line("# Stopped at #{node.inspect} node class: #{node_class}") unless node_class&.end_with?("ReturnNode")
+          add_line("# Stopped at #{node}") unless node.node_class&.end_with?("ReturnNode")
           nil
         end
 
         def collect_one(node)
           last_part = node.props.dig(:node_class, :node_class)&.split('.')&.last
           return :next if node.props[SKIP_DURING_COLLECTION_PROP]
-          if (failure = node.props[FAILURE_REASON_PROP])
+          if (failure = node.failure_reason)
             add_line("# #{failure}")
             return :done
           end
@@ -741,18 +790,19 @@ module Seafoam
           end
         end
 
-        def add_line(line)
+        def add_line(line, node = nil)
           return unless line
+          line += " from #{node}" if node
           @lines << "#{' ' * @indent}#{line}"
         end
 
         def add_decompiled_code(node)
-          decompiled = node.props[DECOMPILED_PROP]
+          decompiled = node.decompiled
           case decompiled
           when Array
-            decompiled.each { |line| add_line("#{line} # from #{node.inspect}") }
+            decompiled.each { |line| add_line(line, node) }
           when String
-            add_line("#{decompiled} # from #{node.inspect}")
+            add_line(decompiled, node)
           end
         end
 
