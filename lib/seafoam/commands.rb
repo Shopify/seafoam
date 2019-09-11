@@ -457,19 +457,54 @@ module Seafoam
 
     class Decompiler
       DECOMPILED_PROP = :decomp_decompiled
+      FAILURE_REASON_PROP = :decomp_failure_reason
       MAX_VARIABLE_PROP = :decomp_max_variable
       SKIP_DURING_COLLECTION_PROP = :decomp_skip_during_collection
+
       def initialize(graph)
         @graph = graph
         @max_var_id = 0
       end
 
+      # a final pass to assemble the final output
+      def collect
+        node = @graph.nodes[0]
+        raise "expected node[0] to be a start node" unless node.props.dig(:node_class, :node_class)&.end_with?("StartNode")
+        Collector.new.collect(node)
+      end
+
       def decompile(node)
-        return if node.props[DECOMPILED_PROP]
-        # detect binary operands
+        decompile_body(node, unwind_on_failure: false)
+      end
+
+      private
+
+      def decompile_body(node, unwind_on_failure: true)
+        decompiled_source = node.props[DECOMPILED_PROP]
+        return decompiled_source if decompiled_source
+
+        begin
+          decompile_one(node, unwind_on_failure: unwind_on_failure)
+          if unwind_on_failure
+            success = !!node.props[DECOMPILED_PROP]
+          end
+        rescue Unwind => unwind
+          if unwind_on_failure
+            unwind.could_not_satisfy_dependency(node)
+            raise
+          else
+            node.props[FAILURE_REASON_PROP] = "Node##{node.id} depends on unhandleable Node##{unwind.unsatisfied_dependency.first.id}"
+          end
+        end
+
+        if unwind_on_failure
+          raise Unwind.new(node) unless success
+        end
+      end
+
+      # this one could raise
+      def decompile_one(node, unwind_on_failure:)
         node_class = node.props.dig(:node_class, :node_class)
-        # require 'pry'
-        # binding.pry
         if node_class.is_a?(String)
           last_part = node_class.split('.').last
           case last_part
@@ -482,7 +517,7 @@ module Seafoam
               edge.props[:type] == "Condition"
             end
             raise "condition input not found for if node" unless condition_edge
-            decompile(condition_edge.from)
+            decompile_body(condition_edge.from)
 
             node.props[DECOMPILED_PROP] = "if #{condition_edge.from.props[DECOMPILED_PROP]}"
           when "MethodCallTargetNode"
@@ -490,7 +525,7 @@ module Seafoam
             raise "can't find target name" unless target_name
             decompiled_arguments = node.inputs.map do |edge|
               next nil unless edge.props[:name] == "arguments"
-              decompile(edge.from)
+              decompile_body(edge.from)
               edge.from.props[DECOMPILED_PROP]
               # TODO: we are assuming that the arguments show up in the order they are listed in Node#inputs.
               # not sure if this is an okay assumption
@@ -502,7 +537,7 @@ module Seafoam
               edge.props[:name] == "callTarget"
             end
             raise "can't find call target from InvokeNode" unless call_target_edge
-            decompile(call_target_edge.from)
+            decompile_body(call_target_edge.from)
 
             node.props[DECOMPILED_PROP] = call_target_edge.from.props[DECOMPILED_PROP]
 
@@ -529,7 +564,7 @@ module Seafoam
 
             phi_inputs = phi.inputs.select { |edge| edge.props[:name] == 'values' }.map!(&:from)
             phi_inputs.each do |input_node|
-              decompile(input_node)
+              decompile_body(input_node)
             end
 
             phi_varaible_name = "temp#{new_var_id}"
@@ -550,12 +585,12 @@ module Seafoam
             raise "no condition edge" unless condition
             condition = condition.from
 
-            decompile(condition)
+            decompile_body(condition)
             node.props[DECOMPILED_PROP] = "raise #{node.props["reason"]} unless #{condition.props[DECOMPILED_PROP]}"
           when "ReturnNode"
             data_input = node.inputs.find { |edge| edge.props[:kind] == "data" }
             if data_input
-              decompile(data_input.from)
+              decompile_body(data_input.from)
               node.props[DECOMPILED_PROP] = "return #{data_input.from.props[DECOMPILED_PROP]}"
             else
               node.props[DECOMPILED_PROP] = "return"
@@ -564,33 +599,33 @@ module Seafoam
             # it looks like this node is for storing the length of an input array?
             array_input = node.inputs.find { |edge| edge.props[:name] == "object" }
             raise "missing object input" unless array_input
-            decompile(array_input.from)
+            decompile_body(array_input.from)
             node.props[DECOMPILED_PROP] = array_input.from.props[DECOMPILED_PROP]
           when "PiNode"
             object_input = node.inputs.find { |edge| edge.props[:name] == "object" }
             raise "missing object input" unless object_input
-            decompile(object_input.from)
+            decompile_body(object_input.from)
             node.props[DECOMPILED_PROP] = object_input.from.props[DECOMPILED_PROP]
           when "LoadIndexedNode"
             array_input = node.inputs.find { |edge| edge.props[:name] == "array" }
             raise "missing array input" unless array_input
             index_input = node.inputs.find { |edge| edge.props[:name] == "index" }
             raise "missing index input" unless index_input
-            decompile(array_input.from)
-            decompile(index_input.from)
+            decompile_body(array_input.from)
+            decompile_body(index_input.from)
 
             node.props[DECOMPILED_PROP] = "#{array_input.from.props[DECOMPILED_PROP]}[#{index_input.from.props[DECOMPILED_PROP]}]"
           when "UnboxNode"
             value_input = node.inputs.find { |edge| edge.props[:name] == "value" }
             raise "missing value input" unless value_input
-            decompile(value_input.from)
+            decompile_body(value_input.from)
 
             node.props[SKIP_DURING_COLLECTION_PROP] = true
             node.props[DECOMPILED_PROP] = "Unbox(#{value_input.from.props[DECOMPILED_PROP]})"
           when "BoxNode"
             value_input = node.inputs.find { |edge| edge.props[:name] == "value" }
             raise "missing value input" unless value_input
-            decompile(value_input.from)
+            decompile_body(value_input.from)
 
             node.props[SKIP_DURING_COLLECTION_PROP] = true
             node.props[DECOMPILED_PROP] = "Box(#{value_input.from.props[DECOMPILED_PROP]})"
@@ -599,13 +634,34 @@ module Seafoam
           return if node.props[DECOMPILED_PROP]
         end
 
+        # detect binary operands
         data_input_edges = node.inputs.select { |edge| edge.props[:kind] == "data" }
         if node.props[:kind] == "op" && data_input_edges.size == 2
           # TODO: ordering. are we sure that x is always the first edge?
           x, y = data_input_edges
-          decompile(x.from)
-          decompile(y.from)
+          decompile_body(x.from)
+          decompile_body(y.from)
           node.props[DECOMPILED_PROP] = "#{x.from.props[DECOMPILED_PROP]} #{node.props.dig(:node_class, :name_template)} #{y.from.props[DECOMPILED_PROP]}"
+        end
+      end
+
+      private
+
+      def new_var_id
+        id = @max_var_id
+        @max_var_id += 1
+        id
+      end
+
+      class Unwind < StandardError
+        attr_reader :unsatisfied_dependency
+
+        def initialize(unsatisfied_node)
+          @unsatisfied_dependency = [unsatisfied_node]
+        end
+
+        def could_not_satisfy_dependency(node)
+          @unsatisfied_dependency << node
         end
       end
 
@@ -628,14 +684,11 @@ module Seafoam
         def collect_until_merge(node)
           loop do
             next_node = collect_one(node)
-            return if next_node == :done
+            return finish_line(node) if next_node == :done
+
             if next_node == :next
               edge = node.outputs.find { |edge| edge.props[:kind] == "control" }
-              unless edge
-                node_class = node.props.dig(:node_class, :node_class)
-                add_line("# stopped at #{node.inspect} node class: #{node_class}") unless node_class&.end_with?("ReturnNode")
-                return
-              end
+              return finish_line(node) unless edge
               next_node = edge.to
             end
 
@@ -645,9 +698,20 @@ module Seafoam
           end
         end
 
+        def finish_line(node)
+          node_class = node.props.dig(:node_class, :node_class)
+          add_line("# Stopped at #{node.inspect} node class: #{node_class}") unless node_class&.end_with?("ReturnNode")
+          nil
+        end
+
         def collect_one(node)
           last_part = node.props.dig(:node_class, :node_class)&.split('.')&.last
           return :next if node.props[SKIP_DURING_COLLECTION_PROP]
+          if (failure = node.props[FAILURE_REASON_PROP])
+            add_line("# #{failure}")
+            return :done
+          end
+
           case last_part
           when "IfNode"
             true_branch = node.outputs.find { |edge| edge.props[:name] == "trueSuccessor" }
@@ -697,21 +761,6 @@ module Seafoam
           yield
           @indent -= 2
         end
-      end
-
-      # a final pass to assemble the final output
-      def collect
-        node = @graph.nodes[0]
-        raise "expected node[0] to be a start node" unless node.props.dig(:node_class, :node_class)&.end_with?("StartNode")
-        Collector.new.collect(node)
-      end
-
-      private
-
-      def new_var_id
-        id = @max_var_id
-        @max_var_id += 1
-        id
       end
     end
 
