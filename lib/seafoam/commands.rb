@@ -326,7 +326,7 @@ module Seafoam
         raise ArgumentError, 'render only works with a graph' unless rest == [nil, nil]
 
         with_graph(file, graph_index) do |parser|
-          parser.skip_graph_header
+          pp parser.read_graph_header
           graph = parser.read_graph
           Annotators.apply graph, annotator_options
 
@@ -454,7 +454,6 @@ module Seafoam
       end
     end
 
-
     class Decompiler
       DECOMPILED_PROP = :decomp_decompiled
       FAILURE_REASON_PROP = :decomp_failure_reason
@@ -495,6 +494,9 @@ module Seafoam
           end
 
           def decompiled=(value)
+            if decompiled
+              raise "asdfasdf"
+            end
             props[DECOMPILED_PROP] = value
           end
 
@@ -614,12 +616,37 @@ module Seafoam
                   end_node.decompiled = [end_node.decompiled]
                 end
 
-                end_node.decompiled << "#{phi_varaible_name} = #{rhs_assignment.props[DECOMPILED_PROP]}"
+                end_node.decompiled << "#{phi_varaible_name} = #{rhs_assignment.decompiled}"
               end
               phi.decompiled = phi_varaible_name
             when (loop_begin = phi.inputs.find { |edge| edge.from.node_class.end_with?("LoopBeginNode") })
-              # basically sink the assignment to the loop variable as low as possible inside the loop
-              p 'hu heu huehe uehue he ueh u'
+              loop_begin = loop_begin.from
+
+              phi_varaible_name = "temp#{new_var_id}"
+              phi.decompiled = phi_varaible_name # in case of circlular dependency
+
+              phi_inputs = phi.inputs.select { |edge| edge.props[:name] == 'values' }.map!(&:from)
+              phi_inputs.each do |input_node|
+                decompile_body(input_node)
+              end
+
+              loop_begin.decompiled = [
+                "#{phi_varaible_name} = #{phi_inputs.first.decompiled}",
+                "while true"
+              ]
+              phi_inputs.shift
+
+              loop_ends = loop_begin.outputs.select { |edge| edge.props[:kind] == "loop" }.map(&:to)
+              raise Unwind.new(node) if loop_ends.size != phi_inputs.size
+
+              loop_ends.zip(phi_inputs) do |loop_end, phi_input|
+                loop_end.decompiled ||= []
+                if loop_end.decompiled.is_a?(String)
+                  loop_end.decompiled = [loop_end.decompiled]
+                end
+
+                loop_end.decompiled << "#{phi_varaible_name} = #{phi_input.decompiled}"
+              end
             else
               node.failure_reason = "could not find known input edge type for phi"
             end
@@ -649,6 +676,7 @@ module Seafoam
             index_input = input_edge_or_unwind(node, :name, "index")
             decompile_body(array_input.from)
             decompile_body(index_input.from)
+            node.props[SKIP_DURING_COLLECTION_PROP] = true # these node show up in control flow paths but don't have sideeffects
             node.decompiled = "#{array_input.from.decompiled}[#{index_input.from.decompiled}]"
           when "UnboxNode"
             value_input = input_edge_or_unwind(node, :name, "value")
@@ -665,10 +693,27 @@ module Seafoam
             decompile_body(value_edge.from)
             node.decompiled = "#{value_edge.from.decompiled} == null"
           when "InstanceOfNode"
-            # willfully ignore these nodes
             value_edge = input_edge_or_unwind(node, :name, "value")
             decompile_body(value_edge.from)
             node.decompiled = "InstanceOf('#{node.props["checkedStamp"]}', #{value_edge.from.decompiled})"
+          when "LoopExitNode"
+            control_input = node.inputs.find { |e| e.props[:kind] == 'control' }
+            assignment = @graph.create_node(@graph.nodes.keys.max + 1, DECOMPILED_PROP => "break")
+            @graph.replace_edge_destination(control_input, assignment)
+            @graph.create_edge(assignment, node, kind: 'control')
+          when "StoreIndexedNode"
+            array_edge = input_edge_or_unwind(node, :name, "array")
+            value_edge = input_edge_or_unwind(node, :name, "value")
+            index_edge = input_edge_or_unwind(node, :name, "index")
+            decompile_body(array_edge.from)
+            decompile_body(value_edge.from)
+            decompile_body(index_edge.from)
+
+            node.decompiled = "#{array_edge.from.decompiled}[#{index_edge.from.decompiled}] = #{value_edge.from.decompiled}"
+          when "FloatConvertNode"
+            value_edge = input_edge_or_unwind(node, :name, "value")
+            decompile_body(value_edge.from)
+            node.decompiled = "ToFloat(#{value_edge.from.decompiled})"
           end
 
           return if node.decompiled
@@ -731,7 +776,7 @@ module Seafoam
 
         def collect(node)
           while node
-            node = collect_until_merge(node)
+            node = collect_until_class(node, "MergeNode")
           end
 
           @lines.join("\n")
@@ -739,7 +784,14 @@ module Seafoam
 
         private
 
-        def collect_until_merge(node)
+        def special_collect_trial(node, b)
+          if node&.props&.dig(:node_class, :node_class)&.end_with?("LoopExitNode")
+            return node
+          end
+          collect_until_class(node, b)
+        end
+
+        def collect_until_class(node, node_class_suffix)
           loop do
             next_node = collect_one(node)
             return finish_line(node) if next_node == :done
@@ -750,7 +802,8 @@ module Seafoam
               next_node = edge.to
             end
 
-            return next_node if next_node&.props&.dig(:node_class, :node_class)&.end_with?("MergeNode")
+            return next_node if next_node&.props&.dig(:node_class, :node_class)&.end_with?(node_class_suffix)
+            return next_node if next_node&.props&.dig(:node_class, :node_class)&.end_with?("LoopExitNode")
 
             node = next_node
           end
@@ -779,15 +832,29 @@ module Seafoam
             merge = nil
             false_branch_merge = nil
             add_decompiled_code(node)
-            indent { merge = collect_until_merge(true_branch.to) }
+            indent { merge = collect_until_class(true_branch.to, "MergeNode") }
             add_line("else")
-            indent { false_branch_merge = collect_until_merge(false_branch.to) }
+            indent { false_branch_merge = collect_until_class(false_branch.to, "MergeNode") }
             add_line("end")
 
             next_node = merge || false_branch_merge
 
             if next_node
               next_node
+            else
+              :done
+            end
+          when "LoopBeginNode"
+            exit_node = nil
+            next_edge = node.outputs.find { |edge| edge.props[:kind] == "control" }
+            return :done unless next_edge
+
+            add_decompiled_code(node)
+            indent { exit_node = collect_until_class(next_edge.to, "LoopExitNode") }
+            add_line("end", node)
+
+            if exit_node
+              exit_node
             else
               :done
             end

@@ -46,12 +46,17 @@ class MatMult {
       i++;
       c[0][0] = i;
     }
-    c();
     i = 0;
     while (i < size) {
       i++;
       c[0][0] = i;
       i++;
+      c[0][1] = i;
+      if (a[0][(int)(Math.random() * size)] < 0.5) continue;
+      i+=2;
+      c[0][2] = i;
+      if (a[0][(int)(Math.random() * size)] < 0.7) continue;
+      c();
     }
   }
 }
