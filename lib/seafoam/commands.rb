@@ -459,6 +459,7 @@ module Seafoam
       FAILURE_REASON_PROP = :decomp_failure_reason
       MAX_VARIABLE_PROP = :decomp_max_variable
       SKIP_DURING_COLLECTION_PROP = :decomp_skip_during_collection
+      WHILE_BODY_NODE_PROP = :decomp_while_body_node # used by the collector to know where to go next
 
       def initialize(graph)
         @graph = graph
@@ -494,9 +495,9 @@ module Seafoam
           end
 
           def decompiled=(value)
-            if decompiled
-              raise "asdfasdf"
-            end
+            # if decompiled
+            #   raise "clobbering #{self} #{decompiled} with #{value}"
+            # end
             props[DECOMPILED_PROP] = value
           end
 
@@ -510,6 +511,10 @@ module Seafoam
 
           def node_class
             props.dig(:node_class, :node_class)
+          end
+
+          def natural_control_successor
+            outputs.find { |edge| edge.props[:name] == 'next' }&.to
           end
         end
       end
@@ -559,9 +564,11 @@ module Seafoam
             decompile_body(condition_edge.from)
 
             node.decompiled = "if #{condition_edge.from.props[DECOMPILED_PROP]}"
-          when "MethodCallTargetNode"
+          when "MethodCallTargetNode", "IndirectCallTargetNode"
             target_name = node.props.dig("targetMethod", :method_name)
-            raise "can't find target name" unless target_name
+            if !target_name && last_part != "IndirectCallTargetNode"
+              raise "can't find target name"
+            end
             decompiled_arguments = node.inputs.map do |edge|
               next nil unless edge.props[:name] == "arguments"
               decompile_body(edge.from)
@@ -570,8 +577,17 @@ module Seafoam
               # not sure if this is an okay assumption
             end.compact
 
-            node.decompiled = "#{target_name}(#{decompiled_arguments.join(', ')})"
-          when "InvokeNode"
+            case last_part
+            when "MethodCallTargetNode"
+              node.decompiled = "#{target_name}(#{decompiled_arguments.join(', ')})"
+            when "IndirectCallTargetNode"
+              computed_address_edge = input_edge_or_unwind(node, :name, 'computedAddress')
+              decompile_body(computed_address_edge.from)
+              node.decompiled = "AsFunc(#{computed_address_edge.from.decompiled}).call(#{decompiled_arguments.join(', ')})"
+            else
+              raise 'should be unreachable'
+            end
+          when "InvokeNode", "InvokeWithExceptionNode"
             call_target_edge = node.inputs.find do |edge|
               edge.props[:name] == "callTarget"
             end
@@ -608,6 +624,8 @@ module Seafoam
 
               phi_varaible_name = "temp#{new_var_id}"
 
+              # heavy assumption here about hte order of edges. Can we rely on the order of the edges in the bgv to be the
+              # correct order for the phi node?
               ends = merge.inputs.select { |e| e.props[:name] == 'ends' }.map(&:from)
               raise "number of ends don't match number of phi inputs" unless ends.size == phi_inputs.size
               phi_inputs.zip(ends) do |rhs_assignment, end_node|
@@ -636,6 +654,20 @@ module Seafoam
               ]
               phi_inputs.shift
 
+              loop_control_next = loop_begin.outputs.find { |edge| edge.props[:kind] == 'control' }
+              if loop_control_next.to.node_class&.end_with?('IfNode')
+
+                loop_if = loop_control_next.to;
+                decompile_body(loop_if)
+                if (loop_false_next = loop_if.outputs.find { |edge| edge.props[:name] == 'falseSuccessor' })
+                  if loop_false_next.to.node_class&.end_with?('LoopExitNode')
+                    loop_begin.decompiled[1] = loop_if.decompiled.sub('if', 'while')
+                    loop_begin.props[WHILE_BODY_NODE_PROP] = loop_if.outputs.find { |edge| edge.props[:name] == 'trueSuccessor'}&.to
+                    loop_if.props[SKIP_DURING_COLLECTION_PROP] = true
+                  end
+                end
+              end
+
               loop_ends = loop_begin.outputs.select { |edge| edge.props[:kind] == "loop" }.map(&:to)
               raise Unwind.new(node) if loop_ends.size != phi_inputs.size
 
@@ -650,10 +682,73 @@ module Seafoam
             else
               node.failure_reason = "could not find known input edge type for phi"
             end
+          when "IntegerSubExactOverflowNode"
+            x = input_edge_or_unwind(node, :name, 'x')
+            y = input_edge_or_unwind(node, :name, 'y')
+            decompile_body(x.from)
+            decompile_body(y.from)
+
+            node.decompiled = "OutOfRange?(#{x.from.decompiled} - #{y.from.decompiled})"
+          when "IntegerAddExactOverflowNode" # duplication here
+            x = input_edge_or_unwind(node, :name, 'x')
+            y = input_edge_or_unwind(node, :name, 'y')
+            decompile_body(x.from)
+            decompile_body(y.from)
+
+            node.decompiled = "OutOfRange?(#{x.from.decompiled} + #{y.from.decompiled})"
+          when "IntegerSubExactNode"
+            x = input_edge_or_unwind(node, :name, 'x')
+            y = input_edge_or_unwind(node, :name, 'y')
+            decompile_body(x.from)
+            decompile_body(y.from)
+
+            node.decompiled = "#{x.from.decompiled} - #{y.from.decompiled}"
+          when "IntegerAddExactNode"
+            x = input_edge_or_unwind(node, :name, 'x')
+            y = input_edge_or_unwind(node, :name, 'y')
+            decompile_body(x.from)
+            decompile_body(y.from)
+
+            node.decompiled = "#{x.from.decompiled} + #{y.from.decompiled}"
+          when "LoadFieldNode"
+            object_input = input_edge_or_unwind(node, :name, "object")
+            decompile_body(object_input.from)
+
+            field_name = node.props.dig("field", :name)
+            raise Unwind.new(node) unless field_name
+            node.decompiled = "#{object_input.from.decompiled}.#{field_name}"
+            node.props[SKIP_DURING_COLLECTION_PROP] = true
+          when "CommitAllocationNode"
+            virtual_object_edges = node.inputs.select { |edge| edge.props[:name] == "virtualObjects" }
+            unless virtual_object_edges.size == 1
+              node.failure_reason = "only know how to deal with exactly one virtualObject"
+              raise Unwind.new(node)
+            end
+            virtual_object = virtual_object_edges.first.from
+
+            value_inputs = node.inputs.select { |edge| edge.props[:name] == 'values' }
+            if virtual_object.node_class.end_with?("SubstrateVirtualArrayNode")
+              array_elements = value_inputs.map do |edge|
+                decompile_body(edge.from)
+                edge.from.decompiled
+              end.join(", ")
+              var_name = "allocated#{new_var_id}"
+              node.decompiled = "#{var_name} = [#{array_elements}]"
+              virtual_object.decompiled = var_name
+            else
+              node.failure_reason = "not implemented"
+              raise Unwind.new(node)
+            end
+          when "AllocatedObjectNode"
+            commit_edge = input_edge_or_unwind(node, :name, 'commit')
+            virtual_object_edge = input_edge_or_unwind(node, :name, 'virtualObject')
+            decompile_body(commit_edge.from)
+            node.decompiled = virtual_object_edge.from.decompiled
           when "FixedGuardNode"
             condition = input_edge_or_unwind(node, :name, 'condition')
             decompile_body(condition.from)
-            node.decompiled = "raise #{node.props["reason"]} unless #{condition.from.decompiled}"
+            verb = node.props['negated'] ? 'if' : 'unless'
+            node.decompiled = "raise #{node.props["reason"]} #{verb} #{condition.from.decompiled}"
           when "ReturnNode"
             data_input = node.inputs.find { |edge| edge.props[:kind] == "data" }
             if data_input
@@ -723,6 +818,7 @@ module Seafoam
         data_input_edges = node.inputs.select { |edge| edge.props[:kind] == "data" }
         if node.props[:kind] == "op" && data_input_edges.size == 2
           # TODO: ordering. are we sure that x is always the first edge?
+          # TODO: for operations that are not associative such as multiplication, we need parenthese
           x, y = data_input_edges
           decompile_body(x.from)
           decompile_body(y.from)
@@ -775,24 +871,17 @@ module Seafoam
         end
 
         def collect(node)
-          while node
-            node = collect_until_class(node, "MergeNode")
-          end
+          collect_until(node) { false }
 
           @lines.join("\n")
         end
 
         private
 
-        def special_collect_trial(node, b)
-          if node&.props&.dig(:node_class, :node_class)&.end_with?("LoopExitNode")
-            return node
-          end
-          collect_until_class(node, b)
-        end
-
-        def collect_until_class(node, node_class_suffix)
+        def collect_until(node)
+          history = []
           loop do
+            history << node
             next_node = collect_one(node)
             return finish_line(node) if next_node == :done
 
@@ -802,8 +891,12 @@ module Seafoam
               next_node = edge.to
             end
 
-            return next_node if next_node&.props&.dig(:node_class, :node_class)&.end_with?(node_class_suffix)
-            return next_node if next_node&.props&.dig(:node_class, :node_class)&.end_with?("LoopExitNode")
+
+            if yield(next_node)
+              history << next_node
+              add_line("# collection finished. path: #{history.inspect}") if $DEBUG
+              return next_node
+            end
 
             node = next_node
           end
@@ -829,35 +922,64 @@ module Seafoam
             raise "need true branch" unless true_branch
             raise "need false branch" unless false_branch
 
-            merge = nil
-            false_branch_merge = nil
-            add_decompiled_code(node)
-            indent { merge = collect_until_class(true_branch.to, "MergeNode") }
-            add_line("else")
-            indent { false_branch_merge = collect_until_class(false_branch.to, "MergeNode") }
-            add_line("end")
+            node_after_true_begin = true_branch.to.natural_control_successor
+            if node_after_true_begin&.node_class&.end_with?("LoopEndNode") && true_branch.to.natural_control_successor&.node_class&.end_with?("LoopEndNode")
+              if node_after_true_begin.decompiled
+                add_decompiled_code(node)
+                indent do
+                  add_decompiled_code(node_after_true_begin)
+                  add_line("continue")
+                end
+                add_line("end")
+              else
+                raise "can't deal with multiline ifs" if node.decompiled.is_a?(Array)
+                add_line("continue #{node.decompiled}")
+              end
 
-            next_node = merge || false_branch_merge
-
-            if next_node
-              next_node
+              false_branch.to
             else
-              :done
+              merge = nil
+              false_branch_merge = nil
+              add_decompiled_code(node)
+              indent do
+                merge = collect_until(true_branch.to) { |node| node.node_class&.end_with?("MergeNode") }
+              end
+              add_line("else")
+              indent do
+                false_branch_merge = collect_until(false_branch.to) { |node| node.node_class&.end_with?("MergeNode") }
+              end
+              add_line("end")
+
+              next_node = merge || false_branch_merge
+
+              if next_node
+                next_node
+              else
+                :done
+              end
             end
           when "LoopBeginNode"
-            exit_node = nil
+            loop_exits = node.outputs.select { |edge| edge.props[:name] == "loopBegin" && edge.to.node_class&.end_with?("LoopExitNode") }
+            if loop_exits.empty?
+              add_line("# #{node}: bailed, couldn't find loop exit")
+              return :done
+            elsif loop_exits.size > 1
+              add_line("# #{node}: bailed, can't support multiple loop exits")
+              return :done
+            end
+            loop_exit = loop_exits.first.to
+
             next_edge = node.outputs.find { |edge| edge.props[:kind] == "control" }
             return :done unless next_edge
 
+            start = node.props[WHILE_BODY_NODE_PROP] || next_edge.to
             add_decompiled_code(node)
-            indent { exit_node = collect_until_class(next_edge.to, "LoopExitNode") }
+            indent do
+              collect_until(start) { false } # loops don't create cycles in the IR
+            end
             add_line("end", node)
 
-            if exit_node
-              exit_node
-            else
-              :done
-            end
+            loop_exit
           else
             add_decompiled_code(node)
 
