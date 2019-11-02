@@ -74,21 +74,21 @@ describe Seafoam::BGVParser do
     end
 
     it 'raises an error for files which are not BGV' do
-      File.open(File.expand_path('bgv/not-bgv', __dir__)) do |stream|
+      File.open(File.expand_path('bgv-fixtures/not.bgv', __dir__)) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         expect { parser.read_file_header }.to raise_error(EncodingError)
       end
     end
 
     it 'raises an error for files which are an unsupported version of BGV' do
-      File.open(File.expand_path('bgv/unsupported-bgv', __dir__)) do |stream|
+      File.open(File.expand_path('bgv-fixtures/unsupported.bgv', __dir__)) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         expect { parser.read_file_header }.to raise_error(NotImplementedError)
       end
     end
 
     it 'does not raise an error for an unsupported version of BGV if version_check is disabled' do
-      File.open(File.expand_path('bgv/unsupported-bgv', __dir__)) do |stream|
+      File.open(File.expand_path('bgv-fixtures/unsupported.bgv', __dir__)) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         expect(parser.read_file_header(version_check: false)).to eq [7, 2]
       end
