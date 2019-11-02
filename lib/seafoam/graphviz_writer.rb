@@ -184,19 +184,17 @@ module Seafoam
       'info' => BIG_STONE,
       'control' => AMARANTH,
       'loop' => AMARANTH,
-      'data' => KEPPEL
+      'data' => KEPPEL,
+      'other' => BLACK
     }
-
-    EDGE_COLORS.default = BLACK
 
     NODE_COLORS = {
       'info' => [DUST, BLACK],
       'input' => [WHITE_ICE, BLACK],
-      'op' => [KEPPEL, BLACK],
       'control' => [CARISSMA, BLACK],
-      'effect' => [AMARANTH, WHITE]
+      'effect' => [AMARANTH, WHITE],
+      'calc' => [KEPPEL, BLACK],
+      'other' => [DUST, BLACK]
     }
-
-    NODE_COLORS.default = [DUST, BLACK]
   end
 end

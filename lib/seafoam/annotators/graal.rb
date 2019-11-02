@@ -84,11 +84,11 @@ module Seafoam
           node.props[:label] = label
 
           # Set the :kind property.
-          kind = if node_class.start_with?('org.graalvm.compiler.nodes.calc.')
-                   'op'
-                 else
-                   NODE_KIND_MAP[node_class]
-                 end
+          if node_class.start_with?('org.graalvm.compiler.nodes.calc.')
+             kind = 'calc'
+           else
+             kind = NODE_KIND_MAP[node_class] || 'other'
+           end
           node.props[:kind] = kind
         end
       end
@@ -153,6 +153,7 @@ module Seafoam
 
           # Condition for branches, which we label as ?.
           when 'condition'
+            edge.props[:kind] = 'data'
             edge.props[:label] = '?'
 
           # loopBegin edges point from LoopEndNode (continue) and LoopExitNode
