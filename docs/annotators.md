@@ -10,12 +10,15 @@ understand them. They usually have knowledge of how the graph is structured, and
 use this to make the graph easier to read or to make important information in
 them stand out.
 
+We call properties with symbol keys *annotations*, as they're added by the
+annotators.
+
 Annotators are similar to filters in IGV.
 
 Appropriate annotators are automatically selected and applied to graphs.
 
-The rendering commands recognize these (symbol) properties (distinct from string
-properties found in the file), so annotators will probably want to add them:
+The rendering commands recognize these annotations, so annotators will probably
+want to add them:
 
 * `:label` on nodes and edges
 * `:hidden` on nodes only, to not show them (*remove frame state* for example in IGV terminology)
