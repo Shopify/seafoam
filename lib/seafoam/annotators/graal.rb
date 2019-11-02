@@ -64,7 +64,7 @@ module Seafoam
             name_template = 'π'
           end
 
-          # Use a symbol for PhiNode
+          # Use a symbol for PhiNode.
           if node_class == 'org.graalvm.compiler.nodes.ValuePhiNode'
             name_template = 'ϕ({i#values}, {p#valueDescription})'
           end
@@ -83,7 +83,7 @@ module Seafoam
           # That's our label.
           node.props[:label] = label
 
-          # Set the :kind property based.
+          # Set the :kind property.
           kind = if node_class.start_with?('org.graalvm.compiler.nodes.calc.')
                    'op'
                  else
