@@ -1,5 +1,10 @@
 # Annotators
 
+The model of Seafoam is that it is a directed graph, with nodes annotated with a
+bag of key-value properties. When graphs are read they'll have some initial
+properties. Seafoam may add more properties. The output routines then draw the
+graph using the graph structure itself and also the properties.
+
 *Annotators* are routines that add extra properties to graphs to help the user
 understand them. They usually have knowledge of how the graph is structured, and
 use this to make the graph easier to read or to make important information in
@@ -15,7 +20,7 @@ properties found in the file), so annotators will probably want to add them:
 * `:label` on nodes and edges
 * `:hidden` on nodes only, to not show them (*remove frame state* for example in IGV terminology)
 * `:inlined` on nodes only, to indicate the node should be shown immediately above each node using it (*reduce edges* in IGV terminology)
-* `:kind` on nodes only, which can be `info`, `input`, `external`, `op`, `call`, or `nil`
+* `:kind` on nodes only, which can be `info`, `input`, `control`, `effect`, `op`, `call`, or `nil`
 * `:kind` on edges only, which can be `info`, `control`, `loop`, `data` or `nil`
 * `:reverse` on edges only
 * `:spotlight` for nodes as part of spotlighting (`lit` are shown, `shaded` are shown but greyed out, and edges from `shaded` to `:hidden` nodes are also shown greyed out)
