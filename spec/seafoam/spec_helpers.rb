@@ -6,6 +6,7 @@ module Seafoam
         parser.read_file_header
         loop do
           index, = parser.read_graph_preheader
+          raise unless index
           if index == graph_index
             parser.read_graph_header
             break parser.read_graph
