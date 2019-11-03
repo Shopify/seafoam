@@ -9,7 +9,7 @@ describe Seafoam::Annotators::FallbackAnnotator do
 
   it 'adds a label annotation when there is a label property' do
     graph = Seafoam::Graph.new
-    node = graph.create_node(0, {'label' => 'foo'})
+    node = graph.create_node(0, 'label' => 'foo')
     annotator = Seafoam::Annotators::FallbackAnnotator.new
     annotator.annotate graph
     expect(node.props[:label]).to eq 'foo'
@@ -17,7 +17,7 @@ describe Seafoam::Annotators::FallbackAnnotator do
 
   it 'does not overwrite an existing label annotation' do
     graph = Seafoam::Graph.new
-    node = graph.create_node(0, {'label' => 'foo', :label => 'bar'})
+    node = graph.create_node(0, 'label' => 'foo', :label => 'bar')
     annotator = Seafoam::Annotators::FallbackAnnotator.new
     annotator.annotate graph
     expect(node.props[:label]).to eq 'bar'
@@ -25,7 +25,7 @@ describe Seafoam::Annotators::FallbackAnnotator do
 
   it 'adds nothing when there is no label property' do
     graph = Seafoam::Graph.new
-    node = graph.create_node(0, {'xlabel' => 'foo'})
+    node = graph.create_node(0, 'xlabel' => 'foo')
     annotator = Seafoam::Annotators::FallbackAnnotator.new
     annotator.annotate graph
     expect(node.props[:label]).to be nil

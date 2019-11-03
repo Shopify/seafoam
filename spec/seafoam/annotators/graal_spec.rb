@@ -41,14 +41,14 @@ describe Seafoam::Annotators::GraalAnnotator do
     describe 'with :hide_frame_state' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new({hide_frame_state: true})
+        annotator = Seafoam::Annotators::GraalAnnotator.new(hide_frame_state: true)
         annotator.annotate @graph
       end
 
       it 'sets the hidden property on all frame state nodes' do
-        frame_state_nodes = @graph.nodes.values.select { |n|
+        frame_state_nodes = @graph.nodes.values.select do |n|
           Seafoam::Annotators::GraalAnnotator::FRAME_STATE_NODES.include?(n.props.dig(:node_class, :node_class))
-        }
+        end
         expect(frame_state_nodes.all? { |n| n.props[:hidden] }).to be_truthy
       end
     end
@@ -56,14 +56,14 @@ describe Seafoam::Annotators::GraalAnnotator do
     describe 'with :hide_floating' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new({hide_floating: true})
+        annotator = Seafoam::Annotators::GraalAnnotator.new(hide_floating: true)
         annotator.annotate @graph
       end
 
       it 'sets the hidden property on all nodes without a control edge' do
-        nodes_without_control_edge = @graph.nodes.values.select { |n|
+        nodes_without_control_edge = @graph.nodes.values.select do |n|
           n.edges.none? { |e| e.props[:kind] == 'control' }
-        }
+        end
         expect(nodes_without_control_edge.all? { |n| n.props[:hidden] }).to be_truthy
       end
     end
@@ -71,14 +71,14 @@ describe Seafoam::Annotators::GraalAnnotator do
     describe 'with :reduce_edges' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new({reduce_edges: true})
+        annotator = Seafoam::Annotators::GraalAnnotator.new(reduce_edges: true)
         annotator.annotate @graph
       end
 
       it 'inlines all constant nodes' do
-        constant_nodes = @graph.nodes.values.select { |n|
+        constant_nodes = @graph.nodes.values.select do |n|
           Seafoam::Annotators::GraalAnnotator::SIMPLE_INPUTS.include?(n.props.dig(:node_class, :node_class))
-        }
+        end
         expect(constant_nodes.all? { |n| n.props[:inlined] }).to be_truthy
       end
     end

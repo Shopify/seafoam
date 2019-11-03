@@ -85,10 +85,10 @@ module Seafoam
 
           # Set the :kind property.
           if node_class.start_with?('org.graalvm.compiler.nodes.calc.')
-             kind = 'calc'
-           else
-             kind = NODE_KIND_MAP[node_class] || 'other'
-           end
+            kind = 'calc'
+          else
+            kind = NODE_KIND_MAP[node_class] || 'other'
+          end
           node.props[:kind] = kind
         end
       end
