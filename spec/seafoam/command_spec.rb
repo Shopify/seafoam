@@ -166,28 +166,28 @@ describe Seafoam::Commands do
         end
 
         count.times do |n|
-          @commands.send :render, "#{file}:#{n}", '-o', 'out.dot'
+          @commands.send :render, "#{file}:#{n}", '--out', 'out.dot'
         end
       end
     end
 
     it 'supports -o out.pdf' do
-      @commands.send :render, "#{@fib_java}:0", '-o', 'out.pdf'
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.pdf'
       expect(`file out.pdf`).to start_with 'out.pdf: PDF document'
     end
 
     it 'supports -o out.svg' do
-      @commands.send :render, "#{@fib_java}:0", '-o', 'out.svg'
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.svg'
       expect(`file out.svg`).to start_with 'out.svg: SVG Scalable Vector Graphics image'
     end
 
     it 'supports -o out.png' do
-      @commands.send :render, "#{@fib_java}:0", '-o', 'out.png'
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.png'
       expect(`file out.png`).to start_with 'out.png: PNG image data'
     end
 
     it 'supports -o out.dot' do
-      @commands.send :render, "#{@fib_java}:0", '-o', 'out.dot'
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.dot'
       expect(`file out.dot`).to start_with 'out.dot: ASCII text'
     end
 

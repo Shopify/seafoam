@@ -176,9 +176,12 @@ $ seafoam render examples/fib-java.bgv:0 --spotlight 13,20
 
 `render` supports these options:
 
+* `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
 * `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
+* `--no-break-edges` turns off the option to break long edges to simplify the graph
+* `--option key value` for custom annotators
 
 ## Configuration
 

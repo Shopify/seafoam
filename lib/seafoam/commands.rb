@@ -274,9 +274,9 @@ module Seafoam
         arg = args.shift
         if arg.start_with?('-')
           case arg
-          when '-o'
+          when '--out'
             out_file = args.shift
-            raise ArgumentError, 'no file for -o' unless out_file
+            raise ArgumentError, 'no file for --out' unless out_file
           when '--spotlight'
             spotlight_arg = args.shift
             raise ArgumentError, 'no list for --spotlight' unless spotlight_arg
