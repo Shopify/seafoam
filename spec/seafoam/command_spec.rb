@@ -217,4 +217,46 @@ describe Seafoam::Commands do
       expect { @commands.send :help, 'foo' }.to raise_error(ArgumentError)
     end
   end
+
+  describe '#parse_name' do
+    it 'parses file.bgv' do
+      file, graph, node, edge = @commands.send(:parse_name, 'file.bgv')
+      expect(file).to eq 'file.bgv'
+      expect(graph).to be_nil
+      expect(node).to be_nil
+      expect(edge).to be_nil
+    end
+
+    it 'parses file.bgv:14' do
+      file, graph, node, edge = @commands.send(:parse_name, 'file.bgv:14')
+      expect(file).to eq 'file.bgv'
+      expect(graph).to eq 14
+      expect(node).to be_nil
+      expect(edge).to be_nil
+    end
+
+    it 'parses file.bgv:14:12' do
+      file, graph, node, edge = @commands.send(:parse_name, 'file.bgv:14:12')
+      expect(file).to eq 'file.bgv'
+      expect(graph).to eq 14
+      expect(node).to eq 12
+      expect(edge).to be_nil
+    end
+
+    it 'parses file.bgv:14:12-81' do
+      file, graph, node, edge = @commands.send(:parse_name, 'file.bgv:14:12-81')
+      expect(file).to eq 'file.bgv'
+      expect(graph).to eq 14
+      expect(node).to eq 12
+      expect(edge).to eq 81
+    end
+
+    it 'parses a realistic knarly BGV file name' do
+      file, graph, node, edge = @commands.send(:parse_name, '../graal_dumps/2019.11.03.19.35.03.828/TruffleHotSpotCompilation-13320[while_loop_at__Users_chrisseaton_src_github.com_Shopify_truffleruby-shopify_src_main_ruby_truffleruby_core_kernel.rb:360<OSR>].bgv:14:12-81')
+      expect(file).to eq '../graal_dumps/2019.11.03.19.35.03.828/TruffleHotSpotCompilation-13320[while_loop_at__Users_chrisseaton_src_github.com_Shopify_truffleruby-shopify_src_main_ruby_truffleruby_core_kernel.rb:360<OSR>].bgv'
+      expect(graph).to eq 14
+      expect(node).to eq 12
+      expect(edge).to eq 81
+    end
+  end
 end

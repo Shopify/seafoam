@@ -464,8 +464,8 @@ module Seafoam
 
     # Parse a name like file.bgv:g:n-e to [file.bgv, g, n, e].
     def parse_name(name)
-      file, graph, node, *rest = name.split(':')
-      raise ArgumentError, "too many parts to name #{name}" unless rest.empty?
+      *pre, file, graph, node = name.split(':')
+      file = [*pre, file].join(':')
 
       if node
         node, edge, *rest = node.split('-')
