@@ -1,0 +1,20 @@
+name: Specs
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.6.x
+    - name: Install graphviz
+      run: apt-get install graphviz
+    - name: Install
+      run: bundle install
+    - name: Run specs
+      run: bundle exec rspec
