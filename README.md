@@ -93,11 +93,13 @@ List graphs in a file.
 
 ```
 $ seafoam examples/fib-java.bgv list
-examples/fib-java.bgv:0  2:Fib.fib(int)/After parsing
-examples/fib-java.bgv:1  2:Fib.fib(int)/Before phase %s
-examples/fib-java.bgv:2  2:Fib.fib(int)/After high tier
-examples/fib-java.bgv:3  2:Fib.fib(int)/After mid tier
-examples/fib-java.bgv:4  2:Fib.fib(int)/After low tier
+examples/fib-java.bgv:0  2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
+examples/fib-java.bgv:1  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite
+examples/fib-java.bgv:2  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase
+examples/fib-java.bgv:3  2:Fib.fib(int)/After parsing
+examples/fib-java.bgv:4  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase
+examples/fib-java.bgv:5  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.inlining.InliningPhase
+...
 ```
 
 Search for strings in a graph, or node or edge within a graph.
@@ -115,7 +117,7 @@ $ seafoam examples/fib-java.bgv:0 edges
 22 nodes, 30 edges
 $ seafoam examples/fib-java.bgv:0:13 edges
 Input:
-  13 (Call Fib.fib) <-() 7 (Begin)
+  13 (Call Fib.fib) <-() 6 (Begin)
   13 (Call Fib.fib) <-() 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
   13 (Call Fib.fib) <-() 12 (MethodCallTarget)
 Output:

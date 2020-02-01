@@ -32,17 +32,17 @@ describe Seafoam::Commands do
       @commands.send :list, @fib_java
       lines = @out.string.lines.map(&:rstrip)
       expect(lines.take(5)).to eq [
-        "#{@fib_java}:0  2:Fib.fib(int)/After phase %s",
-        "#{@fib_java}:1  2:Fib.fib(int)/After phase %s",
-        "#{@fib_java}:2  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:0  2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase",
+        "#{@fib_java}:1  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite",
+        "#{@fib_java}:2  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
         "#{@fib_java}:3  2:Fib.fib(int)/After parsing",
-        "#{@fib_java}:4  2:Fib.fib(int)/After phase %s"
+        "#{@fib_java}:4  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase"
       ]
       expect(lines.drop(lines.length - 5)).to eq [
-        "#{@fib_java}:46  2:Fib.fib(int)/After phase %s",
-        "#{@fib_java}:47  2:Fib.fib(int)/After phase %s",
-        "#{@fib_java}:48  2:Fib.fib(int)/After phase %s",
-        "#{@fib_java}:49  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:46  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.PropagateDeoptimizeProbabilityPhase",
+        "#{@fib_java}:47  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.InsertMembarsPhase",
+        "#{@fib_java}:48  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.schedule.SchedulePhase",
+        "#{@fib_java}:49  2:Fib.fib(int)/After phase org.graalvm.compiler.core.phases.LowTier",
         "#{@fib_java}:50  2:Fib.fib(int)/After low tier"
       ]
     end

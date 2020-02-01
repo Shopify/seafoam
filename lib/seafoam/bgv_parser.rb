@@ -116,7 +116,13 @@ module Seafoam
     # Produce a flat graph name from a header.
     def graph_name(graph_header)
       groups_names = graph_header[:group].map { |g| g[:short_name] }
-      components = groups_names + [graph_header[:format]]
+      count = 0
+      name = graph_header[:format].sub(/%s/) do
+        arg = graph_header[:args][count]
+        count += 1
+        arg
+      end
+      components = groups_names + [name]
       components.join('/')
     end
 
