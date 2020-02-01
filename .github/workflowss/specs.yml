@@ -3,15 +3,15 @@ name: Specs
 on: [push]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Setup Ruby
-      uses: actions/setup-ruby@v1
+      uses: eregon/use-ruby-action@v1
       with:
-        ruby-version: 2.6.x
+        ruby-version: 2.7
     - name: Install graphviz
       run: apt-get install graphviz
     - name: Install
