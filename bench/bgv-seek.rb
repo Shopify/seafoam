@@ -10,10 +10,6 @@ require 'benchmark/ips'
 BGV_FILE = File.expand_path('../examples/matmult-java.bgv', __dir__)
 
 Benchmark.ips do |x|
-  # Accomodate optimising implementations of Ruby by not triggering
-  # deoptimisation on transition from warmup to measurement.
-  x.iterations = 3
-
   x.report('read') do
     File.open(BGV_FILE) do |stream|
       parser = Seafoam::BGVParser.new(stream)

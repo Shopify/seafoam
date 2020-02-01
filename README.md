@@ -59,13 +59,13 @@ This is just a quick summary - see more information on
 
 ```
 $ javac Fib.java
-$ java -XX:CompileOnly=::fib -Dgraal.Dump=* Fib 14
+$ java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
 ```
 
 ### TruffleRuby and other Truffle languages
 
 ```
-$ ruby --vm.Dgraal.TruffleCompileOnly=fib --vm.Dgraal.TruffleFunctionInlining=false  --vm.Dgraal.Dump=Truffle:1 fib.rb 14
+$ ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=fasle --vm.Dgraal.Dump=Truffle:2 fib.rb 14
 ```
 
 You will usually want to look at the *After TruffleTier* graph.

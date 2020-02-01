@@ -2,11 +2,11 @@
 
 ## GraalVM Compiler as a Java compiler
 
-`-Dgraal.Dump=*` is the simplest option to enable Graal graph dumping.
+`-Dgraal.Dump=:2` is a simple option to enable Graal graph dumping.
 
 The value of `Dump` is a *dump filter*. The format of dump filters is
-[documented][dump-filters], but in simple cases `*` will be enough and will give
-you everything.
+[documented][dump-filters], but in simple cases `:2` will be enough and will
+give you everything.
 
 [dump-filters]: https://github.com/oracle/graal/blob/master/compiler/src/org.graalvm.compiler.debug/src/org/graalvm/compiler/debug/doc-files/DumpHelp.txt
 
@@ -20,18 +20,28 @@ massive graphs with the logic repeated. I often use these flags to simplify the
 graph without significantly effecting too much how the logic in it is compiled.
 
 ```
--Dgraal.FullUnroll=false -Dgraal.PartialUnroll=false -Dgraal.LoopPeeling=false -Dgraal.LoopUnswitch=false -Dgraal.OptLoopTransform=false -Dgraal.OptScheduleOutOfLoops=false -Dgraal.VectorizeLoops=false
+  -Dgraal.FullUnroll=false \
+  -Dgraal.PartialUnroll=false \
+  -Dgraal.LoopPeeling=false \
+  -Dgraal.LoopUnswitch=false \
+  -Dgraal.OptLoopTransform=false \
+  -Dgraal.OptScheduleOutOfLoops=false \
+  -Dgraal.VectorizeLoops=false
 ```
 
 ## TruffleRuby and other Truffle languages
 
 Use the same options as for GraalVM for Java, except they're prefixed with
-`--vm.`, for example `--vm.Dgraal.Dump=*`.
+`--vm.`, for example `--vm.Dgraal.Dump=Truffle:2`.
 
-Use with `--vm.Dgraal.TruffleCompileOnly=foo`.
+Use with `--engine.CompileOnly=foo`.
 
 A good filter to use for Truffle languages is `--vm.Dgraal.Dump=Truffle:1`,
-which will only give you Truffle compilations.
+which will only give you Truffle compilations if you don't care about the
+whole Graal compilation pipeline.
 
-You may want to disable inlining with `--vm.Dgraal.TruffleFunctionInlining=false` in
-order to make graphs easier to understand.
+You may want to disable on-stack-replacement and inlining with
+`--engine.Inlining=false` and `--engine.OSR=false` in order to make graphs
+easier to understand.
+
+You may need to use `--experimental-options`.

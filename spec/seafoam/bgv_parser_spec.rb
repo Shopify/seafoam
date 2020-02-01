@@ -108,7 +108,7 @@ describe Seafoam::BGVParser do
       File.open(@fib_java) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
-        5.times do
+        51.times do
           expect(parser.read_graph_preheader).to_not be_nil
           parser.skip_graph_header
           parser.skip_graph
@@ -141,7 +141,7 @@ describe Seafoam::BGVParser do
         parser.read_file_header
         parser.read_graph_preheader
         header = parser.read_graph_header
-        expect(header[:props]['scope']).to eq 'main.Compiling.GraalCompiler.FrontEnd'
+        expect(header[:props]['scope']).to eq 'main.Compiling.GraalCompiler.FrontEnd.PhaseSuite.GraphBuilderPhase'
       end
     end
   end

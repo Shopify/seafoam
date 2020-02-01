@@ -1,6 +1,6 @@
 /*
- * $ javac Fib.java
- * $ java -XX:CompileOnly=::fib -Dgraal.Dump=* Fib 14
+ * % javac Fib.java
+ * % java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
  */
 
 class Fib {

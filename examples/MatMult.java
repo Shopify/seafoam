@@ -1,6 +1,6 @@
 /*
- * $ javac MatMult.java
- * $ java -XX:CompileOnly=::matmult -Dgraal.Dump=* MatMult 500
+ * % javac MatMult.java
+ * % java -XX:CompileOnly=::matmult -Dgraal.Dump=:2 MatMult 100
  */
 
 class MatMult {

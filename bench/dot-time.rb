@@ -32,7 +32,7 @@ Dir.glob(File.expand_path('../examples/*.bgv', __dir__)).each do |file|
       print "#{file}:#{index} (#{graph.nodes.size} nodes, #{graph.edges.size} edges)... "
 
       start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      `dot -Tpdf --out out.pdf out.dot`
+      `dot -Tpdf -o out.pdf out.dot`
       finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       puts format('%.2fs', finish - start)

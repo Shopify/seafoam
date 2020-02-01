@@ -10,7 +10,7 @@ in the GraalVM compiler.
 
 ## Format
 
-Seafoam supports version 6.1 of the BGV format (GraalVM 19 onwards.)
+Seafoam supports version 6.1 of the BGV format (GraalVM 1.0.0-rc16 onwards.)
 
 The BGV file format is network-endian.
 

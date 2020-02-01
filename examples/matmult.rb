@@ -1,4 +1,4 @@
-# $ ruby --vm.Dgraal.TruffleCompileOnly=matmult --vm.Dgraal.TruffleOSR=false --vm.Dgraal.TruffleFunctionInlining=false --vm.Dgraal.Dump=Truffle:1 matmult.rb 50
+# % ruby --experimental-options --engine.CompileOnly=matmult --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 matmult.rb 100
 
 def matmult(size, a, b, c)
   # Normally we'd write a loop with blocks, but then we'd be reliant on

@@ -31,12 +31,19 @@ describe Seafoam::Commands do
     it 'prints graphs' do
       @commands.send :list, @fib_java
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
-        "#{@fib_java}:0  2:Fib.fib(int)/After parsing",
-        "#{@fib_java}:1  2:Fib.fib(int)/Before phase %s",
-        "#{@fib_java}:2  2:Fib.fib(int)/After high tier",
-        "#{@fib_java}:3  2:Fib.fib(int)/After mid tier",
-        "#{@fib_java}:4  2:Fib.fib(int)/After low tier"
+      expect(lines.take(5)).to eq [
+        "#{@fib_java}:0  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:1  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:2  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:3  2:Fib.fib(int)/After parsing",
+        "#{@fib_java}:4  2:Fib.fib(int)/After phase %s"
+      ]
+      expect(lines.drop(lines.length - 5)).to eq [
+        "#{@fib_java}:46  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:47  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:48  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:49  2:Fib.fib(int)/After phase %s",
+        "#{@fib_java}:50  2:Fib.fib(int)/After low tier"
       ]
     end
 
@@ -49,11 +56,12 @@ describe Seafoam::Commands do
     it 'finds terms in files' do
       @commands.send :search, @fib_java, 'MethodCallTarget'
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
+      expect(lines.take(5)).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
         "#{@fib_java}:0:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
         "#{@fib_java}:1:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
+        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
+        "#{@fib_java}:2:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
       ]
     end
 
@@ -69,11 +77,12 @@ describe Seafoam::Commands do
     it 'is case-insensitive' do
       @commands.send :search, @fib_java, 'methodcalltarget'
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
+      expect(lines.take(5)).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
         "#{@fib_java}:0:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
         "#{@fib_java}:1:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
+        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
+        "#{@fib_java}:2:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
       ]
     end
 
@@ -94,7 +103,7 @@ describe Seafoam::Commands do
       lines = @out.string.lines.map(&:rstrip)
       expect(lines).to eq [
         'Input:',
-        '  13 (Call Fib.fib) <-() 7 (Begin)',
+        '  13 (Call Fib.fib) <-() 6 (Begin)',
         '  13 (Call Fib.fib) <-() 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)',
         '  13 (Call Fib.fib) <-() 12 (MethodCallTarget)',
         'Output:',
@@ -149,25 +158,9 @@ describe Seafoam::Commands do
       expect { @commands.send :render, @fib_java }.to raise_error(ArgumentError)
     end
 
-    it 'can render all BGV files and graphs to dot' do
+    it 'can render all BGV files to dot' do
       @all_bgv.each do |file|
-        count = 0
-        File.open(file) do |stream|
-          parser = Seafoam::BGVParser.new(stream)
-          parser.read_file_header
-          loop do
-            index, = parser.read_graph_preheader
-            break unless index
-
-            parser.read_graph_header
-            parser.skip_graph
-            count += 1
-          end
-        end
-
-        count.times do |n|
-          @commands.send :render, "#{file}:#{n}", '--out', 'out.dot'
-        end
+        @commands.send :render, "#{file}:7", '--out', 'out.dot'
       end
     end
 

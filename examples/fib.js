@@ -1,4 +1,4 @@
-// $ js --vm.Dgraal.TruffleCompileOnly=fib --vm.Dgraal.TruffleFunctionInlining=false --vm.Dgraal.Dump=Truffle:1 fib.rb 14
+// % node --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --vm.Dgraal.Dump=Truffle:2 -f fib.js 14
 
 function fib(n) {
   if (n <= 1) {

@@ -6,7 +6,7 @@ module Seafoam
     end
 
     def read_utf8(length)
-      read_bytes(length).force_encoding(Encoding::UTF_8)
+      read_bytes(length).force_encoding Encoding::UTF_8
     end
 
     def read_bytes(length)
@@ -70,7 +70,7 @@ module Seafoam
     end
 
     def skip(count)
-      @stream.seek(count, IO::SEEK_CUR)
+      @stream.seek count, IO::SEEK_CUR
     end
 
     def eof?

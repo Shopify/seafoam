@@ -1,4 +1,4 @@
-# $ ruby --vm.Dgraal.TruffleCompileOnly=fib --vm.Dgraal.TruffleFunctionInlining=false --vm.Dgraal.Dump=Truffle:1 fib.rb 14
+# % ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 fib.rb 14
 
 def fib(n)
   if n <= 1

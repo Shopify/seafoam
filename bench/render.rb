@@ -17,10 +17,6 @@ graph = File.open(BGV_FILE) do |stream|
 end
 
 Benchmark.ips do |x|
-  # Accomodate optimising implementations of Ruby by not triggering
-  # deoptimisation on transition from warmup to measurement.
-  x.iterations = 3
-
   x.report('render') do
     out = StringIO.new
     writer = Seafoam::GraphvizWriter.new(out)
