@@ -271,5 +271,5 @@ much further to advance in the file.
 
 ## Other information
 
-`seafoam debug file.bgv` checks that a file can be parsed and prints information
+`seafoam file.bgv debug` checks that a file can be parsed and prints information
 as it does so.

@@ -10,126 +10,98 @@ module Seafoam
 
     # Run any command.
     def run(*args)
-      command, *args = args
-      case command
-      when 'info'
-        info(*args)
-      when 'list'
-        list(*args)
-      when 'search'
-        search(*args)
-      when 'edges'
-        edges(*args)
-      when 'props'
-        props(*args)
-      when 'render'
-        render(*args)
-      when 'debug'
-        debug(*args)
+      first, *args = args
+      case first
       when nil, 'help', '-h', '--help', '-help'
         help(*args)
       when 'version', '-v', '-version', '--version'
         version(*args)
       else
-        raise ArgumentError, "unknown command #{command}"
+        name = first
+        command, *args = args
+        case command
+        when 'info'
+          info name, *args
+        when 'list'
+          list name, *args
+        when 'search'
+          search name, *args
+        when 'edges'
+          edges name, *args
+        when 'props'
+          props name, *args
+        when 'render'
+          render name, *args
+        when 'debug'
+          debug name, *args
+        else
+          raise ArgumentError, "unknown command #{command}"
+        end
       end
     end
 
     private
 
-    # seafoam info file.bgv
-    def info(*args)
-      files = []
-      args.each do |arg|
-        if arg.start_with?('-')
-          raise ArgumentError, "unexpected option #{arg}"
-        else
-          files.push arg
-        end
-      end
-      files.each do |file|
-        file, *rest = parse_name(file)
-        raise ArgumentError, 'info only works with a file' unless rest == [nil, nil, nil]
+    # seafoam file.bgv info
+    def info(name, *args)
+      file, *rest = parse_name(name)
+      raise ArgumentError, 'info only works with a file' unless rest == [nil, nil, nil]
 
-        File.open(file) do |stream|
-          parser = BGVParser.new(stream)
-          major, minor = parser.read_file_header(version_check: false)
-          @out.puts "BGV #{major}.#{minor}"
+      raise ArgumentError, 'info does not take arguments' unless args.empty?
+
+      File.open(file) do |stream|
+        parser = BGVParser.new(stream)
+        major, minor = parser.read_file_header(version_check: false)
+        @out.puts "BGV #{major}.#{minor}"
+      end
+    end
+
+    # seafoam file.bgv list
+    def list(name, *args)
+      file, *rest = parse_name(name)
+      raise ArgumentError, 'list only works with a file' unless rest == [nil, nil, nil]
+
+      raise ArgumentError, 'list does not take arguments' unless args.empty?
+
+      File.open(file) do |stream|
+        parser = BGVParser.new(stream)
+        parser.read_file_header
+        loop do
+          index, = parser.read_graph_preheader
+          break unless index
+
+          graph_header = parser.read_graph_header
+          @out.puts "#{file}:#{index}  #{parser.graph_name(graph_header)}"
+          parser.skip_graph
         end
       end
     end
 
-    # seafoam list file.bgv
-    def list(*args)
-      files = []
-      args.each do |arg|
-        if arg.start_with?('-')
-          raise ArgumentError, "unexpected option #{arg}"
-        else
-          files.push arg
-        end
-      end
-      files.each do |file|
-        file, *rest = parse_name(file)
-        raise ArgumentError, 'list only works with a file' unless rest == [nil, nil, nil]
+    # seafoam file.bgv:n... search term...
+    def search(name, *terms)
+      file, graph_index, node_id, = parse_name(name)
+      raise ArgumentError, 'search only works with a file or graph' if node_id
 
-        File.open(file) do |stream|
-          parser = BGVParser.new(stream)
-          parser.read_file_header
-          loop do
-            index, = parser.read_graph_preheader
-            break unless index
+      File.open(file) do |stream|
+        parser = BGVParser.new(stream)
+        parser.read_file_header
+        loop do
+          index, = parser.read_graph_preheader
+          break unless index
 
-            graph_header = parser.read_graph_header
-            @out.puts "#{file}:#{index}  #{parser.graph_name(graph_header)}"
-            parser.skip_graph
-          end
-        end
-      end
-    end
-
-    # seafoam search file.bgv:n... term...
-    def search(*args)
-      files = []
-      terms = []
-      until args.empty?
-        arg = args.shift
-        if arg.start_with?('-')
-          case arg
-          when '--'
-            terms.push args.shift until args.empty?
-          else
-            raise ArgumentError, "unexpected option #{arg}"
-          end
-        else
-          files.push arg
-        end
-      end
-      files.each do |file|
-        file, graph_index, node_id, = parse_name(file)
-        raise ArgumentError, 'search only works with a file or graph' if node_id
-
-        File.open(file) do |stream|
-          parser = BGVParser.new(stream)
-          parser.read_file_header
-          loop do
-            index, = parser.read_graph_preheader
-            break unless index
-
-            if !graph_index || index == graph_index
-              header = parser.read_graph_header
-              search_object "#{file}:#{index}", header, terms
-              graph = parser.read_graph
-              graph.nodes.each_value do |node|
-                search_object "#{file}:#{index}:#{node.id}", node.props, terms
-              end
-              graph.edges.each do |edge|
-                search_object "#{file}:#{index}:#{edge.from.id}-#{edge.to.id}", edge.props, terms
-              end
-            else
-              parser.skip_graph_header
-              parser.skip_graph
+          if !graph_index || index == graph_index
+            header = parser.read_graph_header
+            search_object "#{file}:#{index}", header, terms
+            graph = parser.read_graph
+            graph.nodes.each_value do |node|
+              search_object "#{file}:#{index}:#{node.id}", node.props, terms
             end
+            graph.edges.each do |edge|
+              search_object "#{file}:#{index}:#{edge.from.id}-#{edge.to.id}", edge.props, terms
+            end
+          else
+            parser.skip_graph_header
+            parser.skip_graph
           end
         end
       end
@@ -161,107 +133,94 @@ module Seafoam
       end
     end
 
-    # seafoam edges file.bgv:n...
-    def edges(*args)
-      files = []
-      args.each do |arg|
-        if arg.start_with?('-')
-          raise ArgumentError, "unexpected option #{arg}"
+    # seafoam file.bgv:n... edges
+    def edges(name, *args)
+      file, graph_index, node_id, edge_id = parse_name(name)
+      raise ArgumentError, 'edges needs at least a graph' unless graph_index
+
+      raise ArgumentError, 'edges does not take arguments' unless args.empty?
+
+      with_graph(file, graph_index) do |parser|
+        parser.read_graph_header
+        graph = parser.read_graph
+        if node_id
+          Annotators.apply graph
+          node = graph.nodes[node_id]
+          raise ArgumentError, 'node not found' unless node
+
+          if edge_id
+            to = graph.nodes[edge_id]
+            raise ArgumentError, 'edge node not found' unless to
+
+            edges = node.outputs.filter { |edge| edge.to == to }
+            raise ArgumentError, 'edge not found' if edges.empty?
+
+            edges.each do |edge|
+              @out.puts "#{edge.from.id_and_label} ->(#{edge.props[:label]}) #{edge.to.id_and_label}"
+            end
+          else
+            @out.puts 'Input:'
+            node.inputs.each do |input|
+              @out.puts "  #{node.id_and_label} <-(#{input.props[:label]}) #{input.from.id_and_label}"
+            end
+            @out.puts 'Output:'
+            node.outputs.each do |output|
+              @out.puts "  #{node.id_and_label} ->(#{output.props[:label]}) #{output.to.id_and_label}"
+            end
+          end
+          break
         else
-          files.push arg
+          @out.puts "#{graph.nodes.count} nodes, #{graph.edges.count} edges"
         end
       end
-      files.each do |file|
-        file, graph_index, node_id, edge_id = parse_name(file)
-        raise ArgumentError, 'edges needs at least a graph' unless graph_index
+    end
 
-        with_graph(file, graph_index) do |parser|
-          parser.read_graph_header
+    # seafoam file.bgv:n props
+    def props(name, *args)
+      file, graph_index, node_id, edge_id = parse_name(name)
+      raise ArgumentError, 'props needs at least a graph' unless graph_index
+
+      raise ArgumentError, 'props does not take arguments' unless args.empty?
+
+      with_graph(file, graph_index) do |parser|
+        graph_header = parser.read_graph_header
+        if node_id
           graph = parser.read_graph
-          if node_id
-            Annotators.apply graph
-            node = graph.nodes[node_id]
-            raise ArgumentError, 'node not found' unless node
+          node = graph.nodes[node_id]
+          raise ArgumentError, 'node not found' unless node
 
-            if edge_id
-              to = graph.nodes[edge_id]
-              raise ArgumentError, 'edge node not found' unless to
+          if edge_id
+            to = graph.nodes[edge_id]
+            raise ArgumentError, 'edge node not found' unless to
 
-              edges = node.outputs.filter { |edge| edge.to == to }
-              raise ArgumentError, 'edge not found' if edges.empty?
+            edges = node.outputs.filter { |edge| edge.to == to }
+            raise ArgumentError, 'edge not found' if edges.empty?
 
+            if edges.size > 1
               edges.each do |edge|
-                @out.puts "#{edge.from.id_and_label} ->(#{edge.props[:label]}) #{edge.to.id_and_label}"
+                pretty_print edge.props
+                @out.puts
               end
             else
-              @out.puts 'Input:'
-              node.inputs.each do |input|
-                @out.puts "  #{node.id_and_label} <-(#{input.props[:label]}) #{input.from.id_and_label}"
-              end
-              @out.puts 'Output:'
-              node.outputs.each do |output|
-                @out.puts "  #{node.id_and_label} ->(#{output.props[:label]}) #{output.to.id_and_label}"
-              end
+              pretty_print edges.first.props
             end
-            break
           else
-            @out.puts "#{graph.nodes.count} nodes, #{graph.edges.count} edges"
+            pretty_print node.props
           end
-        end
-      end
-    end
-
-    # seafoam props file.bgv:n
-    def props(*args)
-      files = []
-      args.each do |arg|
-        if arg.start_with?('-')
-          raise ArgumentError, "unexpected option #{arg}"
+          break
         else
-          files.push arg
-        end
-      end
-      files.each do |file|
-        file, graph_index, node_id, edge_id = parse_name(file)
-        raise ArgumentError, 'props needs at least a graph' unless graph_index
-
-        with_graph(file, graph_index) do |parser|
-          graph_header = parser.read_graph_header
-          if node_id
-            graph = parser.read_graph
-            node = graph.nodes[node_id]
-            raise ArgumentError, 'node not found' unless node
-
-            if edge_id
-              to = graph.nodes[edge_id]
-              raise ArgumentError, 'edge node not found' unless to
-
-              edges = node.outputs.filter { |edge| edge.to == to }
-              raise ArgumentError, 'edge not found' if edges.empty?
-
-              if edges.size > 1
-                edges.each do |edge|
-                  pretty_print edge.props
-                  @out.puts
-                end
-              else
-                pretty_print edges.first.props
-              end
-            else
-              pretty_print node.props
-            end
-            break
-          else
-            pretty_print graph_header
-            parser.skip_graph
-          end
+          pretty_print graph_header
+          parser.skip_graph
         end
       end
     end
 
-    # seafoam render file.bgv:0
-    def render(*args)
-      files = []
+    # seafoam file.bgv:0 render options...
+    def render(name, *args)
+      file, graph_index, *rest = parse_name(name)
+      raise ArgumentError, 'render needs at least a graph' unless graph_index
+      raise ArgumentError, 'render only works with a graph' unless rest == [nil, nil]
+
       annotator_options = {
         hide_frame_state: true,
         hide_floating: false,
@@ -272,36 +231,32 @@ module Seafoam
       out_file = nil
       until args.empty?
         arg = args.shift
-        if arg.start_with?('-')
-          case arg
-          when '--out'
-            out_file = args.shift
-            raise ArgumentError, 'no file for --out' unless out_file
-          when '--spotlight'
-            spotlight_arg = args.shift
-            raise ArgumentError, 'no list for --spotlight' unless spotlight_arg
+        case arg
+        when '--out'
+          out_file = args.shift
+          raise ArgumentError, 'no file for --out' unless out_file
+        when '--spotlight'
+          spotlight_arg = args.shift
+          raise ArgumentError, 'no list for --spotlight' unless spotlight_arg
 
-            spotlight_nodes = spotlight_arg.split(',').map { |n| Integer(n) }
-          when '--show-frame-state'
-            annotator_options[:hide_frame_state] = false
-          when '--hide-floating'
-            annotator_options[:hide_floating] = true
-          when '--no-reduce-edges'
-            annotator_options[:reduce_edges] = false
-          when '--option'
-            key = args.shift
-            raise ArgumentError, 'no key for --option' unless key
+          spotlight_nodes = spotlight_arg.split(',').map { |n| Integer(n) }
+        when '--show-frame-state'
+          annotator_options[:hide_frame_state] = false
+        when '--hide-floating'
+          annotator_options[:hide_floating] = true
+        when '--no-reduce-edges'
+          annotator_options[:reduce_edges] = false
+        when '--option'
+          key = args.shift
+          raise ArgumentError, 'no key for --option' unless key
 
-            value = args.shift
-            raise ArgumentError, "no value for --option #{key}" unless out_file
+          value = args.shift
+          raise ArgumentError, "no value for --option #{key}" unless out_file
 
-            value = { 'true' => true, 'false' => 'false' }.fetch(key, value)
-            annotator_options[key.to_sym] = value
-          else
-            raise ArgumentError, "unexpected option #{arg}"
-          end
+          value = { 'true' => true, 'false' => 'false' }.fetch(key, value)
+          annotator_options[key.to_sym] = value
         else
-          files.push arg
+          raise ArgumentError, "unexpected option #{arg}"
         end
       end
       out_file ||= 'graph.pdf'
@@ -318,64 +273,54 @@ module Seafoam
       else
         raise ArgumentError, "unknown render format #{out_ext}"
       end
-      files.each do |file|
-        file, graph_index, *rest = parse_name(file)
-        raise ArgumentError, 'render needs at least a graph' unless graph_index
-        raise ArgumentError, 'render only works with a graph' unless rest == [nil, nil]
 
-        with_graph(file, graph_index) do |parser|
-          parser.skip_graph_header
-          graph = parser.read_graph
-          Annotators.apply graph, annotator_options
-          if spotlight_nodes
-            spotlight = Spotlight.new(graph)
-            spotlight_nodes.each do |node_id|
-              node = graph.nodes[node_id]
-              raise ArgumentError, 'node not found' unless node
+      with_graph(file, graph_index) do |parser|
+        parser.skip_graph_header
+        graph = parser.read_graph
+        Annotators.apply graph, annotator_options
+        if spotlight_nodes
+          spotlight = Spotlight.new(graph)
+          spotlight_nodes.each do |node_id|
+            node = graph.nodes[node_id]
+            raise ArgumentError, 'node not found' unless node
 
-              spotlight.light node
-            end
-            spotlight.shade
+            spotlight.light node
           end
-          if out_format == :dot
-            File.open(out_file, 'w') do |stream|
-              writer = GraphvizWriter.new(stream)
-              writer.write_graph graph
-            end
-          else
-            IO.popen(['dot', "-T#{out_format}", '-o', out_file], 'w') do |stream|
-              writer = GraphvizWriter.new(stream)
-              writer.write_graph graph
-            end
-            autoopen out_file
+          spotlight.shade
+        end
+        if out_format == :dot
+          File.open(out_file, 'w') do |stream|
+            writer = GraphvizWriter.new(stream)
+            writer.write_graph graph
           end
+        else
+          IO.popen(['dot', "-T#{out_format}", '-o', out_file], 'w') do |stream|
+            writer = GraphvizWriter.new(stream)
+            writer.write_graph graph
+          end
+          autoopen out_file
         end
       end
     end
 
-    # seafoam debug file.bgv
-    def debug(*args)
-      files = []
+    # seafoam file.bgv debug options...
+    def debug(name, *args)
+      file, *rest = parse_name(name)
+      raise ArgumentError, 'debug only works with a file' unless rest == [nil, nil, nil]
+
       skip = false
       args.each do |arg|
-        if arg.start_with?('-')
-          case arg
-          when '--skip'
-            skip = true
-          else
-            raise ArgumentError, "unexpected option #{arg}"
-          end
+        case arg
+        when '--skip'
+          skip = true
         else
-          files.push arg
+          raise ArgumentError, "unexpected option #{arg}"
         end
       end
-      files.each do |file|
-        file, *rest = parse_name(file)
-        raise ArgumentError, 'debug only works with a file' unless rest == [nil, nil, nil]
 
-        @out.puts file
-        File.open(file) do |stream|
-          parser = BGVDebugParser.new(@out, stream)
+      File.open(file) do |stream|
+        parser = BGVDebugParser.new(@out, stream)
+        begin
           pretty_print parser.read_file_header
           loop do
             index, id = parser.read_graph_preheader
@@ -438,12 +383,12 @@ module Seafoam
     def help(*args)
       raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
 
-      @out.puts 'seafoam info file.bgv'
-      @out.puts '        list file.bgv'
-      @out.puts '        search file.bgv[:graph][:node[-edge]] -- term...'
-      @out.puts '        edges file.bgv[:graph][:node[-edge]]'
-      @out.puts '        props file.bgv[:graph][:node[-edge]]'
-      @out.puts '        render file.bgv:graph'
+      @out.puts 'seafoam file.bgv info'
+      @out.puts '        file.bgv list'
+      @out.puts '        file.bgv[:graph][:node[-edge]] search term...'
+      @out.puts '        file.bgv[:graph][:node[-edge]] edges'
+      @out.puts '        file.bgv[:graph][:node[-edge]] props'
+      @out.puts '        file.bgv:graph render'
       @out.puts '              --spotlight n,n,n...'
       @out.puts '               -o graph.pdf'
       @out.puts '                  graph.svg'

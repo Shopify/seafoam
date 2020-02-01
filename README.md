@@ -44,7 +44,7 @@ seafoam 0.1
 Quick-start demo:
 
 ```
-$ seafoam render examples/fib-java.bgv:0
+$ seafoam examples/fib-java.bgv:0 render
 ```
 
 ## Getting compiler graphs
@@ -85,14 +85,14 @@ Note that a *graph ID* is an ID found in BGV files, but is not unique. A
 Print information about a file.
 
 ```
-$ seafoam info examples/fib-java.bgv
+$ seafoam examples/fib-java.bgv info
 BGV 6.1
 ```
 
 List graphs in a file.
 
 ```
-$ seafoam list examples/fib-java.bgv
+$ seafoam examples/fib-java.bgv list
 examples/fib-java.bgv:0  2:Fib.fib(int)/After parsing
 examples/fib-java.bgv:1  2:Fib.fib(int)/Before phase %s
 examples/fib-java.bgv:2  2:Fib.fib(int)/After high tier
@@ -103,7 +103,7 @@ examples/fib-java.bgv:4  2:Fib.fib(int)/After low tier
 Search for strings in a graph, or node or edge within a graph.
 
 ```
-$ seafoam search examples/fib-java.bgv:0 -- Start
+$ seafoam examples/fib-java.bgv:0 search Start
 examples/fib-java.bgv:0:0  ...node_class":"org.graalvm.compiler.nodes.StartNode","name_template":"Start","inputs":[...
 examples/fib-java.bgv:0:0  ...piler.nodes.StartNode","name_template":"Start","inputs":[{"direct":true,"name":"state...
 ```
@@ -111,9 +111,9 @@ examples/fib-java.bgv:0:0  ...piler.nodes.StartNode","name_template":"Start","in
 Print edges of a graph, or node or edge within a graph.
 
 ```
-$ seafoam edges examples/fib-java.bgv:0
+$ seafoam examples/fib-java.bgv:0 edges
 22 nodes, 30 edges
-$ seafoam edges examples/fib-java.bgv:0:13
+$ seafoam examples/fib-java.bgv:0:13 edges
 Input:
   13 (Call Fib.fib) <-() 7 (Begin)
   13 (Call Fib.fib) <-() 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
@@ -123,14 +123,14 @@ Output:
   13 (Call Fib.fib) ->(values) 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
   13 (Call Fib.fib) ->(values) 19 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:19)
   13 (Call Fib.fib) ->(x) 20 (+)
-$ seafoam edges examples/fib-java.bgv:0:13-20
+$ seafoam examples/fib-java.bgv:0:13-20 edges
 13 (Call Fib.fib) ->(x) 20 (+)
 ```
 
 Print properties of a graph, or node or edge within a graph.
 
 ```
-$ seafoam props examples/fib-java.bgv:0
+$ seafoam examples/fib-java.bgv:0 props
 {
   "group": [
     {
@@ -138,7 +138,7 @@ $ seafoam props examples/fib-java.bgv:0
       "short_name": "2:Fib.fib(int)",
       "method": null,
 ...
-$ seafoam props examples/fib-java.bgv:0:13
+$ seafoam examples/fib-java.bgv:0:13 props
 {
   "nodeSourcePosition": {
     "method": {
@@ -146,7 +146,7 @@ $ seafoam props examples/fib-java.bgv:0:13
       "method_name": "fib",
       "signature": {
 ...
-$ seafoam props examples/fib-java.bgv:0:13-20
+$ seafoam examples/fib-java.bgv:0:13-20 props
 {
   "direct": true,
   "name": "x",
@@ -157,14 +157,14 @@ $ seafoam props examples/fib-java.bgv:0:13-20
 Render a graph as a PDF image and have it opened automatically.
 
 ```
-$ seafoam render examples/fib-java.bgv:0
+$ seafoam examples/fib-java.bgv:0 render
 ```
 
 Render a graph showing just a few nodes and those surrounding them, similar to
 the IGV feature of gradually revealing nodes.
 
 ```
-$ seafoam render examples/fib-java.bgv:0 --spotlight 13,20
+$ seafoam examples/fib-java.bgv:0 render --spotlight 13,20
 ```
 
 <p>
@@ -194,7 +194,7 @@ file.
 
 Exception backtraces are printed if `$DEBUG` (`-d`) is set.
 
-Use `seafoam debug file.bgv` to debug file parsing.
+Use `seafoam file.bgv debug` to debug file parsing.
 
 ## More documentation
 

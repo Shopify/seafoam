@@ -1,4 +1,5 @@
-examples/*.class
+/.idea
+/examples/*.class
 /*.pdf
 /*.dot
 /*.png

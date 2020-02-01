@@ -47,7 +47,7 @@ describe Seafoam::Commands do
 
   describe '#search' do
     it 'finds terms in files' do
-      @commands.send :search, @fib_java, '--', 'MethodCallTarget'
+      @commands.send :search, @fib_java, 'MethodCallTarget'
       lines = @out.string.lines.map(&:rstrip)
       expect(lines).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
@@ -58,7 +58,7 @@ describe Seafoam::Commands do
     end
 
     it 'finds terms in graphs' do
-      @commands.send :search, "#{@fib_java}:0", '--', 'MethodCallTarget'
+      @commands.send :search, "#{@fib_java}:0", 'MethodCallTarget'
       lines = @out.string.lines.map(&:rstrip)
       expect(lines).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
@@ -67,7 +67,7 @@ describe Seafoam::Commands do
     end
 
     it 'is case-insensitive' do
-      @commands.send :search, @fib_java, '--', 'methodcalltarget'
+      @commands.send :search, @fib_java, 'methodcalltarget'
       lines = @out.string.lines.map(&:rstrip)
       expect(lines).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
