@@ -1,4 +1,4 @@
-name: Specs
+name: Test
 
 on: [push]
 
@@ -18,3 +18,5 @@ jobs:
       run: bundle install
     - name: Run specs
       run: bundle exec rspec
+    - name: Run cops
+      run: bundle exec rubocop
