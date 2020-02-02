@@ -227,6 +227,7 @@ module Seafoam
         reduce_edges: true
       }
       spotlight_nodes = nil
+      schedule = false
       args = args.dup
       out_file = nil
       until args.empty?
@@ -246,6 +247,8 @@ module Seafoam
           annotator_options[:hide_floating] = true
         when '--no-reduce-edges'
           annotator_options[:reduce_edges] = false
+        when '--schedule'
+          schedule = true
         when '--option'
           key = args.shift
           raise ArgumentError, 'no key for --option' unless key
@@ -278,6 +281,10 @@ module Seafoam
         parser.skip_graph_header
         graph = parser.read_graph
         Annotators.apply graph, annotator_options
+        if schedule
+          scheduler = Scheduler.new(graph)
+          scheduler.schedule
+        end
         if spotlight_nodes
           spotlight = Spotlight.new(graph)
           spotlight_nodes.each do |node_id|

@@ -15,7 +15,7 @@ module Seafoam
         hide_frame_state graph if @options[:hide_frame_state]
         hide_floating graph if @options[:hide_floating]
         reduce_edges graph if @options[:reduce_edges]
-        hide_detached_nodes graph
+        hide_unused_nodes graph
       end
 
       private
@@ -220,11 +220,12 @@ module Seafoam
         end
       end
 
-      # Hide nodes that have no non-hidden edges. These would display as a node
-      # floating unconnected to the rest of the graph otherwise.
-      def hide_detached_nodes(graph)
+      # Hide nodes that have no non-hidden users and no control flow in. These
+      # would display as a node floating unconnected to the rest of the graph
+      # otherwise.
+      def hide_unused_nodes(graph)
         graph.nodes.each_value do |node|
-          if node.adjacent.all? { |n| n.props[:hidden] }
+          if node.outputs.all? { |edge| edge.to.props[:hidden] } && node.inputs.none? { |edge| edge.props[:kind] == 'control' }
             node.props[:hidden] = true
           end
         end

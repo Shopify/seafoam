@@ -174,16 +174,17 @@ $ seafoam examples/fib-java.bgv:0 render --spotlight 13,20
 <img src="docs/images/spotlight-igv.png" width="350">
 </p>
 
-## Options for GraalVM graphs
-
 `render` supports these options:
 
 * `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
+* `--option key value` for custom annotators
+
+### Options for GraalVM graphs
+
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
 * `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
-* `--no-break-edges` turns off the option to break long edges to simplify the graph
-* `--option key value` for custom annotators
+* `--schedule` schedules floating nodes to be executed by a fixed node
 
 ## Configuration
 
