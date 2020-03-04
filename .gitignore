@@ -1,6 +1,6 @@
+*.pdf
+*.dot
+*.png
+*.svg
+*.class
 /.idea
-/examples/*.class
-/*.pdf
-/*.dot
-/*.png
-/*.svg

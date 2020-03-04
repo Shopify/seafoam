@@ -1,6 +1,6 @@
 /*
  * % javac JavaExamples.java
- * % java -XX:-UseOnStackReplacement '-XX:CompileCommand=dontinline,*::*' -Dgraal.Dump=:2 JavaExamples
+ * % java -XX:-UseOnStackReplacement '-XX:CompileCommand=dontinline,*::*' -XX:+PrintCompilation -Dgraal.Dump=:3 JavaExamples
  */
 
 import java.lang.reflect.Field;
@@ -301,6 +301,7 @@ class JavaExamples {
     }
 
     private static int exampleFieldRead(ExampleObject object) {
+        assert object != null; // otherwise this is a 'trivial' method and won't go past tier 1
         return object.x;
     }
 
