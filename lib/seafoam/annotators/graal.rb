@@ -128,7 +128,9 @@ module Seafoam
         'org.graalvm.compiler.nodes.virtual.CommitAllocationNode' => 'effect',
         'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode' => 'virtual',
         'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual',
-        'org.graalvm.compiler.nodes.GuardNode' => 'guard'
+        'org.graalvm.compiler.nodes.GuardNode' => 'guard',
+        'org.graalvm.compiler.nodes.memory.address.OffsetAddressNode' => 'calc',
+        'org.graalvm.compiler.nodes.memory.ReadNode' => 'effect'
       }
 
       # Render a Graal 'name template'.
