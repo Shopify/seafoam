@@ -81,6 +81,11 @@ module Seafoam
             name_template = 'StoreField {x#field}'
           end
 
+          # We want to see keys for IntegerSwitchNode
+          if node_class == 'org.graalvm.compiler.nodes.extended.IntegerSwitchNode'
+            name_template = "IntegerSwitchNode {p#keys}"
+          end
+
           # Use a symbol for PiNode
           if node_class == 'org.graalvm.compiler.nodes.PiNode'
             name_template = 'π'
