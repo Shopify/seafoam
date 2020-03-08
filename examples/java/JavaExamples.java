@@ -36,8 +36,8 @@ class JavaExamples {
             examplePartialEscape(RANDOM.nextBoolean(), RANDOM.nextInt());
             exampleIf(RANDOM.nextBoolean(), RANDOM.nextInt(), RANDOM.nextInt());
             exampleIfNeverTaken(false, RANDOM.nextInt(), RANDOM.nextInt());
-            exampleIntSwitch(RANDOM.nextBoolean() ? 0 : 1, RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt());
-            exampleStringSwitch(RANDOM.nextBoolean() ? "foo" : "bar", RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt());
+            exampleIntSwitch(RANDOM.nextInt(3), RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt());
+            exampleStringSwitch(new String[]{"foo", "bar", "baz"}[RANDOM.nextInt(3)], RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt());
             exampleWhile(RANDOM.nextInt(10));
             exampleReducible(RANDOM.nextBoolean(), RANDOM.nextInt(10));
             Irreducible.exampleIrreducible(RANDOM.nextBoolean(), RANDOM.nextInt(10));
