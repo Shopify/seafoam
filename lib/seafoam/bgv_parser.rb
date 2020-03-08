@@ -9,6 +9,7 @@ module Seafoam
       @group_stack = []
       @pool = {}
       @index = 0
+      @edge_counter = 0
     end
 
     # Read the file header and return the version.
@@ -88,6 +89,8 @@ module Seafoam
         others = edge[:ids].reject(&:nil?).map { |id| graph.nodes[id] || raise(EncodingError, "BGV edge with unknown node #{id}") }
         inputs = edge[:inputs]
         others.each do |other|
+          # We need to give each edge their own property as they're annotated separately.
+          props = props.dup
           if inputs
             graph.create_edge other, node, props
           else
@@ -218,7 +221,6 @@ module Seafoam
         ids = count.times.map do
           id = @reader.read_sint32
           raise if id < -1
-
           id = nil if id == -1
           id
         end
@@ -226,7 +228,8 @@ module Seafoam
           node: node,
           edge: edge,
           ids: ids,
-          inputs: inputs
+          inputs: inputs,
+          counter: @edge_counter += 1
         }
       end
     end

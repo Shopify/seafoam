@@ -83,7 +83,7 @@ module Seafoam
 
           # We want to see keys for IntegerSwitchNode
           if node_class == 'org.graalvm.compiler.nodes.extended.IntegerSwitchNode'
-            name_template = "IntegerSwitchNode {p#keys}"
+            name_template = "IntegerSwitch {p#keys}"
           end
 
           # Use a symbol for PiNode
@@ -228,6 +228,20 @@ module Seafoam
           when 'merge'
             edge.props[:kind] = 'info'
             edge.props[:reverse] = true
+
+          # Successors are control from a switch.
+          when 'successors'
+            edge.props[:kind] = 'control'
+
+            # We want to label the edges with the corresponding index of the key.
+            successor_edges = edge.from.edges.filter { |e| e.props[:name] == 'successors' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
+            edge_index = successor_edges.find { |n, e| e == edge }.first
+            if edge_index == edge.from.props['keys'].size
+              label = 'default'
+            else
+              label = "k[#{edge_index}]"
+            end
+            edge.props[:label] = label
 
           # Everything else is data.
           else

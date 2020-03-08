@@ -4,21 +4,23 @@ module Seafoam
   class Graph
     attr_reader :props, :nodes, :edges
 
-    def initialize(props = {})
-      @props = props
+    def initialize(props=nil)
+      @props = props || {}
       @nodes = {}
       @edges = []
     end
 
     # Create a node.
-    def create_node(id, props = {})
+    def create_node(id, props=nil)
+      props ||= {}
       node = Node.new(id, props)
       @nodes[id] = node
       node
     end
 
     # Create an edge between two nodes.
-    def create_edge(from, to, props = {})
+    def create_edge(from, to, props=nil)
+      props ||= {}
       edge = Edge.new(from, to, props)
       @edges.push edge
       from.outputs.push edge
@@ -31,7 +33,8 @@ module Seafoam
   class Node
     attr_reader :id, :inputs, :outputs, :props
 
-    def initialize(id, props = {})
+    def initialize(id, props=nil)
+      props ||= {}
       @id = id
       @inputs = []
       @outputs = []
@@ -68,7 +71,8 @@ module Seafoam
   class Edge
     attr_reader :from, :to, :props
 
-    def initialize(from, to, props = {})
+    def initialize(from, to, props=nil)
+      props ||= {}
       @from = from
       @to = to
       @props = props
