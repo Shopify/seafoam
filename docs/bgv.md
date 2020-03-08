@@ -193,7 +193,8 @@ PoolObject {
         }
         struct {
           sint8 type = POOL_NODE
-          // pool nodes are unsupported
+          sint32 node_id
+          PoolObject node_class
         }
       }
     }

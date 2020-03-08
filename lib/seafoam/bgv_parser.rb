@@ -280,6 +280,10 @@ module Seafoam
           @reader.read_sint32.times do
             skip_pool_object
           end
+        when PROPERTY_INT
+          @reader.skip_int32 @reader.read_sint32
+        when PROPERTY_DOUBLE
+          @reader.skip_float64 @reader.read_sint32
         else
           raise EncodingError, "unknown BGV property array type 0x#{type.to_s(16)}"
         end
@@ -460,7 +464,12 @@ module Seafoam
           caller: caller
         }
       when POOL_NODE
-        raise NotImplementedError, 'pool nodes are not supported'
+        node_id = @reader.read_sint32
+        node_class = read_pool_object
+        object = {
+          node_id: node_id,
+          node_class: node_class
+        }
       else
         raise EncodingError, "unknown BGV pool type 0x#{type.to_s(16)}"
       end
