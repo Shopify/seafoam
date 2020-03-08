@@ -266,10 +266,13 @@ module Seafoam
 
       # Hide nodes that have no non-hidden users and no control flow in. These
       # would display as a node floating unconnected to the rest of the graph
-      # otherwise.
+      # otherwise. An exception is made for node with an anchor edge coming in,
+      # as some guards are anchored like this.
       def hide_unused_nodes(graph)
         graph.nodes.each_value do |node|
-          if node.outputs.all? { |edge| edge.to.props[:hidden] } && node.inputs.none? { |edge| edge.props[:kind] == 'control' }
+          if node.outputs.all? { |edge| edge.to.props[:hidden] } &&
+              node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
+              !node.inputs.any? { |edge| edge.props[:name] == 'anchor' }
             node.props[:hidden] = true
           end
         end
