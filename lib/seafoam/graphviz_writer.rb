@@ -196,6 +196,7 @@ module Seafoam
       'control' => [CARISSMA, BLACK],
       'effect' => [AMARANTH, WHITE],
       'virtual' => [BIG_STONE, WHITE],
+      'guard' => ['orange', BLACK],
       'calc' => [KEPPEL, BLACK],
       'other' => [DUST, BLACK]
     }

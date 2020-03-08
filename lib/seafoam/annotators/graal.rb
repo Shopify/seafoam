@@ -41,11 +41,12 @@ module Seafoam
           name_template = node.props.dig(:node_class, :name_template)
 
           # The template for FixedGuardNode could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.FixedGuardNode'
+          if node_class == 'org.graalvm.compiler.nodes.FixedGuardNode' ||
+              node_class == 'org.graalvm.compiler.nodes.GuardNode'
             name_template = if node.props[:negated]
-                              'Guard not, or {p#reason/s}'
+                              'Guard not, else {p#reason/s}'
                             else
-                              'Guard, or {p#reason/s}'
+                              'Guard, else {p#reason/s}'
                             end
           end
 
@@ -109,7 +110,7 @@ module Seafoam
         'org.graalvm.compiler.nodes.ConstantNode' => 'input',
         'org.graalvm.compiler.nodes.DeoptimizeNode' => 'effect',
         'org.graalvm.compiler.nodes.EndNode' => 'control',
-        'org.graalvm.compiler.nodes.FixedGuardNode' => 'effect',
+        'org.graalvm.compiler.nodes.FixedGuardNode' => 'guard',
         'org.graalvm.compiler.nodes.FrameState' => 'info',
         'org.graalvm.compiler.nodes.IfNode' => 'control',
         'org.graalvm.compiler.nodes.InvokeNode' => 'effect',
@@ -126,7 +127,8 @@ module Seafoam
         'org.graalvm.compiler.nodes.java.NewArrayNode' => 'effect',
         'org.graalvm.compiler.nodes.virtual.CommitAllocationNode' => 'effect',
         'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode' => 'virtual',
-        'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual'
+        'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual',
+        'org.graalvm.compiler.nodes.GuardNode' => 'guard'
       }
 
       # Render a Graal 'name template'.
