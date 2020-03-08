@@ -59,6 +59,16 @@ module Seafoam
             name_template = 'Call {p#targetMethod/s} !'
           end
 
+          # The template for CommitAllocationNode could be simpler.
+          if node_class == 'org.graalvm.compiler.nodes.virtual.CommitAllocationNode'
+            name_template = 'Alloc'
+          end
+
+          # The template for org.graalvm.compiler.nodes.virtual.VirtualArrayNode includes an ID that we don't normally need.
+          if node_class == 'org.graalvm.compiler.nodes.virtual.VirtualArrayNode'
+            name_template = 'VirtualArray {p#componentType/s}[{p#length}]'
+          end
+
           # Use a symbol for PiNode
           if node_class == 'org.graalvm.compiler.nodes.PiNode'
             name_template = 'π'
@@ -112,7 +122,11 @@ module Seafoam
         'org.graalvm.compiler.nodes.ParameterNode' => 'input',
         'org.graalvm.compiler.nodes.ReturnNode' => 'control',
         'org.graalvm.compiler.nodes.StartNode' => 'control',
-        'org.graalvm.compiler.nodes.VirtualObjectState' => 'info'
+        'org.graalvm.compiler.nodes.VirtualObjectState' => 'info',
+        'org.graalvm.compiler.nodes.java.NewArrayNode' => 'effect',
+        'org.graalvm.compiler.nodes.virtual.CommitAllocationNode' => 'effect',
+        'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode' => 'virtual',
+        'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual'
       }
 
       # Render a Graal 'name template'.
@@ -246,9 +260,7 @@ module Seafoam
       # Nodes just to maintain frame state.
       FRAME_STATE_NODES = [
         'org.graalvm.compiler.nodes.FrameState',
-        'org.graalvm.compiler.nodes.virtual.VirtualArrayNode',
-        'org.graalvm.compiler.virtual.nodes.MaterializedObjectState',
-        'org.graalvm.compiler.virtual.nodes.VirtualObjectState'
+        'org.graalvm.compiler.virtual.nodes.MaterializedObjectState'
       ]
     end
   end

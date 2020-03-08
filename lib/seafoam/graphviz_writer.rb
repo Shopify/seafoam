@@ -195,6 +195,7 @@ module Seafoam
       'input' => [WHITE_ICE, BLACK],
       'control' => [CARISSMA, BLACK],
       'effect' => [AMARANTH, WHITE],
+      'virtual' => [BIG_STONE, WHITE],
       'calc' => [KEPPEL, BLACK],
       'other' => [DUST, BLACK]
     }
