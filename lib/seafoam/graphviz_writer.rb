@@ -105,8 +105,9 @@ module Seafoam
       # Basic edge attributes.
       attrs[:label] = edge.props[:label]
       attrs[:fontname] = 'arial'
+      color = EDGE_COLORS[edge.props[:kind]]
       attrs[:color] = EDGE_COLORS[edge.props[:kind]]
-      attrs[:fontcolor] = 'black'
+      attrs[:fontcolor] = color
 
       # Properties depending on the kind of edge.
       case edge.props[:kind]
