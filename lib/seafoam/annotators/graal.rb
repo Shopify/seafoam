@@ -26,19 +26,20 @@ module Seafoam
           # The Java class of the node.
           node_class = node.props.dig(:node_class, :node_class)
 
+          # IGV renders labels using a template, with parts that are replaced
+          # with other properties. We will modify these templates in some
+          # cases.
+          name_template = node.props.dig(:node_class, :name_template)
+
           # For constant nodes, the rawvalue is a truncated version of the
           # actual value, which is fully qualified. Instead, produce a simple
           # version of the value and don't truncate it.
           if node_class == 'org.graalvm.compiler.nodes.ConstantNode'
             if node.props['value'] =~ /Object\[Instance<(\w+\.)+(\w*)>\]/
-              node.props['rawvalue'] = "Object[Instance<#{Regexp.last_match(2)}>]"
+              node.props['rawvalue'] = "instance:#{Regexp.last_match(2)}"
             end
+            name_template = 'C({p#rawvalue})'
           end
-
-          # IGV renders labels using a template, with parts that are replaced
-          # with other properties. We will modify these templates in some
-          # cases.
-          name_template = node.props.dig(:node_class, :name_template)
 
           # The template for FixedGuardNode could be simpler.
           if node_class == 'org.graalvm.compiler.nodes.FixedGuardNode' ||
@@ -141,7 +142,6 @@ module Seafoam
         'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode' => 'virtual',
         'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual',
         'org.graalvm.compiler.nodes.GuardNode' => 'guard',
-        'org.graalvm.compiler.nodes.memory.address.OffsetAddressNode' => 'calc',
         'org.graalvm.compiler.nodes.memory.ReadNode' => 'effect',
         'org.graalvm.compiler.nodes.memory.WriteNode' => 'effect',
         'org.graalvm.compiler.nodes.UnwindNode' => 'effect',
