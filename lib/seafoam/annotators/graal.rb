@@ -70,6 +70,16 @@ module Seafoam
             name_template = 'VirtualArray {p#componentType/s}[{p#length}]'
           end
 
+          # The template for LoadField could be simpler.
+          if node_class == 'org.graalvm.compiler.nodes.java.LoadFieldNode'
+            name_template = 'LoadField {x#field}'
+          end
+
+          # The template for StoreField could be simpler.
+          if node_class == 'org.graalvm.compiler.nodes.java.StoreFieldNode'
+            name_template = 'StoreField {x#field}'
+          end
+
           # Use a symbol for PiNode
           if node_class == 'org.graalvm.compiler.nodes.PiNode'
             name_template = 'π'
@@ -107,6 +117,8 @@ module Seafoam
       # Map of node classes to their kind.
       NODE_KIND_MAP = {
         'org.graalvm.compiler.nodes.BeginNode' => 'control',
+        'org.graalvm.compiler.nodes.KillingBeginNode' => 'control',
+        'org.graalvm.compiler.nodes.MergeNode' => 'control',
         'org.graalvm.compiler.nodes.ConstantNode' => 'input',
         'org.graalvm.compiler.nodes.DeoptimizeNode' => 'effect',
         'org.graalvm.compiler.nodes.EndNode' => 'control',
@@ -130,7 +142,11 @@ module Seafoam
         'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual',
         'org.graalvm.compiler.nodes.GuardNode' => 'guard',
         'org.graalvm.compiler.nodes.memory.address.OffsetAddressNode' => 'calc',
-        'org.graalvm.compiler.nodes.memory.ReadNode' => 'effect'
+        'org.graalvm.compiler.nodes.memory.ReadNode' => 'effect',
+        'org.graalvm.compiler.nodes.memory.WriteNode' => 'effect',
+        'org.graalvm.compiler.nodes.UnwindNode' => 'effect',
+        'org.graalvm.compiler.nodes.java.LoadFieldNode' => 'effect',
+        'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'effect'
       }
 
       # Render a Graal 'name template'.
@@ -141,6 +157,7 @@ module Seafoam
         string = template
         string = string.gsub(%r{\{p#(\w+)(/s)?\}}) { |_| node.props[Regexp.last_match(1)] }
         string = string.gsub(%r{\{i#(\w+)(/s)?\}}) { |_| node.inputs.filter { |e| e.props[:name] == Regexp.last_match(1) }.map { |e| e.from.id }.join(', ') }
+        string = string.gsub(%r{\{x#field\}}) { |_| "#{node.props.dig('field', :field_class).split('.').last}.#{node.props.dig('field', :name)}" }
         string
       end
 
