@@ -14,4 +14,5 @@ module Seafoam
   DUST = '#f9f9f9'
   BIG_STONE = '#343d46'
   ICE_STONE = '#b3bbc3'
+  ORANGE = '#ffa500'
 end

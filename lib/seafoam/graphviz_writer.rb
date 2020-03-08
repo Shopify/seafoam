@@ -186,7 +186,7 @@ module Seafoam
       'control' => AMARANTH,
       'loop' => AMARANTH,
       'data' => KEPPEL,
-      'schedule' => 'orange',
+      'schedule' => ORANGE,
       'other' => BLACK
     }
 
@@ -196,7 +196,7 @@ module Seafoam
       'control' => [CARISSMA, BLACK],
       'effect' => [AMARANTH, WHITE],
       'virtual' => [BIG_STONE, WHITE],
-      'guard' => ['orange', BLACK],
+      'guard' => [ORANGE, BLACK],
       'calc' => [KEPPEL, BLACK],
       'other' => [DUST, BLACK]
     }
