@@ -88,7 +88,7 @@ module Seafoam
 
           # Use a symbol for PhiNode.
           if node_class == 'org.graalvm.compiler.nodes.ValuePhiNode'
-            name_template = 'ϕ({i#values}, {p#valueDescription})'
+            name_template = 'ϕ({i#values})'
           end
 
           if name_template.empty?
@@ -106,7 +106,8 @@ module Seafoam
           node.props[:label] = label
 
           # Set the :kind property.
-          if node_class.start_with?('org.graalvm.compiler.nodes.calc.')
+          if node_class.start_with?('org.graalvm.compiler.nodes.calc.') ||
+              node_class.start_with?('org.graalvm.compiler.replacements.nodes.arithmetic.')
             kind = 'calc'
           else
             kind = NODE_KIND_MAP[node_class] || 'other'
@@ -146,7 +147,15 @@ module Seafoam
         'org.graalvm.compiler.nodes.memory.WriteNode' => 'effect',
         'org.graalvm.compiler.nodes.UnwindNode' => 'effect',
         'org.graalvm.compiler.nodes.java.LoadFieldNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'effect'
+        'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'effect',
+        'org.graalvm.compiler.nodes.java.RawMonitorEnterNode' => 'effect',
+        'org.graalvm.compiler.nodes.java.MonitorEnterNode' => 'effect',
+        'org.graalvm.compiler.nodes.java.MonitorExitNode' => 'effect',
+        'org.graalvm.compiler.replacements.nodes.ReadRegisterNode' => 'effect',
+        'org.graalvm.compiler.replacements.nodes.WriteRegisterNode' => 'effect',
+        'org.graalvm.compiler.nodes.PrefetchAllocateNode' => 'effect'
+
+        # org.graalvm.compiler.word.WordCastNode is not an effect even though it is fixed.
       }
 
       # Render a Graal 'name template'.
