@@ -150,16 +150,12 @@ describe Seafoam::Commands do
   end
 
   describe '#render' do
-    before :all do
-      @all_bgv = Dir.glob(File.expand_path('../../examples/*.bgv', __dir__))
-    end
-
     it 'does not work on a file' do
       expect { @commands.send :render, @fib_java }.to raise_error(ArgumentError)
     end
 
     it 'can render all BGV files to dot' do
-      @all_bgv.each do |file|
+      Seafoam::SpecHelpers::ALL_BGV.each do |file|
         @commands.send :render, "#{file}:7", '--out', 'out.dot'
       end
     end

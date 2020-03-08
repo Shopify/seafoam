@@ -4,8 +4,10 @@ require 'seafoam'
 
 require 'rspec'
 
+require_relative 'spec_helpers'
+
 describe Seafoam::GraphvizWriter do
-  describe 'with a graph' do
+  describe '#write_graph' do
     before :all do
       file = File.expand_path('../../examples/fib-java.bgv', __dir__)
       File.open(file) do |stream|
@@ -13,7 +15,7 @@ describe Seafoam::GraphvizWriter do
         parser.read_file_header
         parser.read_graph_preheader
         parser.read_graph_header
-        @graph = parser.read_graph
+        @fib_java_graph = parser.read_graph
       end
     end
 
@@ -22,10 +24,23 @@ describe Seafoam::GraphvizWriter do
       @writer = Seafoam::GraphvizWriter.new(@stream)
     end
 
-    describe '#write_graph' do
-      it 'writes the header' do
-        @writer.write_graph @graph
-        expect(@stream.string).to start_with 'digraph G {'
+    it 'writes the header' do
+      @writer.write_graph @fib_java_graph
+      expect(@stream.string).to start_with 'digraph G {'
+    end
+
+    it 'writes all graphs' do
+      Seafoam::SpecHelpers::ALL_BGV.each do |file|
+        File.open(file) do |stream|
+          parser = Seafoam::BGVParser.new(stream)
+          parser.read_file_header
+          loop do
+            index, = parser.read_graph_preheader
+            break unless index
+            parser.read_graph_header
+            @writer.write_graph parser.read_graph
+          end
+        end
       end
     end
   end

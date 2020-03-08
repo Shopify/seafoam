@@ -4,14 +4,15 @@ require 'seafoam'
 
 require 'rspec'
 
+require_relative 'spec_helpers'
+
 describe Seafoam::BGVParser do
   before :all do
     @fib_java_bgv = File.expand_path('../../examples/fib-java.bgv', __dir__)
-    @all_bgv = Dir.glob(File.expand_path('../../examples/**/*.bgv', __dir__))
   end
 
   it 'can read full files' do
-    @all_bgv.each do |file|
+    Seafoam::SpecHelpers::ALL_BGV.each do |file|
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
@@ -27,7 +28,7 @@ describe Seafoam::BGVParser do
   end
 
   it 'can skip full files' do
-    @all_bgv.each do |file|
+    Seafoam::SpecHelpers::ALL_BGV.each do |file|
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
@@ -43,7 +44,7 @@ describe Seafoam::BGVParser do
   end
 
   it 'can alternate skipping and reading full files' do
-    @all_bgv.each do |file|
+    Seafoam::SpecHelpers::ALL_BGV.each do |file|
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
