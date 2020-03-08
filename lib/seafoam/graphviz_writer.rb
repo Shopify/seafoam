@@ -41,7 +41,7 @@ module Seafoam
           @stream.puts "  node#{node.id} #{write_attrs(attrs)};"
         end
       else
-        # This is a visible node, not inlined.
+        # This is a visible node.
 
         # Give it a label.
         if node.props[:label]
@@ -140,9 +140,9 @@ module Seafoam
           node_attrs = inline_attrs[edge.from.id]
         end
 
-        # Inlined nodes skip the arrow and label for simplicity.
+        # Inlined nodes skip the arrow for simplicity.
         attrs[:arrowhead] = 'none'
-        attrs[:label] = nil
+        attrs[:fontsize] = '8'
 
         # Declare a new node just for this user.
         @stream.puts "  inline#{edge.from.id}x#{edge.to.id} #{write_attrs(node_attrs)};"
