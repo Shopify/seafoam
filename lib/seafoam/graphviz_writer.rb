@@ -102,8 +102,13 @@ module Seafoam
       # We're going to build up a hash of Graphviz drawing attributes.
       attrs = {}
 
+      label = edge.props[:label]
+      if edge.from.props[:out_annotation]
+        label = "#{label} #{edge.from.props[:out_annotation]}"
+      end
+      attrs[:label] = label
+
       # Basic edge attributes.
-      attrs[:label] = edge.props[:label]
       attrs[:fontname] = 'arial'
       color = EDGE_COLORS[edge.props[:kind]]
       attrs[:color] = EDGE_COLORS[edge.props[:kind]]

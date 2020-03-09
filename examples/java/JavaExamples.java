@@ -110,8 +110,8 @@ class JavaExamples {
         return staticCall(x);
     }
 
-    private static boolean exampleStamp(int x) {
-        return (x & 1) > 100;
+    private static int exampleStamp(int x) {
+        return x & 0x1234;
     }
 
     private static int exampleFullEscape(int x) {

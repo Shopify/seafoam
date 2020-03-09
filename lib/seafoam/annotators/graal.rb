@@ -109,6 +109,11 @@ module Seafoam
             label = render_name_template(name_template, node)
           end
 
+          # Annotate interesting stamps.
+          if node.props['stamp'] =~ /(\[\d+ \- \d+\])/
+            node.props[:out_annotation] = Regexp.last_match(1)
+          end
+
           # That's our label.
           node.props[:label] = label
 

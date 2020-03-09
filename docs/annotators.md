@@ -21,6 +21,7 @@ The rendering commands recognize these annotations, so annotators will probably
 want to add them:
 
 * `:label` on nodes and edges
+* `:out_annotation` on nodes
 * `:hidden` on nodes only, to not show them (*remove frame state* for example in IGV terminology)
 * `:inlined` on nodes only, to indicate the node should be shown immediately above each node using it (*reduce edges* in IGV terminology)
 * `:kind` on nodes only, which can be `info`, `input`, `control`, `effect`, `virtual`, `calc`, `guard`, or `other`
