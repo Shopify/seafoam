@@ -209,7 +209,7 @@ class JavaExamples {
     private static int exampleReducible(boolean condition, int count) {
         int a = count;
         if (condition) {
-            intField = a;
+            a = count - 1;
         }
         while (a > 0) {
             intField = a;
