@@ -66,16 +66,14 @@ class JavaExamples {
     }
 
     private static int exampleLocalVariables(int x, int y) {
-        int a = x;
-        int b = y;
-        return a + b;
+        int a = x + y;
+        return a * 2 + a;
     }
 
     private static int exampleLocalVariablesState(int x, int y) {
-        int a = x;
-        int b = y;
+        int a = x + y;
         opaqueCall();
-        return a + b;
+        return a * 2 + a;
     }
 
     private static int exampleArithOperator(int x, int y) {
