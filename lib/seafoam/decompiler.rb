@@ -22,7 +22,6 @@ module Seafoam
         if pointer.outputs.any? { |output| output.props[:kind] == 'loop' }
           pointer = decompile_loop(pointer)
         else
-          control_in = pointer.inputs.select { |input| input.props[:kind] == 'control' }
           control_out = pointer.outputs.select { |output| output.props[:kind] == 'control' }
           if control_out.size == 2
             pointer = decompile_branch(pointer)
@@ -32,7 +31,7 @@ module Seafoam
             if control_out.size == 1
               # Linear control node.
               pointer = control_out.first.to
-            elsif control_out.size == 0
+            elsif control_out.empty?
               # Exit point.
               pointer = nil
             else
@@ -49,7 +48,7 @@ module Seafoam
       until worklist.empty?
         x = worklist.shift
         schedule.push x
-        worklist.push *x.inputs.select { |input| input.props[:kind] == 'schedule' }.map(&:from)
+        worklist.push(*x.inputs.select { |input| input.props[:kind] == 'schedule' }.map(&:from))
       end
       schedule.delete node
       schedule.reverse.each do |scheduled|

@@ -3,11 +3,11 @@ module Seafoam
   class Dominator
     def initialize(graph)
       @graph = graph
-      @dominates = Hash.new { |hash, key|
+      @dominates = Hash.new do |hash, key|
         node_a, node_b = key
         dominates = solve(node_a, node_b)
         hash[key] = dominates
-      }
+      end
     end
 
     def dominates?(node_a, node_b)

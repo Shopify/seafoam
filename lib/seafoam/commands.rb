@@ -313,7 +313,7 @@ module Seafoam
     end
 
     # seafoam file.bgv:0 decompile
-    def decompile(name, *args)
+    def decompile(name, *)
       file, graph_index, *rest = parse_name(name)
       raise ArgumentError, 'decompile needs at least a graph' unless graph_index
       raise ArgumentError, 'decompile only works with a graph' unless rest == [nil, nil]

@@ -42,8 +42,10 @@ module Seafoam
           end
 
           # The template for FixedGuardNode could be simpler.
-          if ['org.graalvm.compiler.nodes.FixedGuardNode',
-              'org.graalvm.compiler.nodes.GuardNode'].include?(node_class)
+          if %w[
+            org.graalvm.compiler.nodes.FixedGuardNode
+            org.graalvm.compiler.nodes.GuardNode
+          ].include?(node_class)
             name_template = if node.props[:negated]
                               'Guard not, else {p#reason/s}'
                             else
@@ -176,7 +178,7 @@ module Seafoam
         string = template
         string = string.gsub(%r{\{p#(\w+)(/s)?\}}) { |_| node.props[Regexp.last_match(1)] }
         string = string.gsub(%r{\{i#(\w+)(/s)?\}}) { |_| node.inputs.filter { |e| e.props[:name] == Regexp.last_match(1) }.map { |e| e.from.id }.join(', ') }
-        string = string.gsub(%r{\{x#field\}}) { |_| "#{node.props.dig('field', :field_class).split('.').last}.#{node.props.dig('field', :name)}" }
+        string = string.gsub(/\{x#field\}/) { |_| "#{node.props.dig('field', :field_class).split('.').last}.#{node.props.dig('field', :name)}" }
         string
       end
 
@@ -238,7 +240,7 @@ module Seafoam
           when 'successors'
             # We want to label the edges with the corresponding index of the key.
             successor_edges = edge.from.edges.filter { |e| e.props[:name] == 'successors' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
-            edge_index = successor_edges.find { |n, e| e == edge }.first
+            edge_index = successor_edges.find { |_n, e| e == edge }.first
             if edge_index == edge.from.props['keys'].size
               label = 'default'
             else
@@ -251,7 +253,7 @@ module Seafoam
           when 'arguments'
             # We want to label the edges with their corresponding argument index.
             argument_edges = edge.to.edges.filter { |e| e.props[:name] == 'arguments' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
-            edge_index = argument_edges.find { |n, e| e == edge }.first
+            edge_index = argument_edges.find { |_n, e| e == edge }.first
             edge.props[:label] = "arg[#{edge_index}]"
             edge.props[:kind] = 'data'
 
@@ -301,11 +303,11 @@ module Seafoam
       # as some guards are anchored like this.
       def hide_unused_nodes(graph)
         graph.nodes.each_value do |node|
-          if node.outputs.all? { |edge| edge.to.props[:hidden] } &&
-             node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
-             !node.inputs.any? { |edge| edge.props[:name] == 'anchor' }
-            node.props[:hidden] = true
-          end
+          next unless node.outputs.all? { |edge| edge.to.props[:hidden] } &&
+                      node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
+                      node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
+
+          node.props[:hidden] = true
         end
       end
 
@@ -316,15 +318,15 @@ module Seafoam
       ]
 
       # Simple input node classes that may be inlined.
-      SIMPLE_INPUTS = [
-        'org.graalvm.compiler.nodes.ConstantNode',
-        'org.graalvm.compiler.nodes.ParameterNode'
+      SIMPLE_INPUTS = %w[
+        org.graalvm.compiler.nodes.ConstantNode
+        org.graalvm.compiler.nodes.ParameterNode
       ]
 
       # Nodes just to maintain frame state.
-      FRAME_STATE_NODES = [
-        'org.graalvm.compiler.nodes.FrameState',
-        'org.graalvm.compiler.virtual.nodes.MaterializedObjectState'
+      FRAME_STATE_NODES = %w[
+        org.graalvm.compiler.nodes.FrameState
+        org.graalvm.compiler.virtual.nodes.MaterializedObjectStat
       ]
     end
   end
