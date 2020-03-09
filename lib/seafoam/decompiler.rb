@@ -108,12 +108,14 @@ module Seafoam
       indented do
         true_branch = branch.outputs.find { |output| output.props[:name] == 'trueSuccessor' }.to
         raise unless true_branch
+
         next_true = decompile_block(true_branch)
       end
       puts 'else'
       indented do
         false_branch = branch.outputs.find { |output| output.props[:name] == 'falseSuccessor' }.to
         raise unless false_branch
+
         next_false = decompile_block(false_branch)
       end
       puts 'end'

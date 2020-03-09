@@ -43,7 +43,7 @@ module Seafoam
 
           # The template for FixedGuardNode could be simpler.
           if node_class == 'org.graalvm.compiler.nodes.FixedGuardNode' ||
-              node_class == 'org.graalvm.compiler.nodes.GuardNode'
+             node_class == 'org.graalvm.compiler.nodes.GuardNode'
             name_template = if node.props[:negated]
                               'Guard not, else {p#reason/s}'
                             else
@@ -112,7 +112,7 @@ module Seafoam
 
           # Set the :kind property.
           if node_class.start_with?('org.graalvm.compiler.nodes.calc.') ||
-              node_class.start_with?('org.graalvm.compiler.replacements.nodes.arithmetic.')
+             node_class.start_with?('org.graalvm.compiler.replacements.nodes.arithmetic.')
             kind = 'calc'
           else
             kind = NODE_KIND_MAP[node_class] || 'other'
@@ -248,7 +248,7 @@ module Seafoam
             edge.props[:kind] = 'control'
 
           # Successors are control from a switch.
-        when 'arguments'
+          when 'arguments'
             # We want to label the edges with their corresponding argument index.
             argument_edges = edge.to.edges.filter { |e| e.props[:name] == 'arguments' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
             edge_index = argument_edges.find { |n, e| e == edge }.first
@@ -302,8 +302,8 @@ module Seafoam
       def hide_unused_nodes(graph)
         graph.nodes.each_value do |node|
           if node.outputs.all? { |edge| edge.to.props[:hidden] } &&
-              node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
-              !node.inputs.any? { |edge| edge.props[:name] == 'anchor' }
+             node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
+             !node.inputs.any? { |edge| edge.props[:name] == 'anchor' }
             node.props[:hidden] = true
           end
         end

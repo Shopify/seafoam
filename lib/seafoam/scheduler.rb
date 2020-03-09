@@ -37,7 +37,7 @@ module Seafoam
 
         node_class = node.props.dig(:node_class, :node_class)
         if node_class == 'org.graalvm.compiler.nodes.ValuePhiNode'
-          @graph.create_edge node, node.inputs.find { |edge| edge.props[:kind] == 'info' }.from, {kind: 'schedule'}
+          @graph.create_edge node, node.inputs.find { |edge| edge.props[:kind] == 'info' }.from, { kind: 'schedule' }
           next
         end
 
@@ -50,7 +50,7 @@ module Seafoam
         else
           if users.size == 1
             # If there's just one user, it's easy - schedule it before the user.
-            @graph.create_edge node, users.first, {kind: 'schedule'}
+            @graph.create_edge node, users.first, { kind: 'schedule' }
           else
             # We've got multiple users - we need to find where to a common node
             # that dominates all the users to schedule it before.
@@ -99,7 +99,7 @@ module Seafoam
             dominating_branch = dominating_branches.first
             raise unless dominating_branch
 
-            @graph.create_edge node, dominating_branch, {kind: 'schedule'}
+            @graph.create_edge node, dominating_branch, { kind: 'schedule' }
           end
         end
       end

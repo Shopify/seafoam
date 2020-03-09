@@ -221,6 +221,7 @@ module Seafoam
         ids = count.times.map do
           id = @reader.read_sint32
           raise if id < -1
+
           id = nil if id == -1
           id
         end

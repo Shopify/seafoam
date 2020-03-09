@@ -37,6 +37,7 @@ describe Seafoam::GraphvizWriter do
           loop do
             index, = parser.read_graph_preheader
             break unless index
+
             parser.read_graph_header
             @writer.write_graph parser.read_graph
           end
