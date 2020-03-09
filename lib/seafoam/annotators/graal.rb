@@ -231,8 +231,6 @@ module Seafoam
 
           # Successors are control from a switch.
           when 'successors'
-            edge.props[:kind] = 'control'
-
             # We want to label the edges with the corresponding index of the key.
             successor_edges = edge.from.edges.filter { |e| e.props[:name] == 'successors' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
             edge_index = successor_edges.find { |n, e| e == edge }.first
@@ -242,6 +240,15 @@ module Seafoam
               label = "k[#{edge_index}]"
             end
             edge.props[:label] = label
+            edge.props[:kind] = 'control'
+
+          # Successors are control from a switch.
+        when 'arguments'
+            # We want to label the edges with their corresponding argument index.
+            argument_edges = edge.to.edges.filter { |e| e.props[:name] == 'arguments' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
+            edge_index = argument_edges.find { |n, e| e == edge }.first
+            edge.props[:label] = "arg[#{edge_index}]"
+            edge.props[:kind] = 'data'
 
           # Everything else is data.
           else
