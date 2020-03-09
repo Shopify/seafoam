@@ -95,7 +95,7 @@ module Seafoam
 
           # Use a symbol for PhiNode.
           if node_class == 'org.graalvm.compiler.nodes.ValuePhiNode'
-            name_template = 'ϕ({i#values})'
+            name_template = 'ϕ'
           end
 
           if name_template.empty?
@@ -185,6 +185,17 @@ module Seafoam
       # Annotate edges with their label and kind.
       def annotate_edges(graph)
         graph.edges.each do |edge|
+          if edge.to.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
+            merge_node = edge.to.edges.find { |e| e.props[:name] == 'merge' }.from
+            control_into_merge = %w[ends loopBegin]
+            merge_node_control_edges_in = merge_node.edges.filter { |e| control_into_merge.include?(e.props[:name]) && e.to.props.dig(:node_class, :node_class) != 'org.graalvm.compiler.nodes.LoopExitNode' }
+            matching_control_edge = merge_node_control_edges_in[edge.props[:index]]
+            control_in_node = matching_control_edge.nodes.find { |n| n != merge_node }
+            edge.props[:label] = "from #{control_in_node.id}"
+            edge.props[:kind] = 'data'
+            next
+          end
+
           # Look at the name of the edge to decide how to treat them.
           case edge.props[:name]
 
@@ -239,12 +250,10 @@ module Seafoam
           # Successors are control from a switch.
           when 'successors'
             # We want to label the edges with the corresponding index of the key.
-            successor_edges = edge.from.edges.filter { |e| e.props[:name] == 'successors' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
-            edge_index = successor_edges.find { |_n, e| e == edge }.first
-            if edge_index == edge.from.props['keys'].size
+            if edge.props[:index] == edge.from.props['keys'].size
               label = 'default'
             else
-              label = "k[#{edge_index}]"
+              label = "k[#{edge.props[:index]}]"
             end
             edge.props[:label] = label
             edge.props[:kind] = 'control'
@@ -252,9 +261,7 @@ module Seafoam
           # Successors are control from a switch.
           when 'arguments'
             # We want to label the edges with their corresponding argument index.
-            argument_edges = edge.to.edges.filter { |e| e.props[:name] == 'arguments' }.sort_by { |e| e.props[:counter] }.each_with_index.map { |e, n| [n, e] }
-            edge_index = argument_edges.find { |_n, e| e == edge }.first
-            edge.props[:label] = "arg[#{edge_index}]"
+            edge.props[:label] = "arg[#{edge.props[:index]}]"
             edge.props[:kind] = 'data'
 
           # Everything else is data.

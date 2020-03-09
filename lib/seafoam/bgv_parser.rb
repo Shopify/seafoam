@@ -9,7 +9,6 @@ module Seafoam
       @group_stack = []
       @pool = {}
       @index = 0
-      @edge_counter = 0
     end
 
     # Read the file header and return the version.
@@ -86,11 +85,12 @@ module Seafoam
       edge_delay.each do |edge|
         node = edge[:node]
         props = edge[:edge]
-        others = edge[:ids].reject(&:nil?).map { |id| graph.nodes[id] || raise(EncodingError, "BGV edge with unknown node #{id}") }
         inputs = edge[:inputs]
-        others.each do |other|
+        others = edge[:ids].reject(&:nil?).map { |id| graph.nodes[id] || raise(EncodingError, "BGV edge with unknown node #{id}") }
+        others.each_with_index do |other, index|
           # We need to give each edge their own property as they're annotated separately.
           props = props.dup
+          props[:index] = index
           if inputs
             graph.create_edge other, node, props
           else
@@ -229,8 +229,7 @@ module Seafoam
           node: node,
           edge: edge,
           ids: ids,
-          inputs: inputs,
-          counter: @edge_counter += 1
+          inputs: inputs
         }
       end
     end
