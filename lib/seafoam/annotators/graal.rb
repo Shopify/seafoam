@@ -158,7 +158,12 @@ module Seafoam
         'org.graalvm.compiler.nodes.java.MonitorExitNode' => 'effect',
         'org.graalvm.compiler.replacements.nodes.ReadRegisterNode' => 'effect',
         'org.graalvm.compiler.replacements.nodes.WriteRegisterNode' => 'effect',
-        'org.graalvm.compiler.nodes.PrefetchAllocateNode' => 'effect'
+        'org.graalvm.compiler.nodes.PrefetchAllocateNode' => 'effect',
+        'org.graalvm.compiler.nodes.extended.IntegerSwitchNode' => 'control',
+        'org.graalvm.compiler.nodes.java.ArrayLengthNode' => 'effect',
+        'org.graalvm.compiler.replacements.nodes.ArrayEqualsNode' => 'effect',
+        'org.graalvm.compiler.nodes.extended.UnsafeMemoryLoadNode' => 'effect',
+        'org.graalvm.compiler.nodes.extended.UnsafeMemoryStoreNode' => 'effect'
 
         # org.graalvm.compiler.word.WordCastNode is not an effect even though it is fixed.
       }
