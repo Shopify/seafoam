@@ -1,24 +1,25 @@
 module Seafoam
+  # Can tell you if one node dominates another node.
   class Dominator
     def initialize(graph)
       @graph = graph
       @dominates = Hash.new { |hash, key|
-        a, b = key
-        dominates = solve(a, b)
+        node_a, node_b = key
+        dominates = solve(node_a, node_b)
         hash[key] = dominates
       }
     end
 
-    def dominates?(a, b)
-      key = [a, b]
+    def dominates?(node_a, node_b)
+      key = [node_a, node_b]
       @dominates[key]
     end
 
     private
 
-    def solve(a, b)
-      control_in = b.inputs.select { |edge| edge.props[:kind] == 'control' }.map(&:from)
-      if control_in.include?(a)
+    def solve(node_a, node_b)
+      control_in = node_b.inputs.select { |edge| edge.props[:kind] == 'control' }.map(&:from)
+      if control_in.include?(node_a)
         # If a has a control edge to b then a dominates b
         true
       elsif control_in.empty?
@@ -26,7 +27,7 @@ module Seafoam
         false
       else
         # a dominates b if a dominates all inputs to b
-        control_in.all? { |node| dominates?(a, node) }
+        control_in.all? { |node| dominates?(node_a, node) }
       end
     end
   end

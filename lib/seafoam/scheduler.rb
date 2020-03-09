@@ -85,11 +85,11 @@ module Seafoam
 
             # Find all branches that dominate all the fixed outputs, and are
             # dominated by all the fixed inputs.
-            dominating_branches = branches.select { |branch|
+            dominating_branches = branches.select do |branch|
               dominates_outputs = fixed_outputs.all? { |fixed_output| @dominator.dominates?(branch, fixed_output) }
               dominated_by_inputs = fixed_inputs.all? { |fixed_input| @dominator.dominates?(fixed_input, branch) }
               dominates_outputs && dominated_by_inputs
-            }
+            end
 
             # Filter the dominating branches to those themselves dominated by
             # all
@@ -99,7 +99,7 @@ module Seafoam
             dominating_branch = dominating_branches.first
             raise unless dominating_branch
 
-            @graph.create_edge node, dominating_branch, { kind: 'schedule' }
+            @graph.create_edge node, dominating_branch, kind: 'schedule'
           end
         end
       end

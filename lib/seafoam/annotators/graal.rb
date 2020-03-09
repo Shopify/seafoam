@@ -42,8 +42,8 @@ module Seafoam
           end
 
           # The template for FixedGuardNode could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.FixedGuardNode' ||
-             node_class == 'org.graalvm.compiler.nodes.GuardNode'
+          if ['org.graalvm.compiler.nodes.FixedGuardNode',
+              'org.graalvm.compiler.nodes.GuardNode'].include?(node_class)
             name_template = if node.props[:negated]
                               'Guard not, else {p#reason/s}'
                             else
@@ -83,7 +83,7 @@ module Seafoam
 
           # We want to see keys for IntegerSwitchNode
           if node_class == 'org.graalvm.compiler.nodes.extended.IntegerSwitchNode'
-            name_template = "IntegerSwitch {p#keys}"
+            name_template = 'IntegerSwitch {p#keys}'
           end
 
           # Use a symbol for PiNode

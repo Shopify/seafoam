@@ -1,4 +1,5 @@
 module Seafoam
+  # Decompiles graphs into pseudo-code.
   class Decompiler
     def initialize(stream)
       @stream = stream
