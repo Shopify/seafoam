@@ -102,6 +102,11 @@ module Seafoam
             name_template = 'FrameState {x#state}'
           end
 
+          # Show the stamp in an InstanceOfNode.
+          if node_class == 'org.graalvm.compiler.nodes.java.InstanceOfNode'
+            name_template = 'InstanceOf {x#simpleStamp}'
+          end
+
           if name_template.empty?
             # If there is no template, then the label is the short name of the
             # Java class, without '...Node' because that's redundant.
@@ -189,6 +194,14 @@ module Seafoam
         string = string.gsub(%r{\{i#(\w+)(/s)?\}}) { |_| node.inputs.filter { |e| e.props[:name] == Regexp.last_match(1) }.map { |e| e.from.id }.join(', ') }
         string = string.gsub(/\{x#field\}/) { |_| "#{node.props.dig('field', :field_class).split('.').last}.#{node.props.dig('field', :name)}" }
         string = string.gsub(/\{x#state\}/) { |_| "#{node.props.dig('code', :declaring_class)}##{node.props.dig('code', :method_name)} #{node.props['sourceFile']}:#{node.props['sourceLine']}" }
+        string = string.gsub(/\{x#simpleStamp\}/) do |_|
+          stamp = node.props.dig('checkedStamp')
+          if stamp =~ /a!?# L(.*);/
+            Regexp.last_match(1)
+          else
+            stamp
+          end
+        end
         string
       end
 
