@@ -14,6 +14,7 @@ extra = {
   'exampleInstanceOfManyImpls' => [65],
   'exampleInstanceOfOneImpl' => [65],
   'exampleInterfaceCallOneImpl' => [9],
+  'exampleInterfaceCallManyImpls' => [9],
   'exampleLocalSynchronized' => [33],
   'exampleNoEscape' => [33],
   'examplePartialEscape' => [33],
