@@ -24,8 +24,12 @@ Dir.glob(File.expand_path('../examples/java/*.bgv', __dir__)).each do |bgv|
   basename = File.basename(bgv, '.bgv')
   phases = [6]
   phases.push *(extra[basename] || [])
+  extra_options = []
+  if basename == 'exampleLocalVariablesState'
+    extra_options.push '--show-frame-state'
+  end
   phases.each do |phase|
-    commands.run "#{bgv}:#{phase}", 'render', '--out', File.expand_path("../#{basename}@#{phase}.png", __dir__)
-    commands.run "#{bgv}:#{phase}", 'render', '--out', File.expand_path("../#{basename}@#{phase}.svg", __dir__)
+    commands.run "#{bgv}:#{phase}", 'render', *extra_options, '--out', File.expand_path("../#{basename}@#{phase}.png", __dir__)
+    commands.run "#{bgv}:#{phase}", 'render', *extra_options, '--out', File.expand_path("../#{basename}@#{phase}.svg", __dir__)
   end
 end
