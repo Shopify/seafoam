@@ -232,11 +232,13 @@ module Seafoam
       schedule = false
       args = args.dup
       out_file = nil
+      explicit_out_file = false
       until args.empty?
         arg = args.shift
         case arg
         when '--out'
           out_file = args.shift
+          explicit_out_file = true
           raise ArgumentError, 'no file for --out' unless out_file
         when '--spotlight'
           spotlight_arg = args.shift
@@ -307,7 +309,7 @@ module Seafoam
             writer = GraphvizWriter.new(stream)
             writer.write_graph graph
           end
-          autoopen out_file
+          autoopen out_file unless explicit_out_file
         end
       end
     end
