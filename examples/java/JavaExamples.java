@@ -28,7 +28,8 @@ class JavaExamples {
             } catch (ArithmeticException e) { }
             examplePhi(RANDOM.nextBoolean(), RANDOM.nextInt());
             exampleSimpleCall(new ExampleObject(RANDOM.nextInt()), RANDOM.nextInt());
-            exampleInterfaceCall(new ExampleObject(RANDOM.nextInt()), RANDOM.nextInt());
+            exampleInterfaceCallOneImpl(new OneImpl());
+            exampleInterfaceCallManyImpls(RANDOM.nextBoolean() ? new ManyImplsA() : new ManyImplsB());
             exampleStaticCall(RANDOM.nextInt());
             exampleStamp(RANDOM.nextInt());
             exampleFullEscape(RANDOM.nextInt());
@@ -57,8 +58,8 @@ class JavaExamples {
             exampleArrayRead(new int[]{RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt()}, RANDOM.nextInt(3));
             exampleUnsafeRead(UNSAFE_MEMORY + RANDOM.nextInt(4) * 4);
             exampleUnsafeWrite(UNSAFE_MEMORY + RANDOM.nextInt(4) * 4, RANDOM.nextInt());
-            exampleInstanceOf(RANDOM.nextBoolean() ? new ExampleObject(RANDOM.nextInt()) : new ExampleNonImplementation());
-            exampleLocalInstanceOf();
+            exampleInstanceOfOneImpl(new OneImpl());
+            exampleInstanceOfManyImpls(RANDOM.nextBoolean() ? new ManyImplsA() : new ManyImplsB());
             exampleSynchronized(new Object(), RANDOM.nextInt());
             exampleDoubleSynchronized(new Object(), RANDOM.nextInt());
             exampleLocalSynchronized(RANDOM.nextInt());
@@ -102,8 +103,12 @@ class JavaExamples {
         return object.instanceCall(x);
     }
 
-    private static int exampleInterfaceCall(ExampleInterface object, int x) {
-        return object.instanceCall(x);
+    private static int exampleInterfaceCallOneImpl(InterfaceOneImpl x) {
+        return x.interfaceCall();
+    }
+
+    private static int exampleInterfaceCallManyImpls(InterfaceManyImpls x) {
+        return x.interfaceCall();
     }
 
     private static int exampleStaticCall(int x) {
@@ -319,12 +324,12 @@ class JavaExamples {
         UNSAFE.putInt(unsafeMemory, x);
     }
 
-    private static boolean exampleInstanceOf(Object object) {
-        return object instanceof ExampleInterface;
+    private static boolean exampleInstanceOfOneImpl(Object x) {
+        return x instanceof InterfaceOneImpl;
     }
 
-    private static boolean exampleLocalInstanceOf() {
-        return new ExampleObject(1) instanceof ExampleInterface;
+    private static boolean exampleInstanceOfManyImpls(Object x) {
+        return x instanceof InterfaceManyImpls;
     }
 
     private static void exampleSynchronized(Object object, int x) {
@@ -361,11 +366,7 @@ class JavaExamples {
     private static volatile int intField;
     private static volatile Object objectField;
 
-    private interface ExampleInterface {
-        int instanceCall(int y);
-    }
-
-    private static class ExampleObject implements ExampleInterface {
+    private static class ExampleObject {
         public int x;
 
         public ExampleObject(int x) {
@@ -377,7 +378,30 @@ class JavaExamples {
         }
     }
 
-    private static class ExampleNonImplementation {
+    private interface InterfaceOneImpl {
+        int interfaceCall();
+    }
+
+    private static class OneImpl implements InterfaceOneImpl {
+        public int interfaceCall() {
+            return 14;
+        }
+    }
+
+    private interface InterfaceManyImpls {
+        int interfaceCall();
+    }
+
+    private static class ManyImplsA implements InterfaceManyImpls {
+        public int interfaceCall() {
+            return 14;
+        }
+    }
+
+    private static class ManyImplsB implements InterfaceManyImpls {
+        public int interfaceCall() {
+            return 14;
+        }
     }
 
     private static Unsafe getUnsafe() {
