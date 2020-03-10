@@ -55,7 +55,7 @@ module Seafoam
 
         # Basic attributes for a node.
         attrs[:shape] = 'rectangle'
-        attrs[:fontname] = 'arial bold'
+        attrs[:fontname] = 'Arial'
         attrs[:style] = 'filled'
         attrs[:color] = 'black'
 
