@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.push File.expand_path('../lib', __dir__)
+require 'seafoam'
+
+config = Seafoam::Config.new
+commands = Seafoam::Commands.new($stdout, config)
+
+extra = {
+  'exampleArrayRead' => [42],
+  'exampleDoubleSynchronized' => [48, 49],
+  'exampleFieldRead' => [42],
+  'exampleFullEscape' => [33],
+  'exampleLocalSynchronized' => [33],
+  'exampleNoEscape' => [33],
+  'examplePartialEscape' => [33],
+  'exampleUnsafeRead' => [42]
+}
+
+Dir.glob(File.expand_path('../examples/java/*.bgv', __dir__)).each do |bgv|
+  basename = File.basename(bgv, '.bgv')
+  phases = [6]
+  phases.push *(extra[basename] || [])
+  phases.each do |phase|
+    commands.run "#{bgv}:#{phase}", 'render', '--out', File.expand_path("../#{basename}@#{phase}.png", __dir__)
+    commands.run "#{bgv}:#{phase}", 'render', '--out', File.expand_path("../#{basename}@#{phase}.svg", __dir__)
+  end
+end
