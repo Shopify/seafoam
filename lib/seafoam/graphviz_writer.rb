@@ -7,7 +7,7 @@ module Seafoam
     end
 
     # Write a graph.
-    def write_graph(graph, hidpi=false)
+    def write_graph(graph, hidpi = false)
       inline_attrs = {}
       attrs = {}
       attrs[:dpi] = 200 if hidpi

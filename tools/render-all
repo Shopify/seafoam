@@ -24,7 +24,7 @@ extra = {
 Dir.glob(File.expand_path('../examples/java/*.bgv', __dir__)).each do |bgv|
   basename = File.basename(bgv, '.bgv')
   phases = [6]
-  phases.push *(extra[basename] || [])
+  phases.push(*(extra[basename] || []))
   extra_options = []
   if basename == 'exampleLocalVariablesState'
     extra_options.push '--show-frame-state'

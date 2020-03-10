@@ -104,12 +104,12 @@ describe Seafoam::Commands do
       expect(lines).to eq [
         'Input:',
         '  13 (Call Fib.fib) <-() 6 (Begin)',
-        '  13 (Call Fib.fib) <-() 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)',
+        '  13 (Call Fib.fib) <-() 14 (FrameState Fib#fib Fib.java:20)',
         '  13 (Call Fib.fib) <-() 12 (MethodCallTarget)',
         'Output:',
         '  13 (Call Fib.fib) ->() 18 (Call Fib.fib)',
-        '  13 (Call Fib.fib) ->(values) 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)',
-        '  13 (Call Fib.fib) ->(values) 19 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:19)',
+        '  13 (Call Fib.fib) ->(values) 14 (FrameState Fib#fib Fib.java:20)',
+        '  13 (Call Fib.fib) ->(values) 19 (FrameState Fib#fib Fib.java:20)',
         '  13 (Call Fib.fib) ->(x) 20 (+)'
       ]
     end
