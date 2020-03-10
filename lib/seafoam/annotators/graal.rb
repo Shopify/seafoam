@@ -337,12 +337,18 @@ module Seafoam
       # otherwise. An exception is made for node with an anchor edge coming in,
       # as some guards are anchored like this.
       def hide_unused_nodes(graph)
-        graph.nodes.each_value do |node|
-          next unless node.outputs.all? { |edge| edge.to.props[:hidden] } &&
-                      node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
-                      node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
-
-          node.props[:hidden] = true
+        loop do
+          modified = false
+          graph.nodes.each_value do |node|
+            next unless node.outputs.all? { |edge| edge.to.props[:hidden] } &&
+                node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
+                node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
+            unless node.props[:hidden]
+              node.props[:hidden] = true
+              modified = true
+            end
+          end
+          break unless modified
         end
       end
 
