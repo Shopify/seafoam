@@ -7,10 +7,12 @@ module Seafoam
     end
 
     # Write a graph.
-    def write_graph(graph)
+    def write_graph(graph, hidpi=false)
       inline_attrs = {}
+      attrs = {}
+      attrs[:dpi] = 200 if hidpi
       @stream.puts 'digraph G {'
-      @stream.puts "  graph #{write_attrs(dpi: 200)};"
+      @stream.puts "  graph #{write_attrs(attrs)};"
       write_nodes inline_attrs, graph
       write_edges inline_attrs, graph
       @stream.puts '}'

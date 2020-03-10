@@ -307,7 +307,8 @@ module Seafoam
         else
           IO.popen(['dot', "-T#{out_format}", '-o', out_file], 'w') do |stream|
             writer = GraphvizWriter.new(stream)
-            writer.write_graph graph
+            hidpi = out_format == :png
+            writer.write_graph graph, hidpi
           end
           autoopen out_file unless explicit_out_file
         end
