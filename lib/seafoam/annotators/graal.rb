@@ -159,6 +159,7 @@ module Seafoam
         'org.graalvm.compiler.nodes.java.MonitorEnterNode' => 'effect',
         'org.graalvm.compiler.nodes.java.MonitorExitNode' => 'effect',
         'org.graalvm.compiler.nodes.java.NewArrayNode' => 'effect',
+        'org.graalvm.compiler.nodes.java.NewInstanceNode' => 'effect',
         'org.graalvm.compiler.nodes.java.RawMonitorEnterNode' => 'effect',
         'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'effect',
         'org.graalvm.compiler.nodes.java.StoreIndexedNode' => 'effect',
@@ -224,7 +225,7 @@ module Seafoam
           case edge.props[:name]
 
           # Control edges.
-          when 'ends', 'next', 'trueSuccessor', 'falseSuccessor'
+          when 'ends', 'next', 'trueSuccessor', 'falseSuccessor', 'exceptionEdge'
             edge.props[:kind] = 'control'
             case edge.props[:name]
             when 'trueSuccessor'
@@ -233,6 +234,9 @@ module Seafoam
             when 'falseSuccessor'
               # Simplify falseSuccessor to F
               edge.props[:label] = 'F'
+            when 'exceptionEdge'
+              # Simplify exceptionEdge to unwind
+              edge.props[:label] = 'unwind'
             end
 
           # Info edges, which are drawn reversed as they point from the user
