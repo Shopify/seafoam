@@ -65,7 +65,7 @@ $ java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
 ### TruffleRuby and other Truffle languages
 
 ```
-$ ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=fasle --vm.Dgraal.Dump=Truffle:2 fib.rb 14
+$ ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 fib.rb 14
 ```
 
 You will usually want to look at the *After TruffleTier* graph.
