@@ -11,6 +11,7 @@ module Seafoam
       inline_attrs = {}
       attrs = {}
       attrs[:dpi] = 200 if hidpi
+      attrs[:bgcolor] = 'transparent';
       @stream.puts 'digraph G {'
       @stream.puts "  graph #{write_attrs(attrs)};"
       write_nodes inline_attrs, graph
@@ -74,6 +75,8 @@ module Seafoam
           # so it can be drawn above them - don't actually declare a node.
           inline_attrs[node.id] = attrs
         else
+          attrs[:shape] = 'diamond' if node.props[:kind] == 'calc'
+
           # If the node is shaded, convert the attributes to the shaded
           # version.
           attrs = shade(attrs) if node.props[:spotlight] == 'shaded'
