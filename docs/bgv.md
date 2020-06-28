@@ -6,11 +6,14 @@ Graal graphs.
 The BGV parser was implemented from the [open-source writer code][graph-protocol]
 in the GraalVM compiler.
 
-[graph-protocol]: https://github.com/oracle/graal/blob/vm-19.1.0/compiler/src/org.graalvm.graphio/src/org/graalvm/graphio/GraphProtocol.java
+[graph-protocol]: https://github.com/oracle/graal/blob/master/compiler/src/org.graalvm.graphio/src/org/graalvm/graphio/GraphProtocol.java
 
 ## Format
 
-Seafoam supports version 6.1 of the BGV format (GraalVM 1.0.0-rc16 onwards.)
+Seafoam supports BGV versions:
+
+* 7.0 (GraalVM 20.1.0 and up)
+* 6.1 (GraalVM 1.0.0-rc16 and up)
 
 The BGV file format is network-endian.
 
@@ -232,6 +235,7 @@ String {
 BEGIN_GROUP = 0x00
 BEGIN_GRAPH = 0x01
 CLOSE_GROUP = 0x02
+BEGIN_DOCUMENT = 0x03
 
 POOL_NEW = 0x00
 POOL_STRING = 0x01

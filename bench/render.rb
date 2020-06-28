@@ -11,6 +11,7 @@ BGV_FILE = File.expand_path('../examples/matmult-java.bgv', __dir__)
 graph = File.open(BGV_FILE) do |stream|
   parser = Seafoam::BGVParser.new(stream)
   parser.read_file_header
+  parser.skip_document_props
   parser.read_graph_preheader
   parser.read_graph_header
   parser.read_graph

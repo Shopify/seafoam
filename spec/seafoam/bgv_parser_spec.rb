@@ -16,6 +16,7 @@ describe Seafoam::BGVParser do
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         loop do
           index, = parser.read_graph_preheader
           break unless index
@@ -32,6 +33,7 @@ describe Seafoam::BGVParser do
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         loop do
           index, = parser.read_graph_preheader
           break unless index
@@ -48,6 +50,7 @@ describe Seafoam::BGVParser do
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         skip = false
         loop do
           index, = parser.read_graph_preheader
@@ -101,6 +104,7 @@ describe Seafoam::BGVParser do
       File.open(@fib_java_bgv) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         expect(parser.read_graph_preheader).to eq [0, 0]
       end
     end
@@ -109,6 +113,7 @@ describe Seafoam::BGVParser do
       File.open(@fib_java_bgv) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         51.times do
           expect(parser.read_graph_preheader).to_not be_nil
           parser.skip_graph_header
@@ -123,6 +128,7 @@ describe Seafoam::BGVParser do
       File.open(@fib_java_bgv) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         indicies = []
         5.times do
           index, = parser.read_graph_preheader
@@ -140,6 +146,7 @@ describe Seafoam::BGVParser do
       File.open(@fib_java_bgv) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         parser.read_graph_preheader
         header = parser.read_graph_header
         expect(header[:props]['scope']).to eq 'main.Compiling.GraalCompiler.FrontEnd.PhaseSuite.GraphBuilderPhase'
@@ -152,6 +159,7 @@ describe Seafoam::BGVParser do
       File.open(@fib_java_bgv) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         parser.read_graph_preheader
         parser.read_graph_header
         graph = parser.read_graph

@@ -15,14 +15,35 @@ module Seafoam
     def read_file_header(version_check: true)
       raise EncodingError, 'does not appear to be a BGV file - missing header' unless @reader.read_bytes(4) == MAGIC
 
-      major = @reader.read_sint8
-      minor = @reader.read_sint8
-      version = [major, minor]
+      @major = @reader.read_sint8
+      @minor = @reader.read_sint8
+      version = [@major, @minor]
       if version_check && !SUPPORTED_VERSIONS.include?(version)
-        raise NotImplementedError, "unsupported BGV version #{major}.#{minor}"
+        raise NotImplementedError, "unsupported BGV version #{@major}.#{@minor}"
       end
 
       version
+    end
+
+    def read_document_props
+      if @major >= 7
+        token = @reader.peek_sint8
+        if token == BEGIN_DOCUMENT
+          @reader.skip_int8
+          document_props = read_props
+        end
+      end
+      document_props
+    end
+
+    def skip_document_props
+      if @major >= 7
+        token = @reader.peek_sint8
+        if token == BEGIN_DOCUMENT
+          @reader.skip_int8
+          skip_props
+        end
+      end
     end
 
     # Move to the next graph in the file, and return its index and ID, or nil if
@@ -540,12 +561,14 @@ module Seafoam
     MAGIC = 'BIGV'
 
     SUPPORTED_VERSIONS = [
-      [6, 1]
+      [6, 1],
+      [7, 0]
     ]
 
     BEGIN_GROUP = 0x00
     BEGIN_GRAPH = 0x01
     CLOSE_GROUP = 0x02
+    BEGIN_DOCUMENT = 0x03
 
     POOL_NEW = 0x00
     POOL_STRING = 0x01

@@ -20,6 +20,8 @@ module Seafoam
         name = first
         command, *args = args
         case command
+        when nil
+          help(*args)
         when 'info'
           info name, *args
         when 'list'
@@ -68,6 +70,7 @@ module Seafoam
       File.open(file) do |stream|
         parser = BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         loop do
           index, = parser.read_graph_preheader
           break unless index
@@ -87,6 +90,7 @@ module Seafoam
       File.open(file) do |stream|
         parser = BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         loop do
           index, = parser.read_graph_preheader
           break unless index
@@ -177,42 +181,49 @@ module Seafoam
       end
     end
 
-    # seafoam file.bgv:n props
+    # seafoam file.bgv... props
     def props(name, *args)
       file, graph_index, node_id, edge_id = parse_name(name)
-      raise ArgumentError, 'props needs at least a graph' unless graph_index
-
       raise ArgumentError, 'props does not take arguments' unless args.empty?
 
-      with_graph(file, graph_index) do |parser|
-        graph_header = parser.read_graph_header
-        if node_id
-          graph = parser.read_graph
-          node = graph.nodes[node_id]
-          raise ArgumentError, 'node not found' unless node
+      if graph_index
+        with_graph(file, graph_index) do |parser|
+          graph_header = parser.read_graph_header
+          if node_id
+            graph = parser.read_graph
+            node = graph.nodes[node_id]
+            raise ArgumentError, 'node not found' unless node
 
-          if edge_id
-            to = graph.nodes[edge_id]
-            raise ArgumentError, 'edge node not found' unless to
+            if edge_id
+              to = graph.nodes[edge_id]
+              raise ArgumentError, 'edge node not found' unless to
 
-            edges = node.outputs.filter { |edge| edge.to == to }
-            raise ArgumentError, 'edge not found' if edges.empty?
+              edges = node.outputs.filter { |edge| edge.to == to }
+              raise ArgumentError, 'edge not found' if edges.empty?
 
-            if edges.size > 1
-              edges.each do |edge|
-                pretty_print edge.props
-                @out.puts
+              if edges.size > 1
+                edges.each do |edge|
+                  pretty_print edge.props
+                  @out.puts
+                end
+              else
+                pretty_print edges.first.props
               end
             else
-              pretty_print edges.first.props
+              pretty_print node.props
             end
+            break
           else
-            pretty_print node.props
+            pretty_print graph_header
+            parser.skip_graph
           end
-          break
-        else
-          pretty_print graph_header
-          parser.skip_graph
+        end
+      else
+        File.open(file) do |stream|
+          parser = BGVParser.new(stream)
+          parser.read_file_header
+          document_props = parser.read_document_props
+          pretty_print document_props || {}
         end
       end
     end
@@ -357,6 +368,10 @@ module Seafoam
         parser = BGVDebugParser.new(@out, stream)
         begin
           pretty_print parser.read_file_header
+          document_props = parser.read_document_props
+          if document_props
+            pretty_print document_props
+          end
           loop do
             index, id = parser.read_graph_preheader
             break unless index
@@ -396,6 +411,7 @@ module Seafoam
       File.open(file) do |stream|
         parser = BGVParser.new(stream)
         parser.read_file_header
+        parser.skip_document_props
         graph_found = false
         loop do
           index, = parser.read_graph_preheader

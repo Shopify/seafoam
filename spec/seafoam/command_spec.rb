@@ -126,8 +126,9 @@ describe Seafoam::Commands do
   end
 
   describe '#props' do
-    it 'does not work on a file' do
-      expect { @commands.send :props, @fib_java }.to raise_error(ArgumentError)
+    it 'prints properties for a graph' do
+      @commands.send :props, @fib_java.to_s
+      expect(@out.string).to eq "{\n}\n"
     end
 
     it 'prints properties for a graph' do

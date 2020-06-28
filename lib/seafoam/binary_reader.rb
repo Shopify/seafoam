@@ -45,6 +45,12 @@ module Seafoam
       @stream.readbyte
     end
 
+    def peek_sint8
+      byte = @stream.read(1).unpack1('c')
+      @stream.ungetbyte byte
+      byte
+    end
+
     def skip_float64(count = 1)
       skip count * 8
     end

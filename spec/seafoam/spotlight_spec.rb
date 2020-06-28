@@ -10,6 +10,7 @@ describe Seafoam::Spotlight do
     File.open(file) do |stream|
       parser = Seafoam::BGVParser.new(stream)
       parser.read_file_header
+      parser.skip_document_props
       parser.read_graph_preheader
       parser.read_graph_header
       @graph = parser.read_graph

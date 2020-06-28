@@ -9,6 +9,7 @@ Dir.glob(File.expand_path('../examples/*.bgv', __dir__)).each do |file|
   File.open(file) do |stream|
     parser = Seafoam::BGVParser.new(stream)
     parser.read_file_header
+    parser.skip_document_props
     loop do
       index, = parser.read_graph_preheader
       break unless index

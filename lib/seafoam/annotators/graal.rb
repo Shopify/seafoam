@@ -341,8 +341,9 @@ module Seafoam
           modified = false
           graph.nodes.each_value do |node|
             next unless node.outputs.all? { |edge| edge.to.props[:hidden] } &&
-                node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
-                node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
+                        node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
+                        node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
+
             unless node.props[:hidden]
               node.props[:hidden] = true
               modified = true
@@ -354,6 +355,7 @@ module Seafoam
 
       # If we see these in the graph properties it's probably a Graal graph.
       TRIGGERS = %w[
+        HostedGraphBuilderPhase
         GraalCompiler
         TruffleCompilerThread
       ]

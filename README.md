@@ -129,7 +129,7 @@ $ seafoam examples/fib-java.bgv:0:13-20 edges
 13 (Call Fib.fib) ->(x) 20 (+)
 ```
 
-Print properties of a graph, or node or edge within a graph.
+Print properties of a file, graph, or node or edge within a graph.
 
 ```
 $ seafoam examples/fib-java.bgv:0 props
