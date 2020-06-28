@@ -34,8 +34,6 @@ module Seafoam
           props name, *args
         when 'render'
           render name, *args
-        when 'decompile'
-          decompile name, *args
         when 'debug'
           debug name, *args
         else
@@ -240,7 +238,6 @@ module Seafoam
         reduce_edges: true
       }
       spotlight_nodes = nil
-      schedule = false
       args = args.dup
       out_file = nil
       explicit_out_file = false
@@ -262,8 +259,6 @@ module Seafoam
           annotator_options[:hide_floating] = true
         when '--no-reduce-edges'
           annotator_options[:reduce_edges] = false
-        when '--schedule'
-          schedule = true
         when '--option'
           key = args.shift
           raise ArgumentError, 'no key for --option' unless key
@@ -296,10 +291,6 @@ module Seafoam
         parser.skip_graph_header
         graph = parser.read_graph
         Annotators.apply graph, annotator_options
-        if schedule
-          scheduler = Scheduler.new(graph)
-          scheduler.schedule
-        end
         if spotlight_nodes
           spotlight = Spotlight.new(graph)
           spotlight_nodes.each do |node_id|
@@ -323,29 +314,6 @@ module Seafoam
           end
           autoopen out_file unless explicit_out_file
         end
-      end
-    end
-
-    # seafoam file.bgv:0 decompile
-    def decompile(name, *)
-      file, graph_index, *rest = parse_name(name)
-      raise ArgumentError, 'decompile needs at least a graph' unless graph_index
-      raise ArgumentError, 'decompile only works with a graph' unless rest == [nil, nil]
-
-      annotator_options = {
-        hide_frame_state: true,
-        hide_floating: false,
-        reduce_edges: true
-      }
-
-      with_graph(file, graph_index) do |parser|
-        parser.skip_graph_header
-        graph = parser.read_graph
-        Annotators.apply graph, annotator_options
-        scheduler = Scheduler.new(graph)
-        scheduler.schedule
-        decompiler = Decompiler.new($stdout)
-        decompiler.decompile graph
       end
     end
 

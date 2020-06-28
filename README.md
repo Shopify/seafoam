@@ -184,7 +184,6 @@ $ seafoam examples/fib-java.bgv:0 render --spotlight 13,20
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
 * `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
-* `--schedule` schedules floating nodes to be executed by a fixed node
 
 ## Configuration
 

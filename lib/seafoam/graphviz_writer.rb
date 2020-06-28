@@ -196,7 +196,6 @@ module Seafoam
       'control' => AMARANTH,
       'loop' => AMARANTH,
       'data' => KEPPEL,
-      'schedule' => ORANGE,
       'other' => BLACK
     }
 

@@ -28,7 +28,6 @@ want to add them:
 * `:kind` on edges only, which can be `info`, `control`, `loop`, or `data`
 * `:reverse` on edges only
 * `:spotlight` for nodes as part of spotlighting (`lit` are shown, `shaded` are shown but greyed out, and edges from `shaded` to `:hidden` nodes are also shown greyed out)
-* `:schedule` on edges from a floating node to a fixed node, possibly by a chain of intermediate fixed nodes
 
 Seafoam ships with an annotator for generic GraalVM graphs. If you work with a
 different compiler you'll probably want to write your own annotators - subclass
