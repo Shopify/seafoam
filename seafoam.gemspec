@@ -7,6 +7,9 @@ Gem::Specification.new do |spec|
   spec.authors  = ['Chris Seaton']
   spec.bindir   = 'bin'
 
+  spec.files = `git ls-files`.split($/)
+  spec.executables = ['seafoam']
+
   spec.add_development_dependency 'benchmark-ips', '~> 2.7.2'
   spec.add_development_dependency 'rspec', '~> 3.8.0'
   spec.add_development_dependency 'rubocop', '~> 0.74.0'
