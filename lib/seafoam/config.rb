@@ -24,8 +24,9 @@ module Seafoam
         dot_dir = File.expand_path('.seafoam', dir)
         return dot_dir if Dir.exist?(dot_dir)
 
-        dir = File.expand_path('..', dir)
-        break unless Dir.exist?(dir)
+        new_dir = File.expand_path('..', dir)
+        break if new_dir == dir
+        dir = new_dir
       end
     end
   end
