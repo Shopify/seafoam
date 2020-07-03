@@ -312,7 +312,8 @@ module Seafoam
           raise EncodingError, "unknown BGV property array type 0x#{type.to_s(16)}"
         end
       when PROPERTY_SUBGRAPH
-        raise NotImplementedError, 'subgraphs are not supported'
+        skip_props
+        skip_graph
       else
         raise EncodingError, "unknown BGV property 0x#{token.to_s(16)}"
       end
@@ -355,7 +356,8 @@ module Seafoam
           raise EncodingError, "unknown BGV property array type 0x#{type.to_s(16)}"
         end
       when PROPERTY_SUBGRAPH
-        raise NotImplementedError, 'subgraphs are not supported'
+        @graph_props = read_props
+        read_graph
       else
         raise EncodingError, "unknown BGV property 0x#{token.to_s(16)}"
       end

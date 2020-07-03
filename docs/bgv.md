@@ -41,6 +41,10 @@ Graph {
   sint8 token = BEGIN_GRAPH
   String format
   Args args
+  GraphBody body
+}
+
+GraphBody {
   Props props
   sint32 nodes_count
   Node[nodes_count] nodes
@@ -122,7 +126,7 @@ PropObject {
     }
     struct {
       sint8 PROPERTY_SUBGRAPH
-      // subgraphs are unsupported
+      GraphBody graph
     }
   }
 }
