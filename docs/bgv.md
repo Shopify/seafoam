@@ -278,7 +278,7 @@ In order to 'seek' BGV files we have two code paths for reading the file, one
 with loads the data and one which loads as little as possible to know just how
 much further to advance in the file.
 
-## Other information
+## Other information
 
 `seafoam file.bgv debug` checks that a file can be parsed and prints information
 as it does so.
