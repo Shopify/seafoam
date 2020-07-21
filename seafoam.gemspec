@@ -5,9 +5,11 @@ Gem::Specification.new do |spec|
   spec.version  = Seafoam::VERSION
   spec.summary  = 'A tool for working with compiler graphs'
   spec.authors  = ['Chris Seaton']
-  spec.bindir   = 'bin'
+  spec.homepage = 'https://github.com/Shopify/seafoam'
+  spec.license = 'MIT'
 
   spec.files = `git ls-files`.split($/)
+  spec.bindir   = 'bin'
   spec.executables = ['seafoam']
 
   spec.add_development_dependency 'benchmark-ips', '~> 2.7.2'

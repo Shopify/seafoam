@@ -251,3 +251,7 @@ in the V8 JavaScript compiler.
 ## Author
 
 Seafoam was written by Chris Seaton at Shopify, chris.seaton@shopify.com.
+
+## License
+
+MIT
