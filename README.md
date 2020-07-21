@@ -14,6 +14,7 @@ IGV, Seafoam:
 * has a command-line interface
 * can be used as a library
 * has easy PDF, SVG and PNG output
+* is designed for accessibility
 * looks prettier, in our opinion
 
 Admittedly, Seafoam does not yet have:
