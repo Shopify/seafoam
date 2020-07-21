@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.files = `git ls-files`.split("\n")
   spec.bindir = 'bin'
-  spec.executables = ['seafoam']
+  spec.executables = ['seafoam', 'bgv2isabelle']
 
   spec.add_development_dependency 'benchmark-ips', '~> 2.7.2'
   spec.add_development_dependency 'rspec', '~> 3.8.0'
