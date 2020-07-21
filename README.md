@@ -9,7 +9,7 @@ The *Ideal Graph Visualizer*, or *IGV*, is the tool usually used to work with
 GraalVM compiler graphs. Seafoam aims to solve several problems with IGV. Unlike
 IGV, Seafoam:
 
-* is open source and can be used without restriction
+* is open source and can be used according to the MIT license
 * is able to some extent seek BGV files to load specific graphs without loading the rest of the file
 * has a command-line interface
 * can be used as a library
