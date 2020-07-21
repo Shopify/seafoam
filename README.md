@@ -19,7 +19,6 @@ IGV, Seafoam:
 
 Admittedly, Seafoam does not yet have:
 
-* subgraphs
 * an interactive user interface
 * diffing of graphs
 * visualization of basic blocks
