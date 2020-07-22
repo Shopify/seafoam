@@ -5,7 +5,7 @@ module Seafoam
     def self.for(source)
       case source
       when File
-        IOBinaryReader.new(File.open(source))
+        IOBinaryReader.new(StringIO.new(File.read(source)))
       when IO
         IOBinaryReader.new(source)
       when String
