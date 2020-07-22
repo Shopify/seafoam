@@ -12,7 +12,7 @@ describe Seafoam::BGVParser do
   end
 
   it 'can read full files' do
-    Seafoam::SpecHelpers::ALL_BGV.each do |file|
+    Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
@@ -29,7 +29,7 @@ describe Seafoam::BGVParser do
   end
 
   it 'can skip full files' do
-    Seafoam::SpecHelpers::ALL_BGV.each do |file|
+    Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header
@@ -46,7 +46,7 @@ describe Seafoam::BGVParser do
   end
 
   it 'can alternate skipping and reading full files' do
-    Seafoam::SpecHelpers::ALL_BGV.each do |file|
+    Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
       File.open(file) do |stream|
         parser = Seafoam::BGVParser.new(stream)
         parser.read_file_header

@@ -30,7 +30,7 @@ describe Seafoam::GraphvizWriter do
     end
 
     it 'writes all graphs' do
-      Seafoam::SpecHelpers::ALL_BGV.each do |file|
+      Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
         File.open(file) do |stream|
           parser = Seafoam::BGVParser.new(stream)
           parser.read_file_header

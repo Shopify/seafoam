@@ -156,7 +156,7 @@ describe Seafoam::Commands do
     end
 
     it 'can render all BGV files to dot' do
-      Seafoam::SpecHelpers::ALL_BGV.each do |file|
+      Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
         @commands.send :render, "#{file}:7", '--out', 'out.dot'
       end
     end
