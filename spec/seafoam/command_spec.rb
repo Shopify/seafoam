@@ -126,7 +126,7 @@ describe Seafoam::Commands do
   end
 
   describe '#props' do
-    it 'prints properties for a graph' do
+    it 'prints properties for a file' do
       @commands.send :props, @fib_java.to_s
       expect(@out.string).to eq "{\n}\n"
     end
