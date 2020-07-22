@@ -7,7 +7,7 @@ describe Seafoam::Annotators do
     it 'asks annotators if they apply' do
       check_applied = false
 
-      Class.new(Seafoam::Annotator) do
+      mock_annotator = Class.new(Seafoam::Annotator) do
         singleton_class.define_method(:applies?) do |_graph|
           check_applied = true
           false
@@ -21,7 +21,7 @@ describe Seafoam::Annotators do
     it 'runs annotators that apply' do
       check_annotated = false
 
-      Class.new(Seafoam::Annotator) do
+      mock_annotator = Class.new(Seafoam::Annotator) do
         singleton_class.define_method(:applies?) do |_graph|
           true
         end
