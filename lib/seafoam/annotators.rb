@@ -20,7 +20,7 @@ module Seafoam
     # Get a list of all annotators in the system.
     def self.annotators
       # Get all subclasses of Annotator.
-      annotators = ObjectSpace.each_object(Class).filter { |klass| klass < Annotator }
+      annotators = ObjectSpace.each_object(Class).select { |klass| klass < Annotator }
 
       # We want the FallbackAnnotator to run last.
       annotators.delete FallbackAnnotator

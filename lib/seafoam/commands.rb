@@ -156,7 +156,7 @@ module Seafoam
             to = graph.nodes[edge_id]
             raise ArgumentError, 'edge node not found' unless to
 
-            edges = node.outputs.filter { |edge| edge.to == to }
+            edges = node.outputs.select { |edge| edge.to == to }
             raise ArgumentError, 'edge not found' if edges.empty?
 
             edges.each do |edge|
@@ -196,7 +196,7 @@ module Seafoam
               to = graph.nodes[edge_id]
               raise ArgumentError, 'edge node not found' unless to
 
-              edges = node.outputs.filter { |edge| edge.to == to }
+              edges = node.outputs.select { |edge| edge.to == to }
               raise ArgumentError, 'edge not found' if edges.empty?
 
               if edges.size > 1

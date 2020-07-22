@@ -193,7 +193,7 @@ module Seafoam
         # probably need to do these replacements in one pass...
         string = template
         string = string.gsub(%r{\{p#(\w+)(/s)?\}}) { |_| node.props[Regexp.last_match(1)] }
-        string = string.gsub(%r{\{i#(\w+)(/s)?\}}) { |_| node.inputs.filter { |e| e.props[:name] == Regexp.last_match(1) }.map { |e| e.from.id }.join(', ') }
+        string = string.gsub(%r{\{i#(\w+)(/s)?\}}) { |_| node.inputs.select { |e| e.props[:name] == Regexp.last_match(1) }.map { |e| e.from.id }.join(', ') }
         string = string.gsub(/\{x#field\}/) { |_| "#{node.props.dig('field', :field_class).split('.').last}.#{node.props.dig('field', :name)}" }
         string = string.gsub(/\{x#state\}/) { |_| "#{node.props.dig('code', :declaring_class)}##{node.props.dig('code', :method_name)} #{node.props['sourceFile']}:#{node.props['sourceLine']}" }
         string = string.gsub(/\{x#simpleStamp\}/) do |_|
@@ -213,7 +213,7 @@ module Seafoam
           if edge.to.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
             merge_node = edge.to.edges.find { |e| e.props[:name] == 'merge' }.from
             control_into_merge = %w[ends loopBegin]
-            merge_node_control_edges_in = merge_node.edges.filter { |e| control_into_merge.include?(e.props[:name]) && e.to.props.dig(:node_class, :node_class) != 'org.graalvm.compiler.nodes.LoopExitNode' }
+            merge_node_control_edges_in = merge_node.edges.select { |e| control_into_merge.include?(e.props[:name]) && e.to.props.dig(:node_class, :node_class) != 'org.graalvm.compiler.nodes.LoopExitNode' }
             matching_control_edge = merge_node_control_edges_in[edge.props[:index]]
             control_in_node = matching_control_edge.nodes.find { |n| n != merge_node }
             edge.props[:label] = "from #{control_in_node.id}"

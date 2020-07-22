@@ -27,7 +27,7 @@ describe Seafoam::Spotlight do
     spotlight = Seafoam::Spotlight.new(@graph)
     spotlight.light @graph.nodes[13]
     expect(@graph.nodes.values
-      .filter { |n| n.props[:spotlight] == 'shaded' }
+      .select { |n| n.props[:spotlight] == 'shaded' }
       .map(&:id).sort).to eq [6, 12, 14, 18, 19, 20]
   end
 
@@ -36,7 +36,7 @@ describe Seafoam::Spotlight do
     spotlight.light @graph.nodes[13]
     spotlight.shade
     expect(@graph.nodes.values
-      .filter { |n| n.props[:hidden] }
+      .select { |n| n.props[:hidden] }
       .map(&:id).sort).to eq [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 15, 16, 17, 21]
   end
 end

@@ -4,3 +4,4 @@
 *.svg
 *.class
 /.idea
+/Gemfile.lock

@@ -11,7 +11,7 @@ jobs:
     - name: Setup Ruby
       uses: eregon/use-ruby-action@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 2.5
     - name: Install graphviz
       run: sudo apt-get install graphviz
     - name: Install
