@@ -1,0 +1,19 @@
+name: Specs
+on: [push]
+jobs:
+  specs:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos]
+        ruby: [2.5, 2.6, 2.7]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz; else sudo apt-get install graphviz; fi
+    - run: bundle install
+    - run: bundle exec rspec
