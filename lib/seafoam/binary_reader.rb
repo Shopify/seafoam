@@ -1,6 +1,7 @@
 require 'stringio'
 
 module Seafoam
+  # Factory for binary readers based on the input.
   module BinaryReader
     def self.for(source)
       case source
