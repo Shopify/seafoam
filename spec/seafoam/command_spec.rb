@@ -128,7 +128,7 @@ describe Seafoam::Commands do
   describe '#props' do
     it 'prints properties for a file' do
       @commands.send :props, @fib_java.to_s
-      expect(@out.string).to eq "{\n}\n"
+      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n}\n"
     end
 
     it 'prints properties for a graph' do
