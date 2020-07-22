@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.homepage = 'https://github.com/Shopify/seafoam'
   spec.license = 'MIT'
 
-  spec.files = `git ls-files`.split($/)
-  spec.bindir   = 'bin'
+  spec.files = `git ls-files`.split("\n")
+  spec.bindir = 'bin'
   spec.executables = ['seafoam']
 
   spec.add_development_dependency 'benchmark-ips', '~> 2.7.2'

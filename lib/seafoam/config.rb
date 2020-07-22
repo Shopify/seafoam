@@ -26,6 +26,7 @@ module Seafoam
 
         new_dir = File.expand_path('..', dir)
         break if new_dir == dir
+
         dir = new_dir
       end
     end
