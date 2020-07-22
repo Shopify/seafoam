@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.files = `git ls-files`.split("\n")
   spec.bindir = 'bin'
-  spec.executables = ['seafoam', 'bgv2isabelle']
+  spec.executables = %w[seafoam bgv2isabelle]
 
   spec.required_ruby_version = '>= 2.5.7'
 

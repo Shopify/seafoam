@@ -49,7 +49,7 @@ ARGV.each do |file|
         outputs = node.outputs.map(&:to).map(&:id)
         puts " (add_node #{node.id} #{desc} #{inputs.inspect} #{outputs.inspect}"
       end
-      puts " empty_graph" + (')' * graph.nodes.size)
+      puts ' empty_graph' + (')' * graph.nodes.size)
     end
   end
 end

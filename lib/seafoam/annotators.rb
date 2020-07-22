@@ -20,7 +20,7 @@ module Seafoam
     # Get a list of all annotators in the system.
     def self.annotators
       # Get all subclasses of Annotator.
-      annotators = ObjectSpace.each_object(Class).select { |klass| klass < Annotator }
+      annotators = Annotator::SUBCLASSES.dup
 
       # We want the FallbackAnnotator to run last.
       annotators.delete FallbackAnnotator
@@ -33,6 +33,8 @@ module Seafoam
   # The base class for all annotators. You must subclass this to be recognized
   # as an annotator.
   class Annotator
+    SUBCLASSES = []
+
     def initialize(options = {})
       @options = options
     end
@@ -43,6 +45,10 @@ module Seafoam
 
     def annotate(_graph)
       raise NotImplementedError
+    end
+
+    def self.inherited(annotator)
+      SUBCLASSES.push annotator
     end
   end
 end
