@@ -1,5 +1,3 @@
-require 'stringio'
-
 require 'seafoam'
 
 require 'rspec'
@@ -7,14 +5,12 @@ require 'rspec'
 describe Seafoam::Spotlight do
   before :each do
     file = File.expand_path('../../examples/fib-java.bgv', __dir__)
-    File.open(file) do |stream|
-      parser = Seafoam::BGVParser.new(stream)
-      parser.read_file_header
-      parser.skip_document_props
-      parser.read_graph_preheader
-      parser.read_graph_header
-      @graph = parser.read_graph
-    end
+    parser = Seafoam::BGVParser.new(File.new(file))
+    parser.read_file_header
+    parser.skip_document_props
+    parser.read_graph_preheader
+    parser.read_graph_header
+    @graph = parser.read_graph
   end
 
   it 'marks individual nodes as lit' do

@@ -51,11 +51,9 @@ module Seafoam
 
       raise ArgumentError, 'info does not take arguments' unless args.empty?
 
-      File.open(file) do |stream|
-        parser = BGVParser.new(stream)
-        major, minor = parser.read_file_header(version_check: false)
-        @out.puts "BGV #{major}.#{minor}"
-      end
+      parser = BGVParser.new(File.new(file))
+      major, minor = parser.read_file_header(version_check: false)
+      @out.puts "BGV #{major}.#{minor}"
     end
 
     # seafoam file.bgv list
@@ -65,18 +63,16 @@ module Seafoam
 
       raise ArgumentError, 'list does not take arguments' unless args.empty?
 
-      File.open(file) do |stream|
-        parser = BGVParser.new(stream)
-        parser.read_file_header
-        parser.skip_document_props
-        loop do
-          index, = parser.read_graph_preheader
-          break unless index
+      parser = BGVParser.new(File.new(file))
+      parser.read_file_header
+      parser.skip_document_props
+      loop do
+        index, = parser.read_graph_preheader
+        break unless index
 
-          graph_header = parser.read_graph_header
-          @out.puts "#{file}:#{index}  #{parser.graph_name(graph_header)}"
-          parser.skip_graph
-        end
+        graph_header = parser.read_graph_header
+        @out.puts "#{file}:#{index}  #{parser.graph_name(graph_header)}"
+        parser.skip_graph
       end
     end
 
@@ -85,28 +81,26 @@ module Seafoam
       file, graph_index, node_id, = parse_name(name)
       raise ArgumentError, 'search only works with a file or graph' if node_id
 
-      File.open(file) do |stream|
-        parser = BGVParser.new(stream)
-        parser.read_file_header
-        parser.skip_document_props
-        loop do
-          index, = parser.read_graph_preheader
-          break unless index
+      parser = BGVParser.new(File.new(file))
+      parser.read_file_header
+      parser.skip_document_props
+      loop do
+        index, = parser.read_graph_preheader
+        break unless index
 
-          if !graph_index || index == graph_index
-            header = parser.read_graph_header
-            search_object "#{file}:#{index}", header, terms
-            graph = parser.read_graph
-            graph.nodes.each_value do |node|
-              search_object "#{file}:#{index}:#{node.id}", node.props, terms
-            end
-            graph.edges.each do |edge|
-              search_object "#{file}:#{index}:#{edge.from.id}-#{edge.to.id}", edge.props, terms
-            end
-          else
-            parser.skip_graph_header
-            parser.skip_graph
+        if !graph_index || index == graph_index
+          header = parser.read_graph_header
+          search_object "#{file}:#{index}", header, terms
+          graph = parser.read_graph
+          graph.nodes.each_value do |node|
+            search_object "#{file}:#{index}:#{node.id}", node.props, terms
           end
+          graph.edges.each do |edge|
+            search_object "#{file}:#{index}:#{edge.from.id}-#{edge.to.id}", edge.props, terms
+          end
+        else
+          parser.skip_graph_header
+          parser.skip_graph
         end
       end
     end
@@ -217,12 +211,10 @@ module Seafoam
           end
         end
       else
-        File.open(file) do |stream|
-          parser = BGVParser.new(stream)
-          parser.read_file_header
-          document_props = parser.read_document_props
-          pretty_print document_props || {}
-        end
+        parser = BGVParser.new(File.new(file))
+        parser.read_file_header
+        document_props = parser.read_document_props
+        pretty_print document_props || {}
       end
     end
 
@@ -376,26 +368,24 @@ module Seafoam
     # Reads a file and yields just the graph requested by the index - skipping
     # the rest of the file as best as possible.
     def with_graph(file, graph_index)
-      File.open(file) do |stream|
-        parser = BGVParser.new(stream)
-        parser.read_file_header
-        parser.skip_document_props
-        graph_found = false
-        loop do
-          index, = parser.read_graph_preheader
-          break unless index
+      parser = BGVParser.new(File.new(file))
+      parser.read_file_header
+      parser.skip_document_props
+      graph_found = false
+      loop do
+        index, = parser.read_graph_preheader
+        break unless index
 
-          if index == graph_index
-            graph_found = true
-            yield parser
-            break
-          else
-            parser.skip_graph_header
-            parser.skip_graph
-          end
+        if index == graph_index
+          graph_found = true
+          yield parser
+          break
+        else
+          parser.skip_graph_header
+          parser.skip_graph
         end
-        raise ArgumentError, 'graph not found' unless graph_found
       end
+      raise ArgumentError, 'graph not found' unless graph_found
     end
 
     # Prints help.

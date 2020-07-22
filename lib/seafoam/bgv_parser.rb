@@ -4,8 +4,8 @@ module Seafoam
   # and some code is duplicated in order to support skipping over parts of the
   # file that you don't need.
   class BGVParser
-    def initialize(stream)
-      @reader = BinaryReader.new(stream)
+    def initialize(source)
+      @reader = BinaryReader.for(source)
       @group_stack = []
       @pool = {}
       @index = 0

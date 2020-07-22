@@ -21,35 +21,33 @@ require 'seafoam'
 #     empty_graph))))))))))))))"
 
 ARGV.each do |file|
-  File.open(file) do |stream|
-    parser = Seafoam::BGVParser.new(stream)
-    parser.read_file_header
-    parser.skip_document_props
+  parser = Seafoam::BGVParser.new(File.new(file))
+  parser.read_file_header
+  parser.skip_document_props
 
-    loop do
-      index, = parser.read_graph_preheader
-      break unless index
+  loop do
+    index, = parser.read_graph_preheader
+    break unless index
 
-      graph_header = parser.read_graph_header
-      graph = parser.read_graph
+    graph_header = parser.read_graph_header
+    graph = parser.read_graph
 
-      puts "graph#{index} = # #{parser.graph_name(graph_header)}"
+    puts "graph#{index} = # #{parser.graph_name(graph_header)}"
 
-      graph.nodes.each_value do |node|
-        node_class = node.props[:node_class][:node_class]
-        case node_class
-        when 'org.graalvm.compiler.nodes.ConstantNode'
-          desc = "(ConstantNode #{node.props['rawvalue']})"
-        when 'org.graalvm.compiler.nodes.ParameterNode'
-          desc = "(ParameterNode #{node.props['index']})"
-        else
-          desc = node_class.split('.').last
-        end
-        inputs = node.inputs.map(&:from).map(&:id)
-        outputs = node.outputs.map(&:to).map(&:id)
-        puts " (add_node #{node.id} #{desc} #{inputs.inspect} #{outputs.inspect}"
+    graph.nodes.each_value do |node|
+      node_class = node.props[:node_class][:node_class]
+      case node_class
+      when 'org.graalvm.compiler.nodes.ConstantNode'
+        desc = "(ConstantNode #{node.props['rawvalue']})"
+      when 'org.graalvm.compiler.nodes.ParameterNode'
+        desc = "(ParameterNode #{node.props['index']})"
+      else
+        desc = node_class.split('.').last
       end
-      puts ' empty_graph' + (')' * graph.nodes.size)
+      inputs = node.inputs.map(&:from).map(&:id)
+      outputs = node.outputs.map(&:to).map(&:id)
+      puts " (add_node #{node.id} #{desc} #{inputs.inspect} #{outputs.inspect}"
     end
+    puts ' empty_graph' + (')' * graph.nodes.size)
   end
 end
