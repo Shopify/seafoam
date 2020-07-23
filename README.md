@@ -41,6 +41,17 @@ $ seafoam --version
 seafoam 0.1
 ````
 
+Ubuntu >= 19.10 quick install:
+
+```
+$ git clone git@github.com:Shopify/seafoam.git
+$ sudo apt-get install graphviz
+$ gem build seafoam.gemspec
+$ gem install seafoam-0.1.gem
+$ seafoam -version 
+ seafoam 0.1
+```
+
 Quick-start demo:
 
 ```
