@@ -36,23 +36,15 @@ describe Seafoam::Annotators::GraalAnnotator do
       it 'annotates all edges with a kind' do
         expect(@graph.edges.any? { |e| e.props[:kind].nil? }).to be_falsey
       end
-    end
-
-    describe 'GuardNode annotation' do
-      before :all do
-        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 9)
-        annotator = Seafoam::Annotators::GraalAnnotator.new({})
-        annotator.annotate @graph
-      end
 
       it 'annotates negated GuardNodes with "Guard not, else ..."' do
-        expect(@graph.nodes[6983].props['negated']).to be true
-        expect(@graph.nodes[6983].props[:label]).to start_with 'Guard not, else'
+        expect(@graph.nodes[561].props['negated']).to be true
+        expect(@graph.nodes[561].props[:label]).to start_with 'Guard not, else'
       end
 
       it 'annotates not negated GuardNodes with "Guard, else ..."' do
-        expect(@graph.nodes[7135].props['negated']).to be false
-        expect(@graph.nodes[7135].props[:label]).to start_with 'Guard, else'
+        expect(@graph.nodes[559].props['negated']).to be false
+        expect(@graph.nodes[559].props[:label]).to start_with 'Guard, else'
       end
     end
 
