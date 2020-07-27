@@ -36,6 +36,16 @@ describe Seafoam::Annotators::GraalAnnotator do
       it 'annotates all edges with a kind' do
         expect(@graph.edges.any? { |e| e.props[:kind].nil? }).to be_falsey
       end
+
+      it 'annotates negated GuardNodes with "Guard not, else ..."' do
+        expect(@graph.nodes[561].props['negated']).to be true
+        expect(@graph.nodes[561].props[:label]).to start_with 'Guard not, else'
+      end
+
+      it 'annotates not negated GuardNodes with "Guard, else ..."' do
+        expect(@graph.nodes[559].props['negated']).to be false
+        expect(@graph.nodes[559].props[:label]).to start_with 'Guard, else'
+      end
     end
 
     describe 'with :hide_frame_state' do
