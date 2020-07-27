@@ -45,14 +45,14 @@ describe Seafoam::Annotators::GraalAnnotator do
         annotator.annotate @graph
       end
 
-      it 'annotates negated GuardNodes with Guard not, else ...' do
-        expect(@graph.nodes[6983].props["negated"]).to be true
-        expect(@graph.nodes[6983].props[:label]).to start_with ("Guard not, else")
+      it 'annotates negated GuardNodes with "Guard not, else ..."' do
+        expect(@graph.nodes[6983].props['negated']).to be true
+        expect(@graph.nodes[6983].props[:label]).to start_with 'Guard not, else'
       end
 
-      it 'annotates not negated GuardNodes with Guard, else ...' do
-        expect(@graph.nodes[7135].props["negated"]).to be false
-        expect(@graph.nodes[7135].props[:label]).to start_with ("Guard, else")
+      it 'annotates not negated GuardNodes with "Guard, else ..."' do
+        expect(@graph.nodes[7135].props['negated']).to be false
+        expect(@graph.nodes[7135].props[:label]).to start_with 'Guard, else'
       end
     end
 

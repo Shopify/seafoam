@@ -46,7 +46,7 @@ module Seafoam
             org.graalvm.compiler.nodes.FixedGuardNode
             org.graalvm.compiler.nodes.GuardNode
           ].include?(node_class)
-            name_template = if node.props["negated"]
+            name_template = if node.props['negated']
                               'Guard not, else {p#reason/s}'
                             else
                               'Guard, else {p#reason/s}'
