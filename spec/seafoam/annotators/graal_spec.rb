@@ -38,6 +38,24 @@ describe Seafoam::Annotators::GraalAnnotator do
       end
     end
 
+    describe 'GuardNode annotation' do
+      before :all do
+        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 9)
+        annotator = Seafoam::Annotators::GraalAnnotator.new({})
+        annotator.annotate @graph
+      end
+
+      it 'annotates negated GuardNodes with Guard not, else ...' do
+        expect(@graph.nodes[6983].props["negated"]).to be true
+        expect(@graph.nodes[6983].props[:label]).to start_with ("Guard not, else")
+      end
+
+      it 'annotates not negated GuardNodes with Guard, else ...' do
+        expect(@graph.nodes[7135].props["negated"]).to be false
+        expect(@graph.nodes[7135].props[:label]).to start_with ("Guard, else")
+      end
+    end
+
     describe 'with :hide_frame_state' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
