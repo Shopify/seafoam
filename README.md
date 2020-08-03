@@ -41,7 +41,7 @@ $ seafoam --version
 seafoam 0.1
 ````
 
-Ubuntu >= 19.10 quick install:
+##### Ubuntu >= 19.10 quick install:
 
 ```
 $ git clone git@github.com:Shopify/seafoam.git
@@ -52,7 +52,39 @@ $ seafoam -version
  seafoam 0.1
 ```
 
-Quick-start demo:
+##### Install on CentOS >= 7 with `rbenv`
+
+```
+## Install ruby with rbenv
+$ sudo yum install gcc-c++ patch readline readline-devel zlib zlib-devel libffi-devel  openssl-devel make bzip2 autoconf automake libtool bison sqlite-devel
+$ git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+
+# Include these lines in your bashrc:
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
+```
+
+In a new terminal: 
+
+```
+$ rbenv install -l
+$ rbenv install 2.7.1
+$ rbenv global 2.7.1
+```
+
+Install Seafoam:
+```
+$ git clone git@github.com:Shopify/seafoam.git
+$ cd seafoam 
+$ sudo yum install graphviz
+$ gem build seafoam.gemspec
+$ gem install seafoam-0.1.gem
+$ seafoam --version
+seafoam 0.1
+```
+
+##### Quick-start demo:
 
 ```
 $ seafoam examples/fib-java.bgv:0 render
