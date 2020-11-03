@@ -6,10 +6,10 @@ Each graph is of the format:
 
 ```json
 {
-  name: ...,
-  props: {...},
-  nodes: [...],
-  edges: [...]
+  "name": ...,
+  "props": {...},
+  "nodes": [...],
+  "edges": [...]
 }
 ```
 
@@ -17,8 +17,8 @@ Each node is of the format:
 
 ```json
 {
-  id: ...,
-  props: {...}
+  "id": ...,
+  "props": {...}
 }
 ```
 
@@ -26,9 +26,9 @@ Each edge is of the format:
 
 ```json
 {
-  from: ..., # node id
-  to: ..., # node id
-  props: {...}
+  "from": ..., # node id
+  "to": ..., # node id
+  "props": {...}
 }
 ```
 
