@@ -21,7 +21,7 @@ require 'seafoam'
 #     empty_graph))))))))))))))"
 
 ARGV.each do |file|
-  parser = Seafoam::BGVParser.new(File.new(file))
+  parser = Seafoam::BGV::BGVParser.new(File.new(file))
   parser.read_file_header
   parser.skip_document_props
 
