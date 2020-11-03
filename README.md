@@ -34,6 +34,8 @@ Admittedly, Seafoam does not yet have:
 
 ## Installation
 
+### macOS
+
 ```
 $ brew install graphviz
 $ gem install seafoam
@@ -41,50 +43,25 @@ $ seafoam --version
 seafoam 0.1
 ```
 
-##### Ubuntu >= 19.10 quick install:
+### Ubuntu
 
 ```
-$ git clone git@github.com:Shopify/seafoam.git
-$ sudo apt-get install graphviz
-$ gem build seafoam.gemspec
-$ gem install seafoam-0.1.gem
-$ seafoam -version 
- seafoam 0.1
-```
-
-##### Install on CentOS >= 7 with `rbenv`
-
-```
-## Install ruby with rbenv
-$ sudo yum install gcc-c++ patch readline readline-devel zlib zlib-devel libffi-devel  openssl-devel make bzip2 autoconf automake libtool bison sqlite-devel
-$ git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-
-# Include these lines in your bashrc:
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
-export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"
-```
-
-In a new terminal: 
-
-```
-$ rbenv install -l
-$ rbenv install 2.7.1
-$ rbenv global 2.7.1
-```
-
-Install Seafoam:
-```
-$ git clone git@github.com:Shopify/seafoam.git
-$ cd seafoam 
-$ sudo yum install graphviz
-$ gem build seafoam.gemspec
-$ gem install seafoam-0.1.gem
+$ sudo apt-get install ruby graphviz
+$ gem install seafoam
 $ seafoam --version
 seafoam 0.1
 ```
 
-##### Quick-start demo:
+#### RedHat
+
+```
+$ sudo yum install ruby graphviz
+$ gem install seafoam
+$ seafoam --version
+seafoam 0.1
+```
+
+## Quick-start demo
 
 ```
 $ seafoam examples/fib-java.bgv:0 render
@@ -125,14 +102,14 @@ Note that a *graph ID* is an ID found in BGV files, but is not unique. A
 
 ## Use cases
 
-Print information about a file.
+#### Print information about a file
 
 ```
 $ seafoam examples/fib-java.bgv info
 BGV 6.1
 ```
 
-List graphs in a file.
+#### List graphs in a file
 
 ```
 $ seafoam examples/fib-java.bgv list
@@ -145,7 +122,7 @@ examples/fib-java.bgv:5  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.
 ...
 ```
 
-Search for strings in a graph, or node or edge within a graph.
+#### Search for strings in a graph, or node or edge within a graph
 
 ```
 $ seafoam examples/fib-java.bgv:0 search Start
@@ -153,7 +130,7 @@ examples/fib-java.bgv:0:0  ...node_class":"org.graalvm.compiler.nodes.StartNode"
 examples/fib-java.bgv:0:0  ...piler.nodes.StartNode","name_template":"Start","inputs":[{"direct":true,"name":"state...
 ```
 
-Print edges of a graph, or node or edge within a graph.
+#### Print edges of a graph, or node or edge within a graph
 
 ```
 $ seafoam examples/fib-java.bgv:0 edges
@@ -172,7 +149,7 @@ $ seafoam examples/fib-java.bgv:0:13-20 edges
 13 (Call Fib.fib) ->(x) 20 (+)
 ```
 
-Print properties of a file, graph, or node or edge within a graph.
+#### Print properties of a file, graph, or node or edge within a graph
 
 ```
 $ seafoam examples/fib-java.bgv:0 props
@@ -199,6 +176,8 @@ $ seafoam examples/fib-java.bgv:0:13-20 props
 }
 ```
 
+#### Render a graph
+
 Render a graph as a PDF image and have it opened automatically.
 
 ```
@@ -222,7 +201,26 @@ $ seafoam examples/fib-java.bgv:0 render --spotlight 13,20
 * `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
 * `--option key value` for custom annotators
 
-### Options for GraalVM graphs
+#### Convert a file
+
+Convert a BGV file to the Isabelle graph format.
+
+```
+$ bgv2isabelle examples/fib-java.bgv
+graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
+ (add_node 0 StartNode [2] [8]
+ (add_node 1 (ParameterNode 0) [] [2, 5, 9, 11, 14, 16]
+ (add_node 2 FrameState [1] [0]
+ (add_node 3 (ConstantNode 1) [] []
+ (add_node 4 (ConstantNode 2) [] [5]
+ (add_node 5 IntegerLessThanNode [1, 4] [8]
+ (add_node 6 BeginNode [8] [13]
+ (add_node 7 BeginNode [8] [9]
+ (add_node 8 IfNode [0, 5] [7, 6]
+...
+```
+
+## Options for GraalVM graphs
 
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
