@@ -23,20 +23,20 @@ ARGV.each do |file|
     edges = []
 
     graph.nodes.each_value do |node|
-      nodes.push({
+      nodes.push(
         id: node.id,
         props: node.props
-      })
+      )
 
       node.outputs.each do |edge|
-        edges.push({
+        edges.push(
           from: edge.from.id,
           to: edge.to.id,
           props: edge.props
-        })
+        )
       end
     end
 
-    puts JSON.generate({name: name, props: graph.props, nodes: nodes, edges: edges})
+    puts JSON.generate(name: name, props: graph.props, nodes: nodes, edges: edges)
   end
 end
