@@ -39,7 +39,7 @@ $ brew install graphviz
 $ gem install seafoam
 $ seafoam --version
 seafoam 0.1
-````
+```
 
 ##### Ubuntu >= 19.10 quick install:
 
