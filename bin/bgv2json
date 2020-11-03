@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+require 'seafoam'
+require 'json'
+
+ARGV.each do |file|
+  parser = Seafoam::BGV::BGVParser.new(File.new(file))
+  parser.read_file_header
+  parser.skip_document_props
+
+  loop do
+    index, = parser.read_graph_preheader
+    break unless index
+
+    graph_header = parser.read_graph_header
+
+    graph = parser.read_graph
+    Seafoam::Annotators.apply graph
+
+    name = parser.graph_name(graph_header)
+
+    nodes = []
+    edges = []
+
+    graph.nodes.each_value do |node|
+      nodes.push({
+        id: node.id,
+        props: node.props
+      })
+
+      node.outputs.each do |edge|
+        edges.push({
+          from: edge.from.id,
+          to: edge.to.id,
+          props: edge.props
+        })
+      end
+    end
+
+    puts JSON.generate({name: name, props: graph.props, nodes: nodes, edges: edges})
+  end
+end
