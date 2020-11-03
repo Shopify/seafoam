@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.bindir = 'bin'
   spec.executables = %w[seafoam bgv2isabelle]
 
-  spec.required_ruby_version = '>= 2.5.7'
+  spec.required_ruby_version = '>= 2.5.8'
 
   spec.add_development_dependency 'benchmark-ips', '~> 2.7.2'
   spec.add_development_dependency 'rspec', '~> 3.8.0'
