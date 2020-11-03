@@ -32,3 +32,6 @@ Security/Eval:
 
 Naming/FileName:
   Enabled: false
+
+Metrics/LineLength:
+  Max: 300
