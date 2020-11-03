@@ -4,7 +4,7 @@ The `bgv2json` command outputs files in [JSON Lines](https://jsonlines.org/) for
 
 Each graph is of the format:
 
-```json
+```js
 {
   "name": ...,
   "props": {...},
@@ -15,7 +15,7 @@ Each graph is of the format:
 
 Each node is of the format:
 
-```json
+```js
 {
   "id": ...,
   "props": {...}
@@ -24,10 +24,10 @@ Each node is of the format:
 
 Each edge is of the format:
 
-```json
+```js
 {
-  "from": ..., # node id
-  "to": ..., # node id
+  "from": ..., // node id
+  "to": ..., // node id
   "props": {...}
 }
 ```
