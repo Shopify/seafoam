@@ -4,7 +4,7 @@ require 'seafoam'
 require 'json'
 
 ARGV.each do |file|
-  parser = Seafoam::BGV::BGVParser.new(File.new(file))
+  parser = Seafoam::BGV::BGVParser.new(file)
   parser.read_file_header
   parser.skip_document_props
 

@@ -11,7 +11,7 @@ describe Seafoam::BGV::BGVParser do
 
   it 'can read full files' do
     Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
-      parser = Seafoam::BGV::BGVParser.new(File.new(file))
+      parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       loop do
@@ -24,9 +24,22 @@ describe Seafoam::BGV::BGVParser do
     end
   end
 
+  it 'can read full gzipped files' do
+    parser = Seafoam::BGV::BGVParser.new(File.expand_path('../../../examples/fib-java.bgv.gz', __dir__))
+    parser.read_file_header
+    parser.skip_document_props
+    loop do
+      index, = parser.read_graph_preheader
+      break unless index
+
+      parser.read_graph_header
+      parser.read_graph
+    end
+  end
+
   it 'can skip full files' do
     Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
-      parser = Seafoam::BGV::BGVParser.new(File.new(file))
+      parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       loop do
@@ -41,7 +54,7 @@ describe Seafoam::BGV::BGVParser do
 
   it 'can alternate skipping and reading full files' do
     Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
-      parser = Seafoam::BGV::BGVParser.new(File.new(file))
+      parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       skip = false
@@ -63,36 +76,36 @@ describe Seafoam::BGV::BGVParser do
 
   describe '#read_file_header' do
     it 'produces a version' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(@fib_java_bgv))
+      parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       expect(parser.read_file_header).to eq [6, 1]
     end
 
     it 'raises an error for files which are not BGV' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(File.expand_path('fixtures/not.bgv', __dir__)))
+      parser = Seafoam::BGV::BGVParser.new(File.expand_path('fixtures/not.bgv', __dir__))
       expect { parser.read_file_header }.to raise_error(EncodingError)
     end
 
     it 'raises an error for files which are an unsupported version of BGV' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(File.expand_path('fixtures/unsupported.bgv', __dir__)))
+      parser = Seafoam::BGV::BGVParser.new(File.expand_path('fixtures/unsupported.bgv', __dir__))
       expect { parser.read_file_header }.to raise_error(NotImplementedError)
     end
 
     it 'does not raise an error for an unsupported version of BGV if version_check is disabled' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(File.expand_path('fixtures/unsupported.bgv', __dir__)))
+      parser = Seafoam::BGV::BGVParser.new(File.expand_path('fixtures/unsupported.bgv', __dir__))
       expect(parser.read_file_header(version_check: false)).to eq [7, 2]
     end
   end
 
   describe '#read_graph_preheader' do
     it 'produces an index and id' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(@fib_java_bgv))
+      parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
       expect(parser.read_graph_preheader).to eq [0, 0]
     end
 
     it 'returns nil for end of file' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(@fib_java_bgv))
+      parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
       51.times do
@@ -104,7 +117,7 @@ describe Seafoam::BGV::BGVParser do
     end
 
     it 'returns unique indicies' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(@fib_java_bgv))
+      parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
       indicies = []
@@ -120,7 +133,7 @@ describe Seafoam::BGV::BGVParser do
 
   describe '#read_graph_header' do
     it 'produces an expected header' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(@fib_java_bgv))
+      parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
       parser.read_graph_preheader
@@ -131,7 +144,7 @@ describe Seafoam::BGV::BGVParser do
 
   describe '#read_graph' do
     it 'produces an expected graph' do
-      parser = Seafoam::BGV::BGVParser.new(File.new(@fib_java_bgv))
+      parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
       parser.read_graph_preheader

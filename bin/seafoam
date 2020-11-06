@@ -14,7 +14,7 @@ begin
   commands.run(*ARGV)
 rescue StandardError => e
   if $DEBUG
-    # Re-raise the exception so the user sees it, it debugging is
+    # Re-raise the exception so the user sees it, if debugging is
     # enabled (ruby -d).
     raise e
   else

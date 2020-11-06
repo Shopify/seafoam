@@ -10,7 +10,7 @@ describe Seafoam::GraphvizWriter do
   describe '#write_graph' do
     before :all do
       file = File.expand_path('../../examples/fib-java.bgv', __dir__)
-      parser = Seafoam::BGV::BGVParser.new(File.new(file))
+      parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.read_graph_preheader
       parser.read_graph_header
@@ -29,7 +29,7 @@ describe Seafoam::GraphvizWriter do
 
     it 'writes all graphs' do
       Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
-        parser = Seafoam::BGV::BGVParser.new(File.new(file))
+        parser = Seafoam::BGV::BGVParser.new(file)
         parser.read_file_header
         parser.skip_document_props
         parser.skip_document_props

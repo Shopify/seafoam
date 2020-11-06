@@ -5,7 +5,7 @@ require 'rspec'
 describe Seafoam::Spotlight do
   before :each do
     file = File.expand_path('../../examples/fib-java.bgv', __dir__)
-    parser = Seafoam::BGV::BGVParser.new(File.new(file))
+    parser = Seafoam::BGV::BGVParser.new(file)
     parser.read_file_header
     parser.skip_document_props
     parser.read_graph_preheader

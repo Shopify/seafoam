@@ -51,7 +51,7 @@ module Seafoam
 
       raise ArgumentError, 'info does not take arguments' unless args.empty?
 
-      parser = BGV::BGVParser.new(File.new(file))
+      parser = BGV::BGVParser.new(file)
       major, minor = parser.read_file_header(version_check: false)
       @out.puts "BGV #{major}.#{minor}"
     end
@@ -63,7 +63,7 @@ module Seafoam
 
       raise ArgumentError, 'list does not take arguments' unless args.empty?
 
-      parser = BGV::BGVParser.new(File.new(file))
+      parser = BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       loop do
@@ -81,7 +81,7 @@ module Seafoam
       file, graph_index, node_id, = parse_name(name)
       raise ArgumentError, 'search only works with a file or graph' if node_id
 
-      parser = BGV::BGVParser.new(File.new(file))
+      parser = BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       loop do
@@ -211,7 +211,7 @@ module Seafoam
           end
         end
       else
-        parser = BGV::BGVParser.new(File.new(file))
+        parser = BGV::BGVParser.new(file)
         parser.read_file_header
         document_props = parser.read_document_props
         pretty_print document_props || {}
@@ -368,7 +368,7 @@ module Seafoam
     # Reads a file and yields just the graph requested by the index - skipping
     # the rest of the file as best as possible.
     def with_graph(file, graph_index)
-      parser = BGV::BGVParser.new(File.new(file))
+      parser = BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       graph_found = false

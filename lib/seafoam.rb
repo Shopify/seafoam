@@ -1,6 +1,5 @@
 require 'seafoam/version'
 require 'seafoam/binary/io_binary_reader'
-require 'seafoam/binary/binary_reader'
 require 'seafoam/bgv/bgv_parser'
 require 'seafoam/colors'
 require 'seafoam/graph'

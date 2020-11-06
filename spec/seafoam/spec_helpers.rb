@@ -10,7 +10,7 @@ module Seafoam
 
     def self.example_graph(file, graph_index)
       file = File.expand_path("../../examples/#{file}.bgv", __dir__)
-      parser = Seafoam::BGV::BGVParser.new(File.new(file))
+      parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
       loop do

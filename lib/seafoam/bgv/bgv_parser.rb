@@ -1,3 +1,5 @@
+require 'zlib'
+
 module Seafoam
   module BGV
     # A parser for BGV files. It's a push-pull streaming interface that you need
@@ -5,8 +7,12 @@ module Seafoam
     # and some code is duplicated in order to support skipping over parts of the
     # file that you don't need.
     class BGVParser
-      def initialize(source)
-        @reader = Binary::BinaryReader.for(source)
+      def initialize(file)
+        data = File.read(file, encoding: Encoding::ASCII_8BIT)
+        if data[0..1].bytes == [0x1f, 0x8b]
+          data = Zlib.gunzip(data)
+        end
+        @reader = Binary::IOBinaryReader.new(StringIO.new(data))
         @group_stack = []
         @pool = {}
         @index = 0
