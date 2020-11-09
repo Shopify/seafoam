@@ -22,7 +22,12 @@ BGV {
   char[4] = 'BIGV'
   sint8 major
   sint8 minor
-  GroupOrGraph*
+  Document? GroupOrGraph*
+}
+
+Document {
+  sint8 token = BEGIN_DOCUMENT
+  Pops props
 }
 
 GroupOrGraph {
