@@ -172,7 +172,8 @@ module Seafoam
           when CLOSE_GROUP
             read_close_group
           when BEGIN_DOCUMENT
-            raise EncodingError, 'document found within stream'
+            # But what should we do with them?
+            skip_props
           else
             raise EncodingError, "unknown token 0x#{token.to_s(16)} beginning BGV object"
           end
@@ -201,12 +202,6 @@ module Seafoam
       def read_close_group
         # Already read CLOSE_GROUP
         @group_stack.pop
-      end
-
-      def read_document
-        # Already read BEGIN_DOCUMENT
-        props = read_props
-
       end
 
       # Skip over arguments.

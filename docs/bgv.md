@@ -22,16 +22,11 @@ BGV {
   char[4] = 'BIGV'
   sint8 major
   sint8 minor
-  Document? GroupOrGraph*
+  GroupDocumentGraph*
 }
 
-Document {
-  sint8 token = BEGIN_DOCUMENT
-  Pops props
-}
-
-GroupOrGraph {
-  BeginGroup GroupOrGraph* CloseGroup | Graph
+GroupDocumentGraph {
+  BeginGroup GroupDocumentGraph* CloseGroup | Document | Graph
 }
 
 BeginGroup {
@@ -40,6 +35,15 @@ BeginGroup {
   PoolObject method
   sint32 bci
   Props props
+}
+
+CloseGroup {
+  sint8 token = CLOSE_GROUP
+}
+
+Document {
+  sint8 token = BEGIN_DOCUMENT
+  Pops props
 }
 
 Graph {
@@ -75,10 +79,6 @@ Blocks {
   sint32[nodes_count] nodes
   sint32 followers_count
   sint32[followers_count] followers
-}
-
-CloseGroup {
-  sint8 token = CLOSE_GROUP
 }
 
 Props {
