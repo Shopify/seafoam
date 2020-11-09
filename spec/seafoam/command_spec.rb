@@ -248,5 +248,21 @@ describe Seafoam::Commands do
       expect(node).to eq 12
       expect(edge).to eq 81
     end
+
+    it 'parses a BGV file name with periods and colons' do
+      file, graph, node, edge = @commands.send(:parse_name, 'TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv:4')
+      expect(file).to eq 'TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv'
+      expect(graph).to eq 4
+      expect(node).to be_nil
+      expect(edge).to be_nil
+    end
+
+    it 'parses a BGV.gz file name with periods and colons' do
+      file, graph, node, edge = @commands.send(:parse_name, 'TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv.gz:4')
+      expect(file).to eq 'TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv.gz'
+      expect(graph).to eq 4
+      expect(node).to be_nil
+      expect(edge).to be_nil
+    end
   end
 end
