@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'seafoam'
+
+ARGV.each do |file|
+  parser = Seafoam::CFG::CFGParser.new(file)
+  parser.skip_over_cfg 'After code installation'
+  nmethod = parser.read_nmethod
+  p nmethod
+end
