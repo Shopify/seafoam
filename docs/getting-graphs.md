@@ -29,6 +29,14 @@ graph without significantly effecting too much how the logic in it is compiled.
   -Dgraal.VectorizeLoops=false
 ```
 
+## GraalVM's Native Image compiler
+
+When using `native-image` you will want to use the `-H:` format.
+
+```
+$ native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+```
+
 ## TruffleRuby and other Truffle languages
 
 Use the same options as for GraalVM for Java, except they're prefixed with

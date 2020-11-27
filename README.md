@@ -83,6 +83,12 @@ $ javac Fib.java
 $ java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
 ```
 
+### GraalVM Native Image
+
+```
+$ native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+```
+
 ### TruffleRuby and other Truffle languages
 
 ```
@@ -90,12 +96,6 @@ $ ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false -
 ```
 
 You will usually want to look at the *After TruffleTier* graph.
-
-### GraalVM Native Image
-
-```bash
-$ native-image -H:Dump=:2 -H:MethodFilter=fib Fib
-```
 
 ## Name syntax
 
