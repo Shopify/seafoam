@@ -91,6 +91,12 @@ $ ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false -
 
 You will usually want to look at the *After TruffleTier* graph.
 
+### GraalVM Native Image
+
+```bash
+$ native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+```
+
 ## Name syntax
 
 When using a command-line interface, Seafoam refers to
