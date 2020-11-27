@@ -34,7 +34,7 @@ graph without significantly effecting too much how the logic in it is compiled.
 When using `native-image` you will want to use the `-H:` format.
 
 ```
-$ native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+% native-image -H:Dump=:2 -H:MethodFilter=fib Fib
 ```
 
 ## TruffleRuby and other Truffle languages

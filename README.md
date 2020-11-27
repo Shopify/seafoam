@@ -38,34 +38,34 @@ Admittedly, Seafoam does not yet have:
 ### macOS
 
 ```
-$ brew install graphviz
-$ gem install seafoam
-$ seafoam --version
+% brew install graphviz
+% gem install seafoam
+% seafoam --version
 seafoam 0.1
 ```
 
 ### Ubuntu
 
 ```
-$ sudo apt-get install ruby graphviz
-$ gem install seafoam
-$ seafoam --version
+% sudo apt-get install ruby graphviz
+% gem install seafoam
+% seafoam --version
 seafoam 0.1
 ```
 
 #### RedHat
 
 ```
-$ sudo yum install ruby graphviz
-$ gem install seafoam
-$ seafoam --version
+% sudo yum install ruby graphviz
+% gem install seafoam
+% seafoam --version
 seafoam 0.1
 ```
 
 ## Quick-start demo
 
 ```
-$ seafoam examples/fib-java.bgv:0 render
+% seafoam examples/fib-java.bgv:0 render
 ```
 
 ## Getting compiler graphs
@@ -79,20 +79,20 @@ This is just a quick summary - see more information on
 ### GraalVM for Java
 
 ```
-$ javac Fib.java
-$ java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
+% javac Fib.java
+% java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
 ```
 
 ### GraalVM Native Image
 
 ```
-$ native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+% native-image -H:Dump=:2 -H:MethodFilter=fib Fib
 ```
 
 ### TruffleRuby and other Truffle languages
 
 ```
-$ ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 fib.rb 14
+% ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 fib.rb 14
 ```
 
 You will usually want to look at the *After TruffleTier* graph.
@@ -112,14 +112,14 @@ Note that a *graph ID* is an ID found in BGV files, but is not unique. A
 #### Print information about a file
 
 ```
-$ seafoam examples/fib-java.bgv info
+% seafoam examples/fib-java.bgv info
 BGV 6.1
 ```
 
 #### List graphs in a file
 
 ```
-$ seafoam examples/fib-java.bgv list
+% seafoam examples/fib-java.bgv list
 examples/fib-java.bgv:0  2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
 examples/fib-java.bgv:1  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite
 examples/fib-java.bgv:2  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase
@@ -132,7 +132,7 @@ examples/fib-java.bgv:5  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.
 #### Search for strings in a graph, or node or edge within a graph
 
 ```
-$ seafoam examples/fib-java.bgv:0 search Start
+% seafoam examples/fib-java.bgv:0 search Start
 examples/fib-java.bgv:0:0  ...node_class":"org.graalvm.compiler.nodes.StartNode","name_template":"Start","inputs":[...
 examples/fib-java.bgv:0:0  ...piler.nodes.StartNode","name_template":"Start","inputs":[{"direct":true,"name":"state...
 ```
@@ -140,9 +140,9 @@ examples/fib-java.bgv:0:0  ...piler.nodes.StartNode","name_template":"Start","in
 #### Print edges of a graph, or node or edge within a graph
 
 ```
-$ seafoam examples/fib-java.bgv:0 edges
+% seafoam examples/fib-java.bgv:0 edges
 22 nodes, 30 edges
-$ seafoam examples/fib-java.bgv:0:13 edges
+% seafoam examples/fib-java.bgv:0:13 edges
 Input:
   13 (Call Fib.fib) <-() 6 (Begin)
   13 (Call Fib.fib) <-() 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
@@ -152,14 +152,14 @@ Output:
   13 (Call Fib.fib) ->(values) 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
   13 (Call Fib.fib) ->(values) 19 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:19)
   13 (Call Fib.fib) ->(x) 20 (+)
-$ seafoam examples/fib-java.bgv:0:13-20 edges
+% seafoam examples/fib-java.bgv:0:13-20 edges
 13 (Call Fib.fib) ->(x) 20 (+)
 ```
 
 #### Print properties of a file, graph, or node or edge within a graph
 
 ```
-$ seafoam examples/fib-java.bgv:0 props
+% seafoam examples/fib-java.bgv:0 props
 {
   "group": [
     {
@@ -167,7 +167,7 @@ $ seafoam examples/fib-java.bgv:0 props
       "short_name": "2:Fib.fib(int)",
       "method": null,
 ...
-$ seafoam examples/fib-java.bgv:0:13 props
+% seafoam examples/fib-java.bgv:0:13 props
 {
   "nodeSourcePosition": {
     "method": {
@@ -175,7 +175,7 @@ $ seafoam examples/fib-java.bgv:0:13 props
       "method_name": "fib",
       "signature": {
 ...
-$ seafoam examples/fib-java.bgv:0:13-20 props
+% seafoam examples/fib-java.bgv:0:13-20 props
 {
   "direct": true,
   "name": "x",
@@ -188,14 +188,14 @@ $ seafoam examples/fib-java.bgv:0:13-20 props
 Render a graph as a PDF image and have it opened automatically.
 
 ```
-$ seafoam examples/fib-java.bgv:0 render
+% seafoam examples/fib-java.bgv:0 render
 ```
 
 Render a graph showing just a few nodes and those surrounding them, similar to
 the IGV feature of gradually revealing nodes.
 
 ```
-$ seafoam examples/fib-java.bgv:0 render --spotlight 13,20
+% seafoam examples/fib-java.bgv:0 render --spotlight 13,20
 ```
 
 <p>
@@ -213,7 +213,7 @@ $ seafoam examples/fib-java.bgv:0 render --spotlight 13,20
 Convert a BGV file to the Isabelle graph format.
 
 ```
-$ bgv2isabelle examples/fib-java.bgv
+% bgv2isabelle examples/fib-java.bgv
 graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
  (add_node 0 StartNode [2] [8]
  (add_node 1 (ParameterNode 0) [] [2, 5, 9, 11, 14, 16]
