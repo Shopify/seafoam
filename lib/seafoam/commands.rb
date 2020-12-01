@@ -236,6 +236,13 @@ module Seafoam
       until args.empty?
         arg = args.shift
         case arg
+        when '--diff'
+          diff_name = args.shift
+          raise ArgumentError, 'no second graph for --diff' unless diff_name
+
+          diff_file, diff_graph_index, *rest = parse_name(diff_name)
+          raise ArgumentError, 'render diff needs at least a graph' unless diff_graph_index
+          raise ArgumentError, 'render dif only works with a graph' unless rest == [nil, nil]
         when '--out'
           out_file = args.shift
           explicit_out_file = true
@@ -283,6 +290,17 @@ module Seafoam
         parser.skip_graph_header
         graph = parser.read_graph
         Annotators.apply graph, annotator_options
+
+        if diff_file
+          with_graph(diff_file, diff_graph_index) do |diff_parser|
+            diff_parser.skip_graph_header
+            diff_graph = diff_parser.read_graph
+            Annotators.apply diff_graph, annotator_options
+            diff = Diff.new
+            diff.diff graph, diff_graph
+          end
+        end
+
         if spotlight_nodes
           spotlight = Spotlight.new(graph)
           spotlight_nodes.each do |node_id|
@@ -293,6 +311,7 @@ module Seafoam
           end
           spotlight.shade
         end
+
         if out_format == :dot
           File.open(out_file, 'w') do |stream|
             writer = GraphvizWriter.new(stream)

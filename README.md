@@ -208,6 +208,12 @@ the IGV feature of gradually revealing nodes.
 * `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
 * `--option key value` for custom annotators
 
+#### Render the difference between graphs
+
+```
+% seafoam examples/diff/added-truffle-profile-before.bgv.gz:4 render --diff examples/diff/added-truffle-profile-after.bgv.gz:4
+```
+
 #### Convert a file
 
 Convert a BGV file to the Isabelle graph format.
