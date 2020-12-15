@@ -1,5 +1,6 @@
 require 'stringio'
 require 'zlib'
+require 'crabstone'
 
 module Seafoam
   module CFG
@@ -53,7 +54,7 @@ module Seafoam
             raise unless $2 == '64'
           when /  HexCode (.*) (.*)  <\|\|@\n/
             base = $1.to_i(16)
-            code = $2.unpack1('H*')
+            code = [$2].pack('H*')
             code = Code.new('amd64', base, code)
           when /  Comment (\d*) (.*)  <\|\|@\n/
             offset = $1.to_i
@@ -65,8 +66,17 @@ module Seafoam
             next
           when "end_nmethod\n"
             break
+          when /  (.*)  <\|\|@\n/
+            offset = -1
+            comment = $1
+            comments.push Comment.new(offset, comment)
+          when /  (.*)\n/
+            offset = -1
+            comment = $1
+            comments.push Comment.new(offset, comment)
           else
-            # useful info here :(
+            # In case anything was missed
+            assert false
           end
         end
         NMethod.new(code, comments)
