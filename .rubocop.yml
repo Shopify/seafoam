@@ -1,7 +1,7 @@
 AllCops:
   TargetRubyVersion: 2.5
   Exclude:
-    - examples/*
+    - examples/**/*.rb
 
 Style/FrozenStringLiteralComment:
   Enabled: false
