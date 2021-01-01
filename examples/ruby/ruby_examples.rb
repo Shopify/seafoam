@@ -1,3 +1,21 @@
+# We're using Graal with this patch:
+#
+# diff --git a/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java b/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java
+# index ffe01c1688f..c70bb165eeb 100644
+# --- a/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java
+# +++ b/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java
+# @@ -114,6 +114,10 @@ final class DefaultInliningPolicy implements InliningPolicy {
+#          final PriorityQueue<CallNode> inlineQueue = getQueue(tree, CallNode.State.Expanded);
+#          CallNode candidate;
+#          while ((candidate = inlineQueue.poll()) != null) {
+# +            if (candidate.getName().startsWith("opaque_") || candidate.getName().equals("escape") || candidate.getName().equals("static_call")) {
+# +                continue;
+# +            }
+# +
+#              if (candidate.isTrivial()) {
+#                  candidate.inline();
+#                  continue;
+
 # % ruby --jvm --experimental-options --engine.OSR=false --engine.TraceCompilation --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
 
 RANDOM = Random.new
