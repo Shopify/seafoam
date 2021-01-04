@@ -2,50 +2,12 @@
 
 require 'seafoam'
 
-ARGV.each do |file|
-  parser = Seafoam::CFG::CFGParser.new(file)
-  parser.skip_over_cfg 'After code installation'
-  nmethod = parser.read_nmethod
+file, verbosity = ARGV
 
-  #0: no comments printed; 1: single-line comments printed; 2: all comments printed.
-  print_comments = 2
-  comments = nmethod[:comments]
-  comments_at = 0
-  comments_length = comments.length
+parser = Seafoam::CFG::CFGParser.new(file)
+parser.skip_over_cfg 'After code installation'
+nmethod = parser.read_nmethod
 
-  begin
-    cs = Crabstone::Disassembler.new(Crabstone::ARCH_X86, Crabstone::MODE_64)
-    puts "Hello from Capstone v #{cs.version.join('.')}!"
-    puts "Disasm:"
-
-    begin
-      # p nmethod[:code][:code].unpack1('H*')
-      # p nmethod[:code][:base]
-      nmethod[:code][:base] = 0
-      cs.disasm(nmethod[:code][:code], nmethod[:code][:base]).each {|i|
-        if print_comments
-          last_comment = i.address + i.bytes.length - nmethod[:code][:base]
-          while comments_at < comments_length && comments[comments_at][:offset] < last_comment
-            if comments[comments_at][:offset] == -1
-              printf("%s\n", comments[comments_at][:comment]) if print_comments == 2
-            else
-              printf("Comment %i:\t%s\n", comments[comments_at][:offset],
-                comments[comments_at][:comment])
-            end
-            comments_at += 1
-          end
-        end
-        printf("0x%x:\t%s\t%s\t\t\t\t%s\n",i.address, i.mnemonic,
-          i.bytes.map { |c| format('%02x', c) }.join(' '), i.op_str)
-      }
-    rescue
-      fail "Disassembly error: #{$!}"
-    ensure
-      cs.close
-    end
-
-  rescue
-    fail "Unable to open engine: #{$!}"
-  end
-
-end
+disassembler = Seafoam::CFG::Disassembler.new
+puts "Disassembling #{file}:"
+disassembler.disassemble(nmethod, verbosity.to_i)
