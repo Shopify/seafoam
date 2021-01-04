@@ -29,10 +29,11 @@ module Seafoam
             @cfg_name = nil
           when /  name "(.*)"\n/
             if @state == :cfg
-              @cfg_name = $1
+              @cfg_name = Regexp.last_match(1)
             end
           when "end_cfg\n"
             raise unless @state == :cfg
+
             @state = :any
             break if @cfg_name == name
           else
@@ -43,36 +44,38 @@ module Seafoam
 
       def read_nmethod
         raise unless @state == :any
+
         code = nil
         comments = []
         raise unless @reader.readline == "begin_nmethod\n"
+
         loop do
           line = @reader.readline("\n")
           case line
           when /  Platform (.*) (.*)  <\|\|@\n/
-            raise unless $1 == 'AMD64'
-            raise unless $2 == '64'
+            raise unless Regexp.last_match(1) == 'AMD64'
+            raise unless Regexp.last_match(2) == '64'
           when /  HexCode (.*) (.*)  <\|\|@\n/
-            base = $1.to_i(16)
-            code = [$2].pack('H*')
+            base = Regexp.last_match(1).to_i(16)
+            code = [Regexp.last_match(2)].pack('H*')
             code = Code.new('amd64', base, code)
           when /  Comment (\d*) (.*)  <\|\|@\n/
-            offset = $1.to_i
-            comment = $2
+            offset = Regexp.last_match(1).to_i
+            comment = Regexp.last_match(2)
             comments.push Comment.new(offset, comment)
           when "  <<<HexCodeFile\n"
             next
-          when "HexCodeFile>>> <|@\n"
+          when "  HexCodeFile>>> <|@\n"
             next
           when "end_nmethod\n"
             break
           when /  (.*)  <\|\|@\n/
             offset = -1
-            comment = $1
+            comment = Regexp.last_match(1)
             comments.push Comment.new(offset, comment)
           when /  (.*)\n/
             offset = -1
-            comment = $1
+            comment = Regexp.last_match(1)
             comments.push Comment.new(offset, comment)
           else
             # In case anything was missed
