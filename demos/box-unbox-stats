@@ -49,5 +49,17 @@ ARGV.each do |dir|
   end
 end
 
-puts "     How many boxes take a value from an unbox?  #{(box_nodes_from_unbox_count / box_nodes_count.to_f * 100).round(1)}%"
-puts "How many graphs contain at least one box-unbox?  #{(graph_match_count / graph_count.to_f * 100).round(1)}%"
+if box_nodes_count.positive?
+  box_nodes_percent = (box_nodes_from_unbox_count / box_nodes_count.to_f) * 100
+else
+  box_nodes_percent = 0.0
+end
+
+if graph_count.positive?
+  graph_percent = (graph_match_count / graph_count.to_f) * 100
+else
+  graph_percent = 0.0
+end
+
+puts "     How many boxes take a value from an unbox?  #{box_nodes_percent.round(1)}%"
+puts "How many graphs contain at least one box-unbox?  #{graph_percent.round(1)}%"
