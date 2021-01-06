@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# This demo analyses a directory full of graphs and looks for how many box nodes
+# take their value directly from an unbox node.
+
+require 'seafoam'
+
+box_nodes_count = 0
+box_nodes_from_unbox_count = 0
+
+graph_count = 0
+graph_match_count = 0
+
+ARGV.each do |dir|
+  Dir.glob(['*.bgv', '*.bgv.gz'], base: dir) do |file|
+    parser = Seafoam::BGV::BGVParser.new(File.join(dir, file))
+    parser.read_file_header
+    parser.skip_document_props
+
+    loop do
+      index, = parser.read_graph_preheader
+      break unless index
+
+      parser.skip_graph_header
+      graph = parser.read_graph
+
+      contains_box_unbox = false
+
+      graph.nodes.each_value do |node|
+        next unless node.props.dig(:node_class, :node_class).start_with?('org.graalvm.compiler.nodes.extended.BoxNode')
+
+        box_node = node
+        box_nodes_count += 1
+        value_edge = node.edges.find { |e| e.props[:name] == 'value' }
+        raise unless value_edge
+
+        value_node = value_edge.from
+        next unless value_node.props.dig(:node_class, :node_class).start_with?('org.graalvm.compiler.nodes.extended.UnboxNode')
+
+        unbox_node = value_node
+        box_nodes_from_unbox_count += 1
+        contains_box_unbox = true
+        puts "seafoam '#{File.join(dir, file)}:#{index}' render --spotlight #{box_node.id},#{unbox_node.id}"
+      end
+
+      graph_count += 1
+      graph_match_count += 1 if contains_box_unbox
+    end
+  end
+end
+
+puts "     How many boxes take a value from an unbox?  #{(box_nodes_from_unbox_count / box_nodes_count.to_f * 100).round(1)}%"
+puts "How many graphs contain at least one box-unbox?  #{(graph_match_count / graph_count.to_f * 100).round(1)}%"
