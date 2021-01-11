@@ -6,9 +6,9 @@ module Seafoam
   module CFG
     # Disassemble and print comments from cfg files
     class Disassembler
-      def initialize
+      def initialize(out)
+        @out = out
         @cs = Crabstone::Disassembler.new(Crabstone::ARCH_X86, Crabstone::MODE_64)
-        puts "Initialized Capstone v #{@cs.version.join('.')}!"
       rescue StandardError => e
         raise "Unable to open engine: #{e.message}"
       end
@@ -29,10 +29,10 @@ module Seafoam
               last_comment = i.address + i.bytes.length - nmethod[:code][:base]
               while comments_at < comments_length && comments[comments_at][:offset] < last_comment
                 if comments[comments_at][:offset] == -1
-                  printf("%<comment>s\n", comment: comments[comments_at][:comment]) if print_comments == 2
+                  @out.printf("\t\t\t\t;%<comment>s\n", comment: comments[comments_at][:comment]) if print_comments == 2
                 else
-                  printf(
-                    "Comment %<loc>i:\t%<comment>s\n",
+                  @out.printf(
+                    "\t\t\t\t;Comment %<loc>i:\t%<comment>s\n",
                     loc: comments[comments_at][:offset],
                     comment: comments[comments_at][:comment]
                   )
@@ -42,8 +42,8 @@ module Seafoam
             end
 
             # print instruction
-            printf(
-              "0x%<address>x:\t%<instruction>s\t\t%<details>s\n",
+            @out.printf(
+              "0x%<address>x:\t%<instruction>s\t%<details>s\n",
               address: i.address,
               instruction: i.mnemonic,
               # bytes: i.bytes.map { |c| format('%02x', c) }.join(' '),

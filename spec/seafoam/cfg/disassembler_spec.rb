@@ -6,15 +6,36 @@ require_relative '../spec_helpers'
 
 describe Seafoam::CFG::Disassembler do
   it 'can successfully start Capstone Disassembler' do
-    Seafoam::CFG::Disassembler.new
+    Seafoam::CFG::Disassembler.new($stdout)
   end
 
-  it 'can start Capstone Disassembler disassemble an nmethod' do
+  it 'can start Capstone Disassembler disassemble an nmethod without comments' do
     @example_cfg = File.expand_path('../../../examples/java/exampleIf.cfg', __dir__)
-    parser = Seafoam::CFG::CFGParser.new(@example_cfg)
+    @file = File.open('tempfile_disassembler_spec.txt', 'w')
+    parser = Seafoam::CFG::CFGParser.new(@file, @example_cfg)
     parser.skip_over_cfg 'After code installation'
     @nmethod = parser.read_nmethod
-    disassembler = Seafoam::CFG::Disassembler.new
+
+    disassembler = Seafoam::CFG::Disassembler.new(@file)
     disassembler.disassemble(@nmethod, 0)
+    @file.close
+
+    expect(%x{wc -l 'tempfile_disassembler_spec.txt'}.to_i).to eq 25
+    File.delete(@file)
+  end
+
+  it 'can start Capstone Disassembler disassemble an nmethod with comments' do
+    @example_cfg = File.expand_path('../../../examples/java/exampleIf.cfg', __dir__)
+    @file = File.open('tempfile_disassembler_spec.txt', 'w')
+    parser = Seafoam::CFG::CFGParser.new(@file, @example_cfg)
+    parser.skip_over_cfg 'After code installation'
+    @nmethod = parser.read_nmethod
+
+    disassembler = Seafoam::CFG::Disassembler.new(@file)
+    disassembler.disassemble(@nmethod, 2)
+    @file.close
+
+    expect(%x{wc -l 'tempfile_disassembler_spec.txt'}.to_i).to eq 52
+    File.delete(@file)
   end
 end

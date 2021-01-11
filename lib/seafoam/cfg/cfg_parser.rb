@@ -10,7 +10,8 @@ module Seafoam
 
     # A parser for CFG files.
     class CFGParser
-      def initialize(file)
+      def initialize(out, file)
+        @out = out
         data = File.read(file, encoding: Encoding::ASCII_8BIT)
         if data[0..1].bytes == [0x1f, 0x8b]
           data = Zlib.gunzip(data)
