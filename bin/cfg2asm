@@ -2,12 +2,65 @@
 
 require 'seafoam'
 
-file, verbosity = ARGV
+module Seafoam
+  module CFG
+    # Implementations of the command-line commands that you can run in Seafoam.
+    class Commands
+      def initialize(out)
+        @out = out
+      end
 
-parser = Seafoam::CFG::CFGParser.new(file)
-parser.skip_over_cfg 'After code installation'
-nmethod = parser.read_nmethod
+      def run(*args)
+        first, *args = args
+        case first
+        when nil, 'help', '-h', '--help', '-help'
+          help(*args)
+        else
+          file = first
+          verbosity, *args = args
+          verbosity = verbosity.to_i
+          raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
+          raise ArgumentError, "expected second argument #{} to belong in (0..2)" unless (0..2).cover?(verbosity)
 
-disassembler = Seafoam::CFG::Disassembler.new
-puts "Disassembling #{file}:"
-disassembler.disassemble(nmethod, verbosity.to_i)
+          parser = Seafoam::CFG::CFGParser.new(@out, file)
+          parser.skip_over_cfg 'After code installation'
+          nmethod = parser.read_nmethod
+
+          disassembler = Seafoam::CFG::Disassembler.new(@out)
+          @out.puts "Disassembling #{file}:"
+          disassembler.disassemble(nmethod, verbosity)
+        end
+      end
+
+      def help(*args)
+        raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
+
+        @out.puts 'To disassemble file.cfg use'
+        @out.puts '    cfg2asm file.cfg n'
+        @out.puts 'where n = 0: no comments printed;'
+        @out.puts '          1: single-line comments printed;'
+        @out.puts '          2: all comments printed.'
+      end
+    end
+  end
+end
+
+
+
+# This is the 'seafoam' command line entry point.
+
+begin
+  # Run the command line.
+  commands = Seafoam::CFG::Commands.new($stdout)
+  commands.run(*ARGV)
+rescue StandardError => e
+  if $DEBUG
+    # Re-raise the exception so the user sees it, if debugging is
+    # enabled (ruby -d).
+    raise e
+  else
+    # Otherwise, just print the message.
+    warn "cfg2asm: #{e.message}"
+  end
+end
+
