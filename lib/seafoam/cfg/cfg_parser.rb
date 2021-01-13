@@ -80,7 +80,7 @@ module Seafoam
             comments.push Comment.new(offset, comment)
           else
             # In case anything was missed
-            assert false
+            raise 'There is currently no case for this line. Please open an issue so it can be addressed.'
           end
         end
         NMethod.new(code, comments)
