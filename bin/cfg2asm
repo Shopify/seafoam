@@ -16,30 +16,40 @@ module Seafoam
         when nil, 'help', '-h', '--help', '-help'
           help(*args)
         else
-          file = first
-          verbosity, *args = args
-          verbosity = verbosity.to_i
-          raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
-          raise ArgumentError, "expected second argument #{verbosity} to belong in (0..2)" unless (0..2).cover?(verbosity)
+          files = [first]
+          comments = true
+          until args.empty?
+            arg = args.shift
+            if arg.start_with?('-')
+              case arg
+              when '--no-comments'
+                comments = false
+              else
+                raise ArgumentError, "unexpected option #{arg}"
+              end
+            else
+              files.push arg
+            end
+          end
 
-          parser = Seafoam::CFG::CFGParser.new(@out, file)
-          parser.skip_over_cfg 'After code installation'
-          nmethod = parser.read_nmethod
+          files.each_with_index do |file, n|
+            parser = Seafoam::CFG::CFGParser.new(@out, file)
+            parser.skip_over_cfg 'After code installation'
+            nmethod = parser.read_nmethod
 
-          disassembler = Seafoam::CFG::Disassembler.new(@out)
-          @out.puts "Disassembling #{file}:"
-          disassembler.disassemble(nmethod, verbosity)
+            disassembler = Seafoam::CFG::Disassembler.new(@out)
+            @out.puts if n.positive?
+            @out.puts "[#{file}]"
+            disassembler.disassemble(nmethod, comments)
+          end
         end
       end
 
       def help(*args)
         raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
 
-        @out.puts 'To disassemble file.cfg use'
-        @out.puts '    cfg2asm file.cfg n'
-        @out.puts 'where n = 0: no comments printed;'
-        @out.puts '          1: single-line comments printed;'
-        @out.puts '          2: all comments printed.'
+        @out.puts 'cfg2asm file.cfg...'
+        @out.puts '              --no-comments'
       end
     end
   end

@@ -53,3 +53,7 @@ You may want to disable on-stack-replacement and inlining with
 easier to understand.
 
 You may need to use `--experimental-options`.
+
+## Getting CFG files
+
+To also get CFG files, add `-Dgraal.PrintBackendCFG=true`, or `--vm.Dgraal.PrintBackendCFG=true` for Truffle.
