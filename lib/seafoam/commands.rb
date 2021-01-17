@@ -20,6 +20,7 @@ module Seafoam
         @out.puts '        file.bgv[:graph][:node[-edge]] search term...'
         @out.puts '        file.bgv[:graph][:node[-edge]] edges'
         @out.puts '        file.bgv[:graph][:node[-edge]] props'
+        @out.puts '        file.bgv:graph:node source'
         @out.puts '        file.bgv:graph render'
         @out.puts '              --spotlight n,n,n...'
         @out.puts '              --out graph.pdf'
@@ -50,6 +51,8 @@ module Seafoam
           edges name, *args
         when 'props'
           props name, *args
+        when 'source'
+          source name, *args
         when 'render'
           render name, *args
         when 'debug'
@@ -371,7 +374,24 @@ module Seafoam
       end
     end
 
-    # seafoam file.bgv:0 render options...
+    # seafoam file.bgv:n:n source
+    def source(name, *args)
+      file, graph_index, node_id, edge_id = parse_name(name)
+      raise ArgumentError, 'source needs a node' unless node_id
+      raise ArgumentError, 'source only works with a node' if edge_id
+      raise ArgumentError, 'source does not take arguments' unless args.empty?
+
+      with_graph(file, graph_index) do |parser|
+        parser.read_graph_header
+        graph = parser.read_graph
+        node = graph.nodes[node_id]
+        raise ArgumentError, 'node not found' unless node
+
+        @out.puts Graal::Source.render(node.props['nodeSourcePosition'])
+      end
+    end
+
+    # seafoam file.bgv:n render options...
     def render(name, *args)
       file, graph_index, *rest = parse_name(name)
       raise ArgumentError, 'render needs at least a graph' unless graph_index

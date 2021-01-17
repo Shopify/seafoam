@@ -196,6 +196,26 @@ Output:
 }
 ```
 
+#### Print node source information
+
+```
+% seafoam examples/fib-ruby.bgv:8:2544 source
+java.lang.Math#addExact
+org.truffleruby.core.numeric.IntegerNodes$AddNode#add
+org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
+org.truffleruby.core.inlined.InlinedAddNode#intAdd
+org.truffleruby.core.inlined.InlinedAddNodeGen#execute
+org.truffleruby.language.control.IfElseNode#execute
+org.truffleruby.language.control.SequenceNode#execute
+org.truffleruby.language.arguments.CheckArityNode#execute
+org.truffleruby.language.control.SequenceNode#execute
+org.truffleruby.language.methods.CatchForMethodNode#execute
+org.truffleruby.language.methods.ExceptionTranslatingNode#execute
+org.truffleruby.language.RubyRootNode#execute
+org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
+org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
+```
+
 #### Render a graph
 
 Render a graph as a PDF image and have it opened automatically.
