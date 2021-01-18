@@ -14,9 +14,13 @@ IGV, Seafoam:
 * is able to some extent seek BGV files to load specific graphs without loading the rest of the file
 * has a command-line interface
 * can be used as a library
-* has easy PDF, SVG and PNG output
+* has easy PDF, SVG, PNG and JSON output
 * is designed for accessibility
 * looks prettier, in our opinion
+
+Additionally, Seafoam adds:
+
+* support for disassembling CFG files
 
 Admittedly, Seafoam does not yet have:
 
@@ -224,6 +228,29 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
  (add_node 6 BeginNode [8] [13]
  (add_node 7 BeginNode [8] [9]
  (add_node 8 IfNode [0, 5] [7, 6]
+...
+```
+
+#### Disassembling
+
+```
+% cfg2asm examples/java/exampleArithOperator.cfg
+[examples/java/exampleArithOperator.cfg]
+				;Comment 0:	3
+				;Comment 0:	1
+	0x112e2f660:	nop	dword ptr [rax + rax]
+				;Comment 5:	block B0 null
+				;Comment 5:	0 [rsi|DWORD, rdx|DWORD, rbp|QWORD] = LABEL numbPhis: 0 align: false label: ?
+				;Comment 5:	4 [] = HOTSPOTLOCKSTACK frameMapBuilder: org.graalvm.compiler.lir.amd64.AMD64FrameMapBuilder@143082de0 slotKind: QWORD
+				;Comment 5:	10 rsi|DWORD = ADD (x: rsi|DWORD, y: rdx|DWORD) size: DWORD
+	0x112e2f665:	add	esi, edx
+				;Comment 7:	12 rax|DWORD = MOVE rsi|DWORD moveKind: DWORD
+	0x112e2f667:	mov	eax, esi
+				;Comment 9:	14 RETURN (savedRbp: rbp|QWORD, value: rax|DWORD) isStub: false requiresReservedStackAccessCheck: false thread: r15 scratchForSafepointOnReturn: rcx config: org.graalvm.compiler.hotspot.GraalHotSpotVMConfig@137f187d8
+				;Comment 9:	12
+	0x112e2f669:	test	dword ptr [rip - 0x46c4669], eax
+	0x112e2f66f:	vzeroupper	
+	0x112e2f672:	ret	
 ...
 ```
 

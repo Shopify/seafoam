@@ -14,6 +14,6 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz; else sudo apt-get install graphviz; fi
+    - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz capstone; else sudo apt-get install graphviz libcapstone3; fi
     - run: bundle install
     - run: bundle exec rspec
