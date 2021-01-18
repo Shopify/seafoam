@@ -85,25 +85,9 @@ module Seafoam
           end
         end
 
-        files.each do |file|
-          # definition eg_short_cut_or1 :: IRGraph where
-          #   "eg_short_cut_or1 =
-          #     (add_node 14 ReturnNode [13] []
-          #     (add_node 13 PhiNode [10, 11, 12] []
-          #     (add_node 12 (ConstantNode 0) [] []
-          #     (add_node 11 (ConstantNode 42) [] []
-          #     (add_node 10 MergeNode [7, 9] [14]
-          #     (add_node 9 EndNode [] []
-          #     (add_node 8 BeginNode [] [9]
-          #     (add_node 7 EndNode [] []
-          #     (add_node 6 BeginNode [] [7]
-          #     (add_node 5 IfNode [3] [6, 8]
-          #     (add_node 3 (ShortCircuitOrNode False False) [1, 2] []
-          #     (add_node 2 (ParameterNode 1) [] []
-          #     (add_node 1 (ParameterNode 0) [] []
-          #     (add_node 0 StartNode [] [5]
-          #     empty_graph))))))))))))))"
+        writer = IsabelleWriter.new(@out)
 
+        files.each do |file|
           parser = Seafoam::BGV::BGVParser.new(file)
           parser.read_file_header
           parser.skip_document_props
@@ -113,25 +97,10 @@ module Seafoam
             break unless index
 
             graph_header = parser.read_graph_header
+            name = parser.graph_name(graph_header)
             graph = parser.read_graph
 
-            puts "graph#{index} = # #{parser.graph_name(graph_header)}"
-
-            graph.nodes.each_value do |node|
-              node_class = node.props[:node_class][:node_class]
-              case node_class
-              when 'org.graalvm.compiler.nodes.ConstantNode'
-                desc = "(ConstantNode #{node.props['rawvalue']})"
-              when 'org.graalvm.compiler.nodes.ParameterNode'
-                desc = "(ParameterNode #{node.props['index']})"
-              else
-                desc = node_class.split('.').last
-              end
-              inputs = node.inputs.map(&:from).map(&:id)
-              outputs = node.outputs.map(&:to).map(&:id)
-              puts " (add_node #{node.id} #{desc} #{inputs.inspect} #{outputs.inspect}"
-            end
-            puts ' empty_graph' + (')' * graph.nodes.size)
+            writer.write index, name, graph
           end
         end
       end
@@ -161,6 +130,8 @@ module Seafoam
           end
         end
 
+        writer = JSONWriter.new(@out)
+
         files.each do |file|
           parser = Seafoam::BGV::BGVParser.new(file)
           parser.read_file_header
@@ -171,31 +142,10 @@ module Seafoam
             break unless index
 
             graph_header = parser.read_graph_header
-
-            graph = parser.read_graph
-            Seafoam::Annotators.apply graph
-
             name = parser.graph_name(graph_header)
+            graph = parser.read_graph
 
-            nodes = []
-            edges = []
-
-            graph.nodes.each_value do |node|
-              nodes.push(
-                id: node.id,
-                props: node.props
-              )
-
-              node.outputs.each do |edge|
-                edges.push(
-                  from: edge.from.id,
-                  to: edge.to.id,
-                  props: edge.props
-                )
-              end
-            end
-
-            puts JSON.generate(name: name, props: graph.props, nodes: nodes, edges: edges)
+            writer.write name, graph
           end
         end
       end
