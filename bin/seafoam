@@ -11,7 +11,7 @@ begin
 
   # Run the command line.
   commands = Seafoam::Commands.new($stdout, config)
-  commands.run(*ARGV)
+  commands.seafoam(*ARGV)
 rescue StandardError => e
   if $DEBUG
     # Re-raise the exception so the user sees it, if debugging is

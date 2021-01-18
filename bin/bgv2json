@@ -1,42 +1,24 @@
 #!/usr/bin/env ruby
 
 require 'seafoam'
-require 'json'
 
-ARGV.each do |file|
-  parser = Seafoam::BGV::BGVParser.new(file)
-  parser.read_file_header
-  parser.skip_document_props
+# This is the 'bgv2json' command line entry point.
 
-  loop do
-    index, = parser.read_graph_preheader
-    break unless index
+begin
+  # Load configuraiton.
+  config = Seafoam::Config.new
+  config.load_config
 
-    graph_header = parser.read_graph_header
-
-    graph = parser.read_graph
-    Seafoam::Annotators.apply graph
-
-    name = parser.graph_name(graph_header)
-
-    nodes = []
-    edges = []
-
-    graph.nodes.each_value do |node|
-      nodes.push(
-        id: node.id,
-        props: node.props
-      )
-
-      node.outputs.each do |edge|
-        edges.push(
-          from: edge.from.id,
-          to: edge.to.id,
-          props: edge.props
-        )
-      end
-    end
-
-    puts JSON.generate(name: name, props: graph.props, nodes: nodes, edges: edges)
+  # Run the command line.
+  commands = Seafoam::Commands.new($stdout, config)
+  commands.bgv2json(*ARGV)
+rescue StandardError => e
+  if $DEBUG
+    # Re-raise the exception so the user sees it, if debugging is
+    # enabled (ruby -d).
+    raise e
+  else
+    # Otherwise, just print the message.
+    warn "seafoam: #{e.message}"
   end
 end

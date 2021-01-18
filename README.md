@@ -231,6 +231,23 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 ...
 ```
 
+Convert a BGV file to JSON.
+
+```
+% bgv2json examples/fib-java.bgv
+graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
+ (add_node 0 StartNode [2] [8]
+ (add_node 1 (ParameterNode 0) [] [2, 5, 9, 11, 14, 16]
+ (add_node 2 FrameState [1] [0]
+ (add_node 3 (ConstantNode 1) [] []
+ (add_node 4 (ConstantNode 2) [] [5]
+ (add_node 5 IntegerLessThanNode [1, 4] [8]
+ (add_node 6 BeginNode [8] [13]
+ (add_node 7 BeginNode [8] [9]
+ (add_node 8 IfNode [0, 5] [7, 6]
+...
+```
+
 #### Disassembling
 
 ```
