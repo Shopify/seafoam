@@ -8,12 +8,30 @@ module Seafoam
       @config = config
     end
 
-    # Run any command.
-    def run(*args)
+    # Run the general seafoam command.
+    def seafoam(*args)
       first, *args = args
       case first
       when nil, 'help', '-h', '--help', '-help'
-        help(*args)
+        raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
+
+        @out.puts 'seafoam file.bgv info'
+        @out.puts '        file.bgv list'
+        @out.puts '        file.bgv[:graph][:node[-edge]] search term...'
+        @out.puts '        file.bgv[:graph][:node[-edge]] edges'
+        @out.puts '        file.bgv[:graph][:node[-edge]] props'
+        @out.puts '        file.bgv:graph render'
+        @out.puts '              --spotlight n,n,n...'
+        @out.puts '              --out graph.pdf'
+        @out.puts '                    graph.svg'
+        @out.puts '                    graph.png'
+        @out.puts '                    graph.dot'
+        @out.puts '               --show-frame-state'
+        @out.puts '               --hide-floating'
+        @out.puts '               --no-reduce-edges'
+        @out.puts '               --option key value'
+        @out.puts '        --help'
+        @out.puts '        --version'
       when 'version', '-v', '-version', '--version'
         version(*args)
       else
@@ -38,6 +56,141 @@ module Seafoam
           debug name, *args
         else
           raise ArgumentError, "unknown command #{command}"
+        end
+      end
+    end
+
+    # Run the bgv2isabelle command.
+    def bgv2isabelle(*args)
+      case args.first
+      when nil, 'help', '-h', '--help', '-help'
+        args = args.drop(1)
+        raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
+
+        @out.puts 'bgv2isabelle file.bgv...'
+        @out.puts '             --help'
+        @out.puts '             --version'
+      when 'version', '-v', '-version', '--version'
+        args = args.drop(1)
+        version(*args)
+      else
+        files = []
+
+        until args.empty?
+          arg = args.shift
+          if arg.start_with?('-')
+            raise ArgumentError, "unknown option #{arg}"
+          else
+            files.push arg
+          end
+        end
+
+        writer = IsabelleWriter.new(@out)
+
+        files.each do |file|
+          parser = Seafoam::BGV::BGVParser.new(file)
+          parser.read_file_header
+          parser.skip_document_props
+
+          loop do
+            index, = parser.read_graph_preheader
+            break unless index
+
+            graph_header = parser.read_graph_header
+            name = parser.graph_name(graph_header)
+            graph = parser.read_graph
+
+            writer.write index, name, graph
+          end
+        end
+      end
+    end
+
+    def bgv2json(*args)
+      case args.first
+      when nil, 'help', '-h', '--help', '-help'
+        args = args.drop(1)
+        raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
+
+        @out.puts 'bgv2json file.bgv...'
+        @out.puts '         --help'
+        @out.puts '         --version'
+      when 'version', '-v', '-version', '--version'
+        args = args.drop(1)
+        version(*args)
+      else
+        files = []
+
+        until args.empty?
+          arg = args.shift
+          if arg.start_with?('-')
+            raise ArgumentError, "unknown option #{arg}"
+          else
+            files.push arg
+          end
+        end
+
+        writer = JSONWriter.new(@out)
+
+        files.each do |file|
+          parser = Seafoam::BGV::BGVParser.new(file)
+          parser.read_file_header
+          parser.skip_document_props
+
+          loop do
+            index, = parser.read_graph_preheader
+            break unless index
+
+            graph_header = parser.read_graph_header
+            name = parser.graph_name(graph_header)
+            graph = parser.read_graph
+
+            writer.write name, graph
+          end
+        end
+      end
+    end
+
+    def cfg2asm(*args)
+      case args.first
+      when nil, 'help', '-h', '--help', '-help'
+        args = args.drop(1)
+        raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
+
+        @out.puts 'cfg2asm file.bgv...'
+        @out.puts '            --no-comments'
+        @out.puts '        --help'
+        @out.puts '        --version'
+      when 'version', '-v', '-version', '--version'
+        args = args.drop(1)
+        version(*args)
+      else
+        comments = true
+        files = []
+
+        until args.empty?
+          arg = args.shift
+          if arg.start_with?('-')
+            case arg
+            when '--no-comments'
+              comments = false
+            else
+              raise ArgumentError, "unknown option #{arg}"
+            end
+          else
+            files.push arg
+          end
+        end
+
+        files.each_with_index do |file, n|
+          parser = Seafoam::CFG::CFGParser.new(@out, file)
+          parser.skip_over_cfg 'After code installation'
+          nmethod = parser.read_nmethod
+
+          disassembler = Seafoam::CFG::Disassembler.new(@out)
+          @out.puts if n.positive?
+          @out.puts "[#{file}]"
+          disassembler.disassemble(nmethod, comments)
         end
       end
     end
@@ -386,27 +539,6 @@ module Seafoam
         end
       end
       raise ArgumentError, 'graph not found' unless graph_found
-    end
-
-    # Prints help.
-    def help(*args)
-      raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
-
-      @out.puts 'seafoam file.bgv info'
-      @out.puts '        file.bgv list'
-      @out.puts '        file.bgv[:graph][:node[-edge]] search term...'
-      @out.puts '        file.bgv[:graph][:node[-edge]] edges'
-      @out.puts '        file.bgv[:graph][:node[-edge]] props'
-      @out.puts '        file.bgv:graph render'
-      @out.puts '              --spotlight n,n,n...'
-      @out.puts '              --out graph.pdf'
-      @out.puts '                    graph.svg'
-      @out.puts '                    graph.png'
-      @out.puts '                    graph.dot'
-      @out.puts '               --show-frame-state'
-      @out.puts '               --hide-floating'
-      @out.puts '               --no-reduce-edges'
-      @out.puts '               --option key value'
     end
 
     # Prints the version.

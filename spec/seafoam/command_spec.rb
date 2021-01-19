@@ -198,13 +198,13 @@ describe Seafoam::Commands do
 
   describe '#help' do
     it 'does not take any arguments' do
-      expect { @commands.send :help, 'foo' }.to raise_error(ArgumentError)
+      expect { @commands.send :seafoam, '--help', 'foo' }.to raise_error(ArgumentError)
     end
   end
 
   describe '#version' do
     it 'does not take any arguments' do
-      expect { @commands.send :help, 'foo' }.to raise_error(ArgumentError)
+      expect { @commands.send :version, 'foo' }.to raise_error(ArgumentError)
     end
   end
 
