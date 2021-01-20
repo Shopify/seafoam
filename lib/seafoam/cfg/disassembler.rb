@@ -12,7 +12,7 @@ module Seafoam
 
       def disassemble(nmethod, print_comments)
         require_crabstone
-        
+
         comments = nmethod.comments
         comments_n = 0
 
@@ -52,14 +52,12 @@ module Seafoam
       end
 
       def require_crabstone
-        begin
-          require 'crabstone'
-        rescue LoadError => e
-          if $DEBUG
-            raise e
-          else
-            raise 'Could not load Capstone - is it installed?'
-          end
+        require 'crabstone'
+      rescue LoadError => e
+        if $DEBUG
+          raise e
+        else
+          raise 'Could not load Capstone - is it installed?'
         end
       end
     end

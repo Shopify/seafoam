@@ -66,6 +66,14 @@ seafoam 0.1
 seafoam 0.1
 ```
 
+### Capstone
+
+To use the `cfg2asm` disassembler, you'll then need to install Capstone.
+
+```
+% brew install capstone
+```
+
 ## Quick-start demo
 
 ```
