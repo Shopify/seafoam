@@ -57,7 +57,7 @@ seafoam 0.1
 seafoam 0.1
 ```
 
-#### RedHat
+### RedHat
 
 ```
 % sudo yum install ruby graphviz
