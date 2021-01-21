@@ -71,7 +71,8 @@ seafoam 0.1
 To use the `cfg2asm` disassembler, you'll then need to install Capstone.
 
 ```
-% brew install capstone
+% brew install capstone               # macOS
+% sudo apt-get install libcapstone3   # Ubuntu
 ```
 
 ## Quick-start demo
