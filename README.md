@@ -57,13 +57,22 @@ seafoam 0.1
 seafoam 0.1
 ```
 
-#### RedHat
+### RedHat
 
 ```
 % sudo yum install ruby graphviz
 % gem install seafoam
 % seafoam --version
 seafoam 0.1
+```
+
+### Capstone
+
+To use the `cfg2asm` disassembler, you'll then need to install Capstone.
+
+```
+% brew install capstone               # macOS
+% sudo apt-get install libcapstone3   # Ubuntu
 ```
 
 ## Quick-start demo

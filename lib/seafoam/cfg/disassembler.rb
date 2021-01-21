@@ -1,6 +1,4 @@
 require 'stringio'
-require 'zlib'
-require 'crabstone'
 
 module Seafoam
   module CFG
@@ -13,6 +11,8 @@ module Seafoam
       end
 
       def disassemble(nmethod, print_comments)
+        require_crabstone
+
         comments = nmethod.comments
         comments_n = 0
 
@@ -48,6 +48,16 @@ module Seafoam
           raise "Disassembly error: #{e.message}"
         ensure
           cs.close
+        end
+      end
+
+      def require_crabstone
+        require 'crabstone'
+      rescue LoadError => e
+        if $DEBUG
+          raise e
+        else
+          raise 'Could not load Capstone - is it installed?'
         end
       end
     end
