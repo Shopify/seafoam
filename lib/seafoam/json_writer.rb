@@ -33,7 +33,26 @@ module Seafoam
         edges: edges
       }
 
-      @out.puts JSON.generate(object)
+      @out.puts JSON.pretty_generate(prepare_json(object))
+    end
+
+    private
+
+    def prepare_json(object)
+      case object
+      when Float
+        if object.nan?
+          '[NaN]'
+        else
+          object
+        end
+      when Array
+        object.map { |o| prepare_json(o) }
+      when Hash
+        object.transform_values { |v| prepare_json(v) }
+      else
+        object
+      end
     end
   end
 end
