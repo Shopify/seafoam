@@ -3,7 +3,7 @@ require 'zlib'
 
 module Seafoam
   module CFG
-    Code = Struct.new(:platform, :base, :code)
+    Code = Struct.new(:arch, :arch_width, :base, :code)
     Comment = Struct.new(:offset, :comment)
     NMethod = Struct.new(:code, :comments)
 
@@ -45,6 +45,8 @@ module Seafoam
       def read_nmethod
         raise unless @state == :any
 
+        arch = nil
+        arch_width = nil
         code = nil
         comments = []
         raise unless @reader.readline == "begin_nmethod\n"
@@ -53,12 +55,14 @@ module Seafoam
           line = @reader.readline("\n")
           case line
           when /  Platform (.*) (.*)  <\|\|@\n/
-            raise unless Regexp.last_match(1) == 'AMD64'
-            raise unless Regexp.last_match(2) == '64'
+            arch = Regexp.last_match(1)
+            arch_width = Regexp.last_match(2)
           when /  HexCode (.*) (.*)  <\|\|@\n/
             base = Regexp.last_match(1).to_i(16)
             code = [Regexp.last_match(2)].pack('H*')
-            code = Code.new('amd64', base, code)
+            raise if arch.nil? || arch_width.nil?
+
+            code = Code.new(arch, arch_width, base, code)
           when /  Comment (\d*) (.*)  <\|\|@\n/
             offset = Regexp.last_match(1).to_i
             comment = Regexp.last_match(2)

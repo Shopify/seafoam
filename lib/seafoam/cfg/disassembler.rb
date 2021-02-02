@@ -16,7 +16,14 @@ module Seafoam
         comments = nmethod.comments
         comments_n = 0
 
-        cs = Crabstone::Disassembler.new(Crabstone::ARCH_X86, Crabstone::MODE_64)
+        case [nmethod.code.arch, nmethod.code.arch_width]
+        when %w[AMD64 64]
+          crabstone_arch = [Crabstone::ARCH_X86, Crabstone::MODE_64]
+        else
+          raise "Unknown architecture #{nmethod.code.arch} and bit width #{nmethod.code.arch_width}"
+        end
+
+        cs = Crabstone::Disassembler.new(*crabstone_arch)
         begin
           cs.disasm(nmethod.code.code, nmethod.code.base).each do |i|
             if print_comments
