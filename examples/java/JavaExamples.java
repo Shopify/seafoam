@@ -1,6 +1,6 @@
 /*
  * % javac JavaExamples.java
- * % java -XX:-UseOnStackReplacement '-XX:CompileCommand=dontinline,*::*' -XX:+PrintCompilation -Dgraal.Dump=:3 JavaExamples
+ * % java -XX:-UseOnStackReplacement '-XX:CompileCommand=dontinline,*::*' -XX:+PrintCompilation -Dgraal.PrintBackendCFG=true -Dgraal.Dump=:3 JavaExamples
  */
 
 import java.lang.reflect.Field;
