@@ -77,7 +77,7 @@ describe Seafoam::BGV::BGVParser do
   describe '#read_file_header' do
     it 'produces a version' do
       parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
-      expect(parser.read_file_header).to eq [6, 1]
+      expect(parser.read_file_header).to eq [7, 0]
     end
 
     it 'raises an error for files which are not BGV' do
@@ -108,7 +108,7 @@ describe Seafoam::BGV::BGVParser do
       parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
-      51.times do
+      54.times do
         expect(parser.read_graph_preheader).to_not be_nil
         parser.skip_graph_header
         parser.skip_graph

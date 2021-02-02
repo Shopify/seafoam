@@ -20,7 +20,7 @@ describe Seafoam::Commands do
     it 'prints format and version' do
       @commands.send :info, @fib_java
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq 'BGV 6.1'
+      expect(lines.first).to eq 'BGV 7.0'
     end
 
     it 'does not work on a graph' do
@@ -40,11 +40,11 @@ describe Seafoam::Commands do
         "#{@fib_java}:4  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase"
       ]
       expect(lines.drop(lines.length - 5)).to eq [
-        "#{@fib_java}:46  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.PropagateDeoptimizeProbabilityPhase",
-        "#{@fib_java}:47  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.InsertMembarsPhase",
-        "#{@fib_java}:48  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.schedule.SchedulePhase",
-        "#{@fib_java}:49  2:Fib.fib(int)/After phase org.graalvm.compiler.core.phases.LowTier",
-        "#{@fib_java}:50  2:Fib.fib(int)/After low tier"
+        "#{@fib_java}:49  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
+        "#{@fib_java}:50  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.PropagateDeoptimizeProbabilityPhase",
+        "#{@fib_java}:51  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.schedule.SchedulePhase",
+        "#{@fib_java}:52  2:Fib.fib(int)/After phase org.graalvm.compiler.core.phases.LowTier",
+        "#{@fib_java}:53  2:Fib.fib(int)/After low tier"
       ]
     end
 
@@ -129,7 +129,7 @@ describe Seafoam::Commands do
   describe '#props' do
     it 'prints properties for a file' do
       @commands.send :props, @fib_java
-      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n}\n"
+      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n  \"vm.uuid\": \"28729\"\n}\n"
     end
 
     it 'prints properties for a graph' do
@@ -153,21 +153,9 @@ describe Seafoam::Commands do
 
   describe '#source' do
     it 'prints source information for a node' do
-      @commands.send :source, "#{@fib_ruby}:8:2544"
+      @commands.send :source, "#{@fib_ruby}:7:2628"
       expect(@out.string).to eq <<~SOURCE
-        java.lang.Math#addExact
-        org.truffleruby.core.numeric.IntegerNodes$AddNode#add
-        org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
-        org.truffleruby.core.inlined.InlinedAddNode#intAdd
-        org.truffleruby.core.inlined.InlinedAddNodeGen#execute
-        org.truffleruby.language.control.IfElseNode#execute
-        org.truffleruby.language.control.SequenceNode#execute
-        org.truffleruby.language.arguments.CheckArityNode#execute
-        org.truffleruby.language.control.SequenceNode#execute
-        org.truffleruby.language.methods.CatchForMethodNode#execute
-        org.truffleruby.language.methods.ExceptionTranslatingNode#execute
-        org.truffleruby.language.RubyRootNode#execute
-        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
+        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#callDirect
         org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
       SOURCE
     end

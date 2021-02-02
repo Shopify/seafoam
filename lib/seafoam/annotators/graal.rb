@@ -357,7 +357,7 @@ module Seafoam
       TRIGGERS = %w[
         HostedGraphBuilderPhase
         GraalCompiler
-        TruffleCompilerThread
+        TruffleCompiler
       ]
 
       # Simple input node classes that may be inlined.

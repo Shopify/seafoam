@@ -20,7 +20,7 @@ describe Seafoam::Annotators::GraalAnnotator do
   describe 'when run' do
     describe 'without options' do
       before :all do
-        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
+        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 7)
         annotator = Seafoam::Annotators::GraalAnnotator.new({})
         annotator.annotate @graph
       end
@@ -38,13 +38,13 @@ describe Seafoam::Annotators::GraalAnnotator do
       end
 
       it 'annotates negated GuardNodes with "Guard not, else ..."' do
-        expect(@graph.nodes[561].props['negated']).to be true
-        expect(@graph.nodes[561].props[:label]).to start_with 'Guard not, else'
+        expect(@graph.nodes[6963].props['negated']).to be true
+        expect(@graph.nodes[6963].props[:label]).to start_with 'Guard not, else'
       end
 
       it 'annotates not negated GuardNodes with "Guard, else ..."' do
-        expect(@graph.nodes[559].props['negated']).to be false
-        expect(@graph.nodes[559].props[:label]).to start_with 'Guard, else'
+        expect(@graph.nodes[6962].props['negated']).to be false
+        expect(@graph.nodes[6962].props[:label]).to start_with 'Guard, else'
       end
     end
 
