@@ -20,14 +20,14 @@ describe Seafoam::CFG::Disassembler do
     disassembler.disassemble(@nmethod, 0)
     @file.close
 
-    expect(`wc -l 'tempfile_disassembler_spec.txt'`.to_i).to eq 52
+    expect(`wc -l 'tempfile_disassembler_spec.txt'`.to_i).to eq 46
 
     @file = File.open('tempfile_disassembler_spec.txt', 'w')
     disassembler = Seafoam::CFG::Disassembler.new(@file)
     disassembler.disassemble(@nmethod, 2)
     @file.close
 
-    expect(`wc -l 'tempfile_disassembler_spec.txt'`.to_i).to eq 52
+    expect(`wc -l 'tempfile_disassembler_spec.txt'`.to_i).to eq 46
 
     File.delete(@file)
   end

@@ -15,7 +15,7 @@ describe Seafoam::CFG::CFGParser do
     nmethod = parser.read_nmethod
     expect(nmethod.code.arch).to eq 'AMD64'
     expect(nmethod.code.arch_width).to eq '64'
-    expect(nmethod.code.base).to eq 0x112e35c20
-    expect(nmethod.comments.size).to eq 27
+    expect(nmethod.code.base).to eq 0x1183037a0
+    expect(nmethod.comments.size).to eq 25
   end
 end

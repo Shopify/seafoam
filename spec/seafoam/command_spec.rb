@@ -153,9 +153,21 @@ describe Seafoam::Commands do
 
   describe '#source' do
     it 'prints source information for a node' do
-      @commands.send :source, "#{@fib_ruby}:7:2628"
+      @commands.send :source, "#{@fib_ruby}:8:2443"
       expect(@out.string).to eq <<~SOURCE
-        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#callDirect
+        java.lang.Math#addExact
+        org.truffleruby.core.numeric.IntegerNodes$AddNode#add
+        org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
+        org.truffleruby.core.inlined.InlinedAddNode#intAdd
+        org.truffleruby.core.inlined.InlinedAddNodeGen#execute
+        org.truffleruby.language.control.IfElseNode#execute
+        org.truffleruby.language.control.SequenceNode#execute
+        org.truffleruby.language.arguments.CheckArityNode#execute
+        org.truffleruby.language.control.SequenceNode#execute
+        org.truffleruby.language.methods.CatchForMethodNode#execute
+        org.truffleruby.language.methods.ExceptionTranslatingNode#execute
+        org.truffleruby.language.RubyRootNode#execute
+        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
         org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
       SOURCE
     end
