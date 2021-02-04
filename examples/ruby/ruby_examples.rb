@@ -1,22 +1,8 @@
-# We're using Graal with this patch:
-#
-# diff --git a/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java b/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java
-# index ffe01c1688f..c9f552a3231 100644
-# --- a/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java
-# +++ b/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/inlining/DefaultInliningPolicy.java
-# @@ -114,6 +114,10 @@ final class DefaultInliningPolicy implements InliningPolicy {
-#          final PriorityQueue<CallNode> inlineQueue = getQueue(tree, CallNode.State.Expanded);
-#          CallNode candidate;
-#          while ((candidate = inlineQueue.poll()) != null) {
-# +            if (candidate.getName().startsWith("Object#opaque_") || candidate.getName().equals("Object#escape") || candidate.getName().equals("Object#static_call") || candidate.getName().equals("ExampleObject#instance_call")) {
-# +                continue;
-# +            }
-# +
-#              if (candidate.isTrivial()) {
-#                  candidate.inline();
-#                  continue;
+# truffleruby_primitives: true
 
-# % ruby --jvm --experimental-options --engine.OSR=false --engine.TraceCompilation --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
+# We're using Graal with graal.patch, to disable some inlining.
+
+# % ruby --jvm --experimental-options --engine.OSR=false --engine.MultiTier=false --engine.TraceCompilation --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
 
 RANDOM = Random.new
 EXCEPTION = Exception.new
@@ -59,7 +45,7 @@ end
 
 def example_full_escape(x)
   a = [x]
-  escape a
+  Primitive.blackhole a
   a[0]
 end
 
@@ -71,7 +57,7 @@ end
 def example_partial_escape(condition, x)
   a = [x]
   if condition
-    escape a
+    Primitive.blackhole a
     a[0]
   else
     a[0]
@@ -80,10 +66,10 @@ end
 
 def example_if(condition, x, y)
   if condition
-    escape x
+    Primitive.blackhole x
     a = x
   else
-    escape y
+    Primitive.blackhole y
     a = y
   end
   a
@@ -91,10 +77,10 @@ end
 
 def example_if_never_taken(condition, x, y)
   if condition
-    escape x
+    Primitive.blackhole x
     a = x
   else
-    escape y
+    Primitive.blackhole y
     a = y
   end
   a
@@ -103,13 +89,13 @@ end
 def example_int_switch(value, x, y, z)
   case value
   when 0
-    escape x
+    Primitive.blackhole x
     a = x
   when 1
-    escape y
+    Primitive.blackhole y
     a = y
   else
-    escape z
+    Primitive.blackhole z
     a = z
   end
   a
@@ -118,13 +104,13 @@ end
 def example_string_switch(value, x, y, z)
   case value
   when 'foo'
-    escape x
+    Primitive.blackhole x
     a = x
   when 'bar'
-    escape y
+    Primitive.blackhole y
     a = y
   else
-    escape z
+    Primitive.blackhole z
     a = z
   end
   a
@@ -133,7 +119,7 @@ end
 def example_while(count)
   a = count
   while a > 0
-    escape a
+    Primitive.blackhole a
     a -= 1
   end
   count
@@ -141,7 +127,7 @@ end
 
 def example_for(count)
   count.times do |a|
-    escape a
+    Primitive.blackhole a
   end
 end
 
@@ -150,7 +136,7 @@ def example_nested_while(count)
   while (a > 0)
     y = count
     while (y > 0)
-      escape a
+      Primitive.blackhole a
       y -= 1
     end
     a -= 1
@@ -164,7 +150,7 @@ def example_while_break(count)
     if a == 4
       break
     end
-    escape a
+    Primitive.blackhole a
     a -= 1
   end
   count
@@ -178,7 +164,7 @@ def example_rescue
   begin
     opaque_raise
   rescue Exception => e
-    escape e
+    Primitive.blackhole e
   end
 end
 
@@ -186,7 +172,7 @@ def example_raise_rescue
   begin
     raise EXCEPTION
   rescue Exception => e
-    escape e
+    Primitive.blackhole e
   end
 end
 
@@ -236,10 +222,6 @@ end
 # no inline
 def opaque_raise
   raise EXCEPTION
-end
-
-# no inline
-def escape(x)
 end
 
 # no inline
