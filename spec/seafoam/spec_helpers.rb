@@ -26,5 +26,9 @@ module Seafoam
         end
       end
     end
+
+    def self.dependencies_installed?
+      ENV['NO_DEPENDENCIES_INSTALLED'].nil?
+    end
   end
 end
