@@ -199,7 +199,7 @@ Output:
 #### Print node source information
 
 ```
-% seafoam examples/fib-ruby.bgv:8:2544 source
+% seafoam examples/fib-ruby.bgv:8:2443 source
 java.lang.Math#addExact
 org.truffleruby.core.numeric.IntegerNodes$AddNode#add
 org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
