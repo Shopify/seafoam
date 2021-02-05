@@ -184,32 +184,57 @@ describe Seafoam::Commands do
       end
     end
 
-    it 'supports -o out.pdf' do
-      @commands.send :render, "#{@fib_java}:0", '--out', 'out.pdf'
-      expect(`file out.pdf`).to start_with 'out.pdf: PDF document'
-    end
+    if Seafoam::SpecHelpers.dependencies_installed?
+      it 'supports -o out.pdf' do
+        @commands.send :render, "#{@fib_java}:0", '--out', 'out.pdf'
+        expect(`file out.pdf`).to start_with 'out.pdf: PDF document'
+      end
 
-    it 'supports -o out.svg' do
-      @commands.send :render, "#{@fib_java}:0", '--out', 'out.svg'
-      expect(`file out.svg`).to start_with 'out.svg: SVG Scalable Vector Graphics image'
-    end
+      it 'supports -o out.svg' do
+        @commands.send :render, "#{@fib_java}:0", '--out', 'out.svg'
+        expect(`file out.svg`).to start_with 'out.svg: SVG Scalable Vector Graphics image'
+      end
 
-    it 'supports -o out.png' do
-      @commands.send :render, "#{@fib_java}:0", '--out', 'out.png'
-      expect(`file out.png`).to start_with 'out.png: PNG image data'
-    end
+      it 'supports -o out.png' do
+        @commands.send :render, "#{@fib_java}:0", '--out', 'out.png'
+        expect(`file out.png`).to start_with 'out.png: PNG image data'
+      end
 
-    it 'supports -o out.dot' do
-      @commands.send :render, "#{@fib_java}:0", '--out', 'out.dot'
-      expect(`file out.dot`).to start_with 'out.dot: ASCII text'
-    end
+      it 'supports -o out.dot' do
+        @commands.send :render, "#{@fib_java}:0", '--out', 'out.dot'
+        expect(`file out.dot`).to start_with 'out.dot: ASCII text'
+      end
 
-    it 'supports spotlighting nodes' do
-      @commands.send :render, "#{@fib_java}:0", '--spotlight', '13'
-    end
+      it 'supports spotlighting nodes' do
+        @commands.send :render, "#{@fib_java}:0", '--spotlight', '13'
+      end
 
-    it 'does not work on a node' do
-      expect { @commands.send :render, "#{@fib_java}:0:13" }.to raise_error(ArgumentError)
+      it 'does not work on a node' do
+        expect { @commands.send :render, "#{@fib_java}:0:13" }.to raise_error(ArgumentError)
+      end
+    else
+      it 'raises an exception if Graphviz is not installed' do
+        expect do
+          @commands.send :render, "#{@fib_java}:0", '--out', 'out.pdf'
+        end.to raise_error(RuntimeError, /Could not run Graphviz - is it installed?/)
+      end
+    end
+  end
+
+  describe '#cfg2asm' do
+    if Seafoam::SpecHelpers.dependencies_installed?
+      it 'prints format and version' do
+        @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg', __dir__), '--no-comments')
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines[1]).to include "0x117df59e0:\tnop	dword ptr [rax + rax]"
+        expect(lines[-1]).to include "0x117df5a47:\thlt"
+      end
+    else
+      it 'raises an exception if Capstone is not installed' do
+        expect do
+          @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg', __dir__), '--no-comments')
+        end.to raise_error(RuntimeError, /Could not load Capstone - is it installed?/)
+      end
     end
   end
 

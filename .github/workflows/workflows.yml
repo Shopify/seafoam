@@ -1,0 +1,39 @@
+name: Workflows
+on: [push]
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+    - run: bundle install
+    - run: bundle exec rubocop
+  specs:
+    strategy:
+      matrix:
+        os: [ubuntu, macos]
+        ruby: [2.5, 2.6, 2.7]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - run: bundle install
+    - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz capstone; else sudo apt-get install graphviz libcapstone3; fi
+    - run: bundle exec rspec
+  specs-no-dependencies:
+    strategy:
+      matrix:
+        os: [ubuntu, macos]
+        ruby: [2.5, 2.6, 2.7]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - run: bundle install
+    - run: NO_DEPENDENCIES_INSTALLED=true bundle exec rspec

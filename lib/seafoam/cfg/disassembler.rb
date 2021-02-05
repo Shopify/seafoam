@@ -6,8 +6,6 @@ module Seafoam
     class Disassembler
       def initialize(out)
         @out = out
-      rescue StandardError => e
-        raise "Unable to open engine: #{e.message}"
       end
 
       def disassemble(nmethod, print_comments)

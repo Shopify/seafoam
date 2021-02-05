@@ -472,10 +472,14 @@ module Seafoam
             writer.write_graph graph
           end
         else
-          IO.popen(['dot', "-T#{out_format}", '-o', out_file], 'w') do |stream|
-            writer = GraphvizWriter.new(stream)
-            hidpi = out_format == :png
-            writer.write_graph graph, hidpi
+          begin
+            IO.popen(['dot', "-T#{out_format}", '-o', out_file], 'w') do |stream|
+              writer = GraphvizWriter.new(stream)
+              hidpi = out_format == :png
+              writer.write_graph graph, hidpi
+            end
+          rescue Errno::ENOENT
+            raise 'Could not run Graphviz - is it installed?'
           end
           autoopen out_file unless explicit_out_file
         end
