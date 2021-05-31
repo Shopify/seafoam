@@ -30,6 +30,7 @@ module Seafoam
         @out.puts '               --show-frame-state'
         @out.puts '               --hide-floating'
         @out.puts '               --no-reduce-edges'
+        @out.puts '               --draw-blocks'
         @out.puts '               --option key value'
         @out.puts '        --help'
         @out.puts '        --version'
@@ -406,6 +407,7 @@ module Seafoam
       args = args.dup
       out_file = nil
       explicit_out_file = false
+      draw_blocks = false
       until args.empty?
         arg = args.shift
         case arg
@@ -424,6 +426,8 @@ module Seafoam
           annotator_options[:hide_floating] = true
         when '--no-reduce-edges'
           annotator_options[:reduce_edges] = false
+        when '--draw-blocks'
+          draw_blocks = true
         when '--option'
           key = args.shift
           raise ArgumentError, 'no key for --option' unless key
@@ -469,14 +473,14 @@ module Seafoam
         if out_format == :dot
           File.open(out_file, 'w') do |stream|
             writer = GraphvizWriter.new(stream)
-            writer.write_graph graph
+            writer.write_graph graph, false, draw_blocks
           end
         else
           begin
             IO.popen(['dot', "-T#{out_format}", '-o', out_file], 'w') do |stream|
               writer = GraphvizWriter.new(stream)
               hidpi = out_format == :png
-              writer.write_graph graph, hidpi
+              writer.write_graph graph, hidpi, draw_blocks
             end
           rescue Errno::ENOENT
             raise 'Could not run Graphviz - is it installed?'

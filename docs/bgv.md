@@ -57,7 +57,8 @@ GraphBody {
   Props props
   sint32 nodes_count
   Node[nodes_count] nodes
-  Blocks blocks
+  sint32 blocks_count
+  Blocks[blocks_count] blocks
 }
 
 Node {

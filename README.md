@@ -26,7 +26,6 @@ Admittedly, Seafoam does not yet have:
 
 * an interactive user interface
 * diffing of graphs
-* visualization of basic blocks
 * breaking of edges for very congested graphs
 * the same speed in rendering big graphs - Seafoam is best suited for looking at graphs before lowering, which is what language developers are usually doing, or use spotlight
 
@@ -101,6 +100,8 @@ This is just a quick summary - see more information on
 ```
 % native-image -H:Dump=:2 -H:MethodFilter=fib Fib
 ```
+
+Note that if you want basic block information to appear, the `-H:+PrintGraphWithSchedule` flag is also needed.
 
 ### TruffleRuby and other Truffle languages
 
@@ -305,6 +306,7 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
 * `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
+* `--draw-blocks` to draw basic block information if available
 
 ## Configuration
 

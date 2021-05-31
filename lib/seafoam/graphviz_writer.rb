@@ -7,7 +7,7 @@ module Seafoam
     end
 
     # Write a graph.
-    def write_graph(graph, hidpi = false)
+    def write_graph(graph, hidpi = false, draw_blocks = false)
       inline_attrs = {}
       attrs = {}
       attrs[:dpi] = 200 if hidpi
@@ -16,6 +16,7 @@ module Seafoam
       @stream.puts "  graph #{write_attrs(attrs)};"
       write_nodes inline_attrs, graph
       write_edges inline_attrs, graph
+      write_blocks graph if draw_blocks
       @stream.puts '}'
     end
 
@@ -163,6 +164,23 @@ module Seafoam
       else
         # Declare the edge.
         @stream.puts "  node#{edge.from.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
+      end
+    end
+
+    # Write basic block outlines.
+    def write_blocks(graph)
+      graph.blocks.each do |block|
+        @stream.puts "  subgraph cluster_block#{block.id} {"
+        @stream.puts "    fontname = \"Arial\";"
+        @stream.puts "    label = \"B#{block.id}\";"
+        @stream.puts '    style=dotted;'
+
+        block.nodes.each do |node|
+          next if (node.props[:hidden] || node.props[:inlined])
+          @stream.puts "    node#{node.id};"
+        end
+
+        @stream.puts '  }'
       end
     end
 
