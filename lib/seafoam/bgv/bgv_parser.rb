@@ -127,7 +127,14 @@ module Seafoam
             end
           end
         end
-        skip_blocks
+        # read block information
+        @reader.read_sint32.times do
+          block_id = @reader.read_sint32
+          block_nodes = @reader.read_sint32.times.map { @reader.read_sint32 }
+          # not used
+          followers = @reader.read_sint32.times.map { @reader.read_sint32 }
+          graph.create_block(block_id, block_nodes)
+        end
         graph
       end
 

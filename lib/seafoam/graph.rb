@@ -2,12 +2,13 @@ module Seafoam
   # A graph, with properties, nodes, and edges. We don't encapsulate the graph
   # too much - be careful.
   class Graph
-    attr_reader :props, :nodes, :edges
+    attr_reader :props, :nodes, :edges, :blocks
 
     def initialize(props = nil)
       @props = props || {}
       @nodes = {}
       @edges = []
+      @blocks = []
     end
 
     # Create a node.
@@ -26,6 +27,14 @@ module Seafoam
       from.outputs.push edge
       to.inputs.push edge
       edge
+    end
+
+    # Add a new basic block with given id and node id list
+    def create_block(id, node_ids)
+      nodes = node_ids.select { |id| @nodes.key? id }.map { |id| @nodes[id] }
+      block = Block.new(id, nodes)
+      @blocks.push block
+      block
     end
   end
 
@@ -86,6 +95,21 @@ module Seafoam
     # Inspect.
     def inspect
       "<Edge #{from.id} -> #{to.id}>"
+    end
+  end
+
+  # A control-flow basic block
+  class Block
+    attr_reader :id, :nodes
+
+    def initialize(id, nodes)
+      @id = id
+      @nodes = nodes
+    end
+
+    # Inspect.
+    def inspect
+      "<Block #{id}>"
     end
   end
 end
