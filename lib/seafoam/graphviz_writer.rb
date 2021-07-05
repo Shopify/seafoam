@@ -11,7 +11,7 @@ module Seafoam
       inline_attrs = {}
       attrs = {}
       attrs[:dpi] = 200 if hidpi
-      attrs[:bgcolor] = 'transparent'
+      attrs[:bgcolor] = 'white'
       @stream.puts 'digraph G {'
       @stream.puts "  graph #{write_attrs(attrs)};"
       write_nodes inline_attrs, graph
