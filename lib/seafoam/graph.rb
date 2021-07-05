@@ -29,9 +29,9 @@ module Seafoam
       edge
     end
 
-    # Add a new basic block with given id and node id list
+    # Add a new basic block with given id and node id list.
     def create_block(id, node_ids)
-      nodes = node_ids.select { |id| @nodes.key? id }.map { |id| @nodes[id] }
+      nodes = node_ids.select { |n| @nodes.key? n }.map { |n| @nodes[n] }
       block = Block.new(id, nodes)
       @blocks.push block
       block

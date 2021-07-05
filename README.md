@@ -101,8 +101,6 @@ This is just a quick summary - see more information on
 % native-image -H:Dump=:2 -H:MethodFilter=fib Fib
 ```
 
-Note that if you want basic block information to appear, the `-H:+PrintGraphWithSchedule` flag is also needed.
-
 ### TruffleRuby and other Truffle languages
 
 ```

@@ -33,18 +33,18 @@ describe Seafoam::Commands do
       @commands.send :list, @fib_java
       lines = @out.string.lines.map(&:rstrip)
       expect(lines.take(5)).to eq [
-        "#{@fib_java}:0  2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase",
-        "#{@fib_java}:1  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite",
-        "#{@fib_java}:2  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
-        "#{@fib_java}:3  2:Fib.fib(int)/After parsing",
-        "#{@fib_java}:4  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase"
+        "#{@fib_java}:0  17:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase",
+        "#{@fib_java}:1  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite",
+        "#{@fib_java}:2  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
+        "#{@fib_java}:3  17:Fib.fib(int)/After parsing",
+        "#{@fib_java}:4  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase"
       ]
       expect(lines.drop(lines.length - 5)).to eq [
-        "#{@fib_java}:49  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
-        "#{@fib_java}:50  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.PropagateDeoptimizeProbabilityPhase",
-        "#{@fib_java}:51  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.schedule.SchedulePhase",
-        "#{@fib_java}:52  2:Fib.fib(int)/After phase org.graalvm.compiler.core.phases.LowTier",
-        "#{@fib_java}:53  2:Fib.fib(int)/After low tier"
+        "#{@fib_java}:51  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
+        "#{@fib_java}:52  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.PropagateDeoptimizeProbabilityPhase",
+        "#{@fib_java}:53  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.schedule.SchedulePhase",
+        "#{@fib_java}:54  17:Fib.fib(int)/After phase org.graalvm.compiler.core.phases.LowTier",
+        "#{@fib_java}:55  17:Fib.fib(int)/After low tier"
       ]
     end
 
@@ -96,7 +96,7 @@ describe Seafoam::Commands do
     it 'prints the number of edges and nodes for a graph' do
       @commands.send :edges, "#{@fib_java}:0"
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq '22 nodes, 30 edges'
+      expect(lines.first).to eq '21 nodes, 30 edges'
     end
 
     it 'prints the edges for a node' do
@@ -129,19 +129,17 @@ describe Seafoam::Commands do
   describe '#props' do
     it 'prints properties for a file' do
       @commands.send :props, @fib_java
-      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n  \"vm.uuid\": \"28729\"\n}\n"
+      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n  \"vm.uuid\": \"94468\"\n}\n"
     end
 
     it 'prints properties for a graph' do
       @commands.send :props, "#{@fib_java}:0"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines[3]).to include '"name": "2:Fib.fib(int)"'
+      expect(@out.string).to include '"scope": "main.Compiling.GraalCompiler.FrontEnd.PhaseSuite.GraphBuilderPhase"'
     end
 
     it 'prints properties for a node' do
       @commands.send :props, "#{@fib_java}:0:13"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines[3]).to include '"declaring_class": "Fib"'
+      expect(@out.string).to include '"declaring_class": "Fib"'
     end
 
     it 'prints properties for an edge' do

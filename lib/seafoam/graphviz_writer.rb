@@ -171,12 +171,13 @@ module Seafoam
     def write_blocks(graph)
       graph.blocks.each do |block|
         @stream.puts "  subgraph cluster_block#{block.id} {"
-        @stream.puts "    fontname = \"Arial\";"
+        @stream.puts '    fontname = "Arial";'
         @stream.puts "    label = \"B#{block.id}\";"
         @stream.puts '    style=dotted;'
 
         block.nodes.each do |node|
-          next if (node.props[:hidden] || node.props[:inlined])
+          next if node.props[:hidden] || node.props[:inlined]
+
           @stream.puts "    node#{node.id};"
         end
 
