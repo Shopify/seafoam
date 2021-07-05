@@ -54,6 +54,10 @@ easier to understand.
 
 You may need to use `--experimental-options`.
 
+## Getting basic blocks
+
+To get the graph when scheduled, so that you can see basic blocks, use `-Dgraal.PrintGraphWithSchedule=true`. Truffle graphs beyond the initial stages have scheduling information by default.
+
 ## Getting CFG files
 
 To also get CFG files, add `-Dgraal.PrintBackendCFG=true`, or `--vm.Dgraal.PrintBackendCFG=true` for Truffle.

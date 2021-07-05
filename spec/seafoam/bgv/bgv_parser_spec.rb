@@ -52,6 +52,16 @@ describe Seafoam::BGV::BGVParser do
     end
   end
 
+  it 'can read basic blocks' do
+    parser = Seafoam::BGV::BGVParser.new(File.expand_path('../../../examples/fib-java.bgv', __dir__))
+    parser.read_file_header
+    parser.skip_document_props
+    parser.read_graph_preheader
+    parser.skip_graph_header
+    graph = parser.read_graph
+    expect(graph.blocks.size).to eq 3
+  end
+
   it 'can alternate skipping and reading full files' do
     Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
       parser = Seafoam::BGV::BGVParser.new(file)
@@ -108,7 +118,7 @@ describe Seafoam::BGV::BGVParser do
       parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
-      54.times do
+      56.times do
         expect(parser.read_graph_preheader).to_not be_nil
         parser.skip_graph_header
         parser.skip_graph
@@ -150,7 +160,7 @@ describe Seafoam::BGV::BGVParser do
       parser.read_graph_preheader
       parser.read_graph_header
       graph = parser.read_graph
-      expect(graph.nodes.size).to eq 22
+      expect(graph.nodes.size).to eq 21
       expect(graph.edges.size).to eq 30
     end
   end

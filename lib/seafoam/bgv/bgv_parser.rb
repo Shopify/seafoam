@@ -127,20 +127,21 @@ module Seafoam
             end
           end
         end
-        # read block information
+
+        # Read block information.
         @reader.read_sint32.times do
           block_id = @reader.read_sint32
           block_nodes = @reader.read_sint32.times.map { @reader.read_sint32 }
-          # not used
-          followers = @reader.read_sint32.times.map { @reader.read_sint32 }
-          graph.create_block(block_id, block_nodes)
+          # Followers aren't used but could be.
+          @reader.read_sint32.times.map { @reader.read_sint32 }
+          graph.create_block block_id, block_nodes
         end
         graph
       end
 
       # Skip over a graph, having read or skipped its headers.
       def skip_graph
-        # Already read BEGIN_GRAPH, id, format, args, and props
+        # Already read BEGIN_GRAPH, id, format, args, and props.
         @reader.read_sint32.times do
           @reader.skip_int32
           node_class = read_pool_object

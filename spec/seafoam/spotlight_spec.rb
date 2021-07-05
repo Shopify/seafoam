@@ -33,6 +33,6 @@ describe Seafoam::Spotlight do
     spotlight.shade
     expect(@graph.nodes.values
       .select { |n| n.props[:hidden] }
-      .map(&:id).sort).to eq [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 15, 16, 17, 21]
+      .map(&:id).sort).to eq [0, 1, 2, 4, 5, 7, 8, 9, 10, 11, 15, 16, 17, 21]
   end
 end
