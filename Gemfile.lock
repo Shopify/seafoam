@@ -1,20 +1,20 @@
 PATH
   remote: .
   specs:
-    seafoam (0.7)
+    seafoam (0.8)
       crabstone (~> 4.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
-    benchmark-ips (2.8.4)
+    benchmark-ips (2.9.1)
     crabstone (4.0.3)
       ffi
     diff-lcs (1.4.4)
-    ffi (1.15.0)
+    ffi (1.15.3)
     parallel (1.20.1)
-    parser (3.0.1.1)
+    parser (3.0.2.0)
       ast (~> 2.4.1)
     rainbow (3.0.0)
     regexp_parser (2.1.1)
@@ -41,7 +41,7 @@ GEM
       rubocop-ast (>= 0.6.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 2.0)
-    rubocop-ast (1.5.0)
+    rubocop-ast (1.8.0)
       parser (>= 3.0.1.1)
     ruby-progressbar (1.11.0)
     unicode-display_width (1.7.0)
