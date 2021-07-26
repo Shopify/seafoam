@@ -71,7 +71,8 @@ To use the `cfg2asm` disassembler, you'll then need to install Capstone.
 
 ```
 % brew install capstone               # macOS
-% sudo apt-get install libcapstone3   # Ubuntu
+% sudo apt-get install libcapstone3   # Ubuntu < 21.04
+% sudo apt-get install libcapstone4   # Ubuntu >= 21.04
 ```
 
 ## Quick-start demo
