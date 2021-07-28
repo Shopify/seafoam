@@ -6,8 +6,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
-    - run: bundle install
-    - run: bundle exec rubocop
+      with:
+        ruby-version: 3.0
+        bundler-cache: true
+    - run: bundle exec rubocop bin lib spec demos
   specs:
     strategy:
       matrix:
@@ -20,7 +22,6 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - run: bundle install
     - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz capstone; else sudo apt-get install graphviz libcapstone3; fi
     - run: bundle exec rspec
   specs-no-dependencies:
@@ -35,5 +36,6 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - run: bundle install
-    - run: NO_DEPENDENCIES_INSTALLED=true bundle exec rspec
+    - env:
+        NO_DEPENDENCIES_INSTALLED: true
+      run: bundle exec rspec
