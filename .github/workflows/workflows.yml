@@ -9,7 +9,7 @@ jobs:
       with:
         ruby-version: 3.0
         bundler-cache: true
-    - run: bundle exec rubocop bin lib spec demos
+    - run: bundle exec rake rubocop
   specs:
     strategy:
       matrix:
@@ -23,7 +23,7 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
     - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz capstone; else sudo apt-get install graphviz libcapstone3; fi
-    - run: bundle exec rspec
+    - run: bundle exec rake specs
   specs-no-dependencies:
     strategy:
       matrix:
@@ -38,4 +38,4 @@ jobs:
         bundler-cache: true
     - env:
         NO_DEPENDENCIES_INSTALLED: true
-      run: bundle exec rspec
+      run: bundle exec rake specs
