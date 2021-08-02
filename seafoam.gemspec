@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.bindir = 'bin'
   spec.executables = %w[seafoam bgv2json bgv2isabelle cfg2asm]
 
-  spec.required_ruby_version = '>= 2.5.8'
+  spec.required_ruby_version = '>= 2.5.9'
 
   spec.add_dependency 'crabstone', '~> 4.0'
 
