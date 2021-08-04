@@ -13,7 +13,7 @@ describe Seafoam::Commands do
 
   before :each do
     @out = StringIO.new
-    @commands = Seafoam::Commands.new(@out, {})
+    @commands = Seafoam::Commands.new(@out)
   end
 
   describe '#info' do

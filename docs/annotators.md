@@ -31,9 +31,7 @@ want to add them:
 
 Seafoam ships with an annotator for generic GraalVM graphs. If you work with a
 different compiler you'll probably want to write your own annotators - subclass
-`Seafoam::Annotator` and implement `#annotate(graph)`. You can add custom
-annotators by requiring them in your `.seafoam/config`. All subclasses of
-`Annotator` will be found, so you just need to define the subclass.
+`Seafoam::Annotator` and implement `#annotate(graph)`.
 
 A fallback annotator, run after all others, just labels the node with the
 `'label'` property if there is one.
