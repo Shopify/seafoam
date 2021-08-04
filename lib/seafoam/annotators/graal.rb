@@ -340,6 +340,10 @@ module Seafoam
         loop do
           modified = false
           graph.nodes.each_value do |node|
+            # Call trees are like Graal graphs but don't have these edges -
+            # don't hide them.
+            next if node.props['truffleCallees']
+
             next unless node.outputs.all? { |edge| edge.to.props[:hidden] } &&
                         node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
                         node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
