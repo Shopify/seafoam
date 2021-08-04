@@ -15,25 +15,7 @@ module Seafoam
       when nil, 'help', '-h', '--help', '-help'
         raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
 
-        @out.puts 'seafoam file.bgv info'
-        @out.puts '        file.bgv list'
-        @out.puts '        file.bgv[:graph][:node[-edge]] search term...'
-        @out.puts '        file.bgv[:graph][:node[-edge]] edges'
-        @out.puts '        file.bgv[:graph][:node[-edge]] props'
-        @out.puts '        file.bgv:graph:node source'
-        @out.puts '        file.bgv:graph render'
-        @out.puts '              --spotlight n,n,n...'
-        @out.puts '              --out graph.pdf'
-        @out.puts '                    graph.svg'
-        @out.puts '                    graph.png'
-        @out.puts '                    graph.dot'
-        @out.puts '               --show-frame-state'
-        @out.puts '               --hide-floating'
-        @out.puts '               --no-reduce-edges'
-        @out.puts '               --draw-blocks'
-        @out.puts '               --option key value'
-        @out.puts '        --help'
-        @out.puts '        --version'
+        help(*args)
       when 'version', '-v', '-version', '--version'
         version(*args)
       else
@@ -567,6 +549,29 @@ module Seafoam
         end
       end
       raise ArgumentError, 'graph not found' unless graph_found
+    end
+
+    # Prints help.
+    def help(*_args)
+      @out.puts 'seafoam file.bgv info'
+      @out.puts '        file.bgv list'
+      @out.puts '        file.bgv[:graph][:node[-edge]] search term...'
+      @out.puts '        file.bgv[:graph][:node[-edge]] edges'
+      @out.puts '        file.bgv[:graph][:node[-edge]] props'
+      @out.puts '        file.bgv:graph:node source'
+      @out.puts '        file.bgv:graph render'
+      @out.puts '              --spotlight n,n,n...'
+      @out.puts '              --out graph.pdf'
+      @out.puts '                    graph.svg'
+      @out.puts '                    graph.png'
+      @out.puts '                    graph.dot'
+      @out.puts '               --show-frame-state'
+      @out.puts '               --hide-floating'
+      @out.puts '               --no-reduce-edges'
+      @out.puts '               --draw-blocks'
+      @out.puts '               --option key value'
+      @out.puts '        --help'
+      @out.puts '        --version'
     end
 
     # Prints the version.
