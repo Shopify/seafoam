@@ -3,9 +3,8 @@ require 'json'
 module Seafoam
   # Implementations of the command-line commands that you can run in Seafoam.
   class Commands
-    def initialize(out, config)
+    def initialize(out)
       @out = out
-      @config = config
     end
 
     # Run the general seafoam command.

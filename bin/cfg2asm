@@ -5,12 +5,8 @@ require 'seafoam'
 # This is the 'cfg2asm' command line entry point.
 
 begin
-  # Load configuraiton.
-  config = Seafoam::Config.new
-  config.load_config
-
   # Run the command line.
-  commands = Seafoam::Commands.new($stdout, config)
+  commands = Seafoam::Commands.new($stdout)
   commands.cfg2asm(*ARGV)
 rescue StandardError => e
   if $DEBUG

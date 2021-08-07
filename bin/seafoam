@@ -5,12 +5,8 @@ require 'seafoam'
 # This is the 'seafoam' command line entry point.
 
 begin
-  # Load configuraiton.
-  config = Seafoam::Config.new
-  config.load_config
-
   # Run the command line.
-  commands = Seafoam::Commands.new($stdout, config)
+  commands = Seafoam::Commands.new($stdout)
   commands.seafoam(*ARGV)
 rescue StandardError => e
   if $DEBUG

@@ -307,13 +307,6 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 * `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
 * `--draw-blocks` to draw basic block information if available
 
-## Configuration
-
-Seafoam loads and runs a Ruby script called `~/.seafoam/config` in the first
-directory it finds starting with the current working directory and moving up.
-You can require or configure extra [annotators](docs/annotators.md) in this
-file.
-
 ## Debugging
 
 Exception backtraces are printed if `$DEBUG` (`-d`) is set.
