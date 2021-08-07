@@ -367,6 +367,10 @@ in the V8 JavaScript compiler.
 
 Seafoam was written by Chris Seaton at Shopify, chris.seaton@shopify.com.
 
+## Citations
+
+* [A Formal Semantics of the GraalVM Intermediate Representation](https://arxiv.org/pdf/2107.01815.pdf), Brae J. Webb , Mark Utting , and Ian J. Hayes.
+
 ## License
 
 MIT
