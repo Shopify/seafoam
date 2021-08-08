@@ -78,13 +78,13 @@ To use the `cfg2asm` disassembler, you'll then need to install Capstone.
 ## Quick-start demo
 
 ```
-% seafoam examples/fib-java.bgv:0 render
+% seafoam examples/fib-java.bgv.gz:0 render
 ```
 
 ## Getting compiler graphs
 
 If you are just experimenting, there are example graphs such as
-`examples/fib-java.bgv`.
+`examples/fib-java.bgv.gz`.
 
 This is just a quick summary - see more information on
 [getting graphs out of compilers](docs/getting-graphs.md).
@@ -93,19 +93,19 @@ This is just a quick summary - see more information on
 
 ```
 % javac Fib.java
-% java -XX:CompileOnly=::fib -Dgraal.Dump=:2 Fib 14
+% java -XX:CompileOnly=::fib -Dgraal.Dump=:1 Fib 14
 ```
 
 ### GraalVM Native Image
 
 ```
-% native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+% native-image -H:Dump=:1 -H:MethodFilter=fib Fib
 ```
 
 ### TruffleRuby and other Truffle languages
 
 ```
-% ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 fib.rb 14
+% ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:1 fib.rb 14
 ```
 
 You will usually want to look at the *After TruffleTier* graph.
@@ -125,81 +125,83 @@ Note that a *graph ID* is an ID found in BGV files, but is not unique. A
 #### Print information about a file
 
 ```
-% seafoam examples/fib-java.bgv info
-BGV 6.1
+% seafoam examples/fib-java.bgv.gz info
+BGV 7.0
 ```
 
 #### List graphs in a file
 
 ```
-% seafoam examples/fib-java.bgv list
-examples/fib-java.bgv:0  2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
-examples/fib-java.bgv:1  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite
-examples/fib-java.bgv:2  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase
-examples/fib-java.bgv:3  2:Fib.fib(int)/After parsing
-examples/fib-java.bgv:4  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase
-examples/fib-java.bgv:5  2:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.inlining.InliningPhase
+% seafoam examples/fib-java.bgv.gz list
+examples/fib-java.bgv.gz:0  17:Fib.fib(int)/After parsing
+examples/fib-java.bgv.gz:1  17:Fib.fib(int)/Before phase org.graalvm.compiler.phases.common.LoweringPhase
+examples/fib-java.bgv.gz:2  17:Fib.fib(int)/After high tier
+examples/fib-java.bgv.gz:3  17:Fib.fib(int)/After mid tier
+examples/fib-java.bgv.gz:4  17:Fib.fib(int)/After low tier
 ...
 ```
 
 #### Search for strings in a graph, or node or edge within a graph
 
 ```
-% seafoam examples/fib-java.bgv:0 search Start
-examples/fib-java.bgv:0:0  ...node_class":"org.graalvm.compiler.nodes.StartNode","name_template":"Start","inputs":[...
-examples/fib-java.bgv:0:0  ...piler.nodes.StartNode","name_template":"Start","inputs":[{"direct":true,"name":"state...
+% seafoam examples/fib-java.bgv.gz:0 search Start
+examples/fib-java.bgv.gz:0:0  ...node_class":"org.graalvm.compiler.nodes.StartNode","name_template":"Start","inputs":[...
+examples/fib-java.bgv.gz:0:0  ...piler.nodes.StartNode","name_template":"Start","inputs":[{"direct":true,"name":"state...
 ```
 
 #### Print edges of a graph, or node or edge within a graph
 
 ```
-% seafoam examples/fib-java.bgv:0 edges
-22 nodes, 30 edges
-% seafoam examples/fib-java.bgv:0:13 edges
+% seafoam examples/fib-java.bgv.gz:0 edges
+21 nodes, 30 edges
+% seafoam examples/fib-java.bgv.gz:0:13 edges
 Input:
   13 (Call Fib.fib) <-() 6 (Begin)
-  13 (Call Fib.fib) <-() 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
+  13 (Call Fib.fib) <-() 14 (FrameState Fib#fib Fib.java:20)
   13 (Call Fib.fib) <-() 12 (MethodCallTarget)
 Output:
   13 (Call Fib.fib) ->() 18 (Call Fib.fib)
-  13 (Call Fib.fib) ->(values) 14 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:13)
-  13 (Call Fib.fib) ->(values) 19 (@{:declaring_class=>"Fib", :method_name=>"fib", :signature=>{:args=>["I"], :ret=>"I"}, :modifiers=>9}:19)
+  13 (Call Fib.fib) ->(values) 14 (FrameState Fib#fib Fib.java:20)
+  13 (Call Fib.fib) ->(values) 19 (FrameState Fib#fib Fib.java:20)
   13 (Call Fib.fib) ->(x) 20 (+)
-% seafoam examples/fib-java.bgv:0:13-20 edges
+% seafoam examples/fib-java.bgv.gz:0:13-20 edges
 13 (Call Fib.fib) ->(x) 20 (+)
 ```
 
 #### Print properties of a file, graph, or node or edge within a graph
 
 ```
-% seafoam examples/fib-java.bgv:0 props
+% seafoam examples/fib-java.bgv.gz:0 props
 {
   "group": [
     {
-      "name": "2:Fib.fib(int)",
-      "short_name": "2:Fib.fib(int)",
+      "name": "17:Fib.fib(int)",
+      "short_name": "17:Fib.fib(int)",
       "method": null,
 ...
-% seafoam examples/fib-java.bgv:0:13 props
+% seafoam examples/fib-java.bgv.gz:0:13 props
 {
-  "nodeSourcePosition": {
-    "method": {
-      "declaring_class": "Fib",
-      "method_name": "fib",
-      "signature": {
+  "relativeFrequency": 0.4995903151404586,
+  "targetMethod": "Fib.fib",
+  "nodeCostSize": "SIZE_2",
+  "stamp": "i32",
+  "bci": 10,
+  "polymorphic": false,
 ...
-% seafoam examples/fib-java.bgv:0:13-20 props
+% seafoam examples/fib-java.bgv.gz:0:13-20 props
 {
   "direct": true,
   "name": "x",
-  "type": "Value"
+  "type": "Value",
+  "index": 0
 }
+
 ```
 
 #### Print node source information
 
 ```
-% seafoam examples/fib-ruby.bgv:8:2443 source
+% seafoam examples/fib-ruby.bgv.gz:2:2436 source
 java.lang.Math#addExact
 org.truffleruby.core.numeric.IntegerNodes$AddNode#add
 org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
@@ -207,11 +209,7 @@ org.truffleruby.core.inlined.InlinedAddNode#intAdd
 org.truffleruby.core.inlined.InlinedAddNodeGen#execute
 org.truffleruby.language.control.IfElseNode#execute
 org.truffleruby.language.control.SequenceNode#execute
-org.truffleruby.language.arguments.CheckArityNode#execute
-org.truffleruby.language.control.SequenceNode#execute
-org.truffleruby.language.methods.CatchForMethodNode#execute
-org.truffleruby.language.methods.ExceptionTranslatingNode#execute
-org.truffleruby.language.RubyRootNode#execute
+org.truffleruby.language.RubyMethodRootNode#execute
 org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
 org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
 ```
@@ -221,14 +219,14 @@ org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
 Render a graph as a PDF image and have it opened automatically.
 
 ```
-% seafoam examples/fib-java.bgv:0 render
+% seafoam examples/fib-java.bgv.gz:0 render
 ```
 
 Render a graph showing just a few nodes and those surrounding them, similar to
 the IGV feature of gradually revealing nodes.
 
 ```
-% seafoam examples/fib-java.bgv:0 render --spotlight 13,20
+% seafoam examples/fib-java.bgv.gz:0 render --spotlight 13,20
 ```
 
 <p>
@@ -246,7 +244,7 @@ the IGV feature of gradually revealing nodes.
 Convert a BGV file to the Isabelle graph format.
 
 ```
-% bgv2isabelle examples/fib-java.bgv
+% bgv2isabelle examples/fib-java.bgv.gz
 graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
  (add_node 0 StartNode [2] [8]
  (add_node 1 (ParameterNode 0) [] [2, 5, 9, 11, 14, 16]
@@ -263,7 +261,7 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 Convert a BGV file to JSON.
 
 ```
-% bgv2json examples/fib-java.bgv
+% bgv2json examples/fib-java.bgv.gz
 graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase
  (add_node 0 StartNode [2] [8]
  (add_node 1 (ParameterNode 0) [] [2, 5, 9, 11, 14, 16]
@@ -280,23 +278,32 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 #### Disassembling
 
 ```
-% cfg2asm examples/java/exampleArithOperator.cfg
-[examples/java/exampleArithOperator.cfg]
-				;Comment 0:	3
-				;Comment 0:	1
-	0x112e2f660:	nop	dword ptr [rax + rax]
+% cfg2asm examples/java/exampleArithOperator.cfg.gz
+[examples/java/exampleArithOperator.cfg.gz]
+				;Comment 0:	VERIFIED_ENTRY
+	0x124b8de80:	nop	dword ptr [rax + rax]
 				;Comment 5:	block B0 null
 				;Comment 5:	0 [rsi|DWORD, rdx|DWORD, rbp|QWORD] = LABEL numbPhis: 0 align: false label: ?
-				;Comment 5:	4 [] = HOTSPOTLOCKSTACK frameMapBuilder: org.graalvm.compiler.lir.amd64.AMD64FrameMapBuilder@143082de0 slotKind: QWORD
+				;Comment 5:	4 [] = HOTSPOTLOCKSTACK frameMapBuilder: org.graalvm.compiler.lir.amd64.AMD64FrameMapBuilder@26ba755b slotKind: QWORD
 				;Comment 5:	10 rsi|DWORD = ADD (x: rsi|DWORD, y: rdx|DWORD) size: DWORD
-	0x112e2f665:	add	esi, edx
+	0x124b8de85:	add	esi, edx
 				;Comment 7:	12 rax|DWORD = MOVE rsi|DWORD moveKind: DWORD
-	0x112e2f667:	mov	eax, esi
-				;Comment 9:	14 RETURN (savedRbp: rbp|QWORD, value: rax|DWORD) isStub: false requiresReservedStackAccessCheck: false thread: r15 scratchForSafepointOnReturn: rcx config: org.graalvm.compiler.hotspot.GraalHotSpotVMConfig@137f187d8
-				;Comment 9:	12
-	0x112e2f669:	test	dword ptr [rip - 0x46c4669], eax
-	0x112e2f66f:	vzeroupper	
-	0x112e2f672:	ret	
+	0x124b8de87:	mov	eax, esi
+				;Comment 9:	14 RETURN (savedRbp: rbp|QWORD, value: rax|DWORD) isStub: false requiresReservedStackAccessCheck: false thread: r15 scratchForSafepointOnReturn: rcx config: org.graalvm.compiler.hotspot.GraalHotSpotVMConfig@6c71283a
+	0x124b8de89:	mov	rcx, qword ptr [r15 + 0x108]
+				;Comment 16:	POLL_RETURN_FAR
+	0x124b8de90:	test	dword ptr [rcx], eax
+	0x124b8de92:	ret	
+				;Comment 19:	{Stub<ExceptionHandlerStub.exceptionHandler>@0x11a9b9980:CallingConvention[rax|QWORD[.], rdx|QWORD]:CallingConvention[rax|QWORD[.], rdx|QWORD]; temps=rdi|ILLEGAL,xmm14|ILLEGAL,xmm15|ILLEGAL,xmm12|ILLEGAL,xmm13|ILLEGAL,xmm10|ILLEGAL,xmm11|ILLEGAL,xmm7|ILLEGAL,xmm8|ILLEGAL,xmm9|ILLEGAL,xmm0|ILLEGAL,xmm1|ILLEGAL,xmm2|ILLEGAL,xmm3|ILLEGAL,xmm4|ILLEGAL,xmm5|ILLEGAL,xmm6|ILLEGAL,rax|ILLEGAL,rcx|ILLEGAL,rdx|ILLEGAL,rsi|ILLEGAL,r8|ILLEGAL,r9|ILLEGAL,r10|ILLEGAL,r11|ILLEGAL}
+				;Comment 19:	EXCEPTION_HANDLER_ENTRY
+	0x124b8de93:	call	0x11a9b9980
+	0x124b8de98:	nop	
+				;Comment 25:	{Field[name=CompilerToVM::Data::SharedRuntime_deopt_blob_unpack, type=address, offset=0, address=0x10646a4d0, value=4740607520]:0x11a8fee20}
+				;Comment 25:	DEOPT_HANDLER_ENTRY
+	0x124b8de99:	call	0x11a8fee20
+	0x124b8de9e:	nop	
+	0x124b8de9f:	hlt	
+
 ...
 ```
 
