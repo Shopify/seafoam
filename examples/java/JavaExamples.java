@@ -41,8 +41,6 @@ class JavaExamples {
             exampleStringSwitch(new String[]{"foo", "bar", "baz"}[RANDOM.nextInt(3)], RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt());
             exampleWhile(RANDOM.nextInt(10));
             exampleFor(RANDOM.nextInt(10));
-            exampleReducible(RANDOM.nextBoolean(), RANDOM.nextInt(10));
-            Irreducible.exampleIrreducible(RANDOM.nextBoolean(), RANDOM.nextInt(10));
             exampleNestedWhile(RANDOM.nextInt(10));
             exampleWhileBreak(RANDOM.nextInt(10));
             exampleNestedWhileBreak(RANDOM.nextInt(10));
@@ -207,19 +205,6 @@ class JavaExamples {
         int a = count;
         while (a > 0) {
             intField = a;
-            a--;
-        }
-        return count;
-    }
-
-    private static int exampleReducible(boolean condition, int count) {
-        int a = count;
-        if (condition) {
-            a = count - 1;
-        }
-        while (a > 0) {
-            intField = a;
-          inner:
             a--;
         }
         return count;
