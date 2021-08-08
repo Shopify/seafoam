@@ -3,7 +3,7 @@ module Seafoam
     SAMPLE_BGV = [
       'fib-java.bgv.gz',
       'fib-js.bgv.gz',
-      'fib-ruby.bgv.gz',
+      'fib-ruby.bgv.gz'
     ].map { |f| File.expand_path("../../examples/graalvm-ce-java11-21.2.0/#{f}", __dir__) }
 
     def self.example_graph(file, graph_index)
