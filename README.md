@@ -312,6 +312,7 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 ## Options for GraalVM graphs
 
 * `--show-frame-state` shows frame state nodes, which are hidden by default
+* `--show-pi` shows 'pi' nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
 * `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
 * `--draw-blocks` to draw basic block information if available

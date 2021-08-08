@@ -21,12 +21,13 @@ want to add them:
 
 * `:label` on nodes and edges
 * `:out_annotation` on nodes
-* `:hidden` on nodes only, to not show them (*remove frame state* for example in IGV terminology)
+* `:hidden` on nodes and edges, to not show them (*remove frame state* for example in IGV terminology)
 * `:inlined` on nodes only, to indicate the node should be shown immediately above each node using it (*reduce edges* in IGV terminology)
 * `:kind` on nodes only, which can be `info`, `input`, `control`, `effect`, `virtual`, `calc`, `guard`, or `other`
 * `:kind` on edges only, which can be `info`, `control`, `loop`, or `data`
 * `:reverse` on edges only
 * `:spotlight` for nodes as part of spotlighting (`lit` are shown, `shaded` are shown but greyed out, and edges from `shaded` to `:hidden` nodes are also shown greyed out)
+* `:synthetic` on nodes edges which were added by passes and not in the original graph
 
 Seafoam ships with a pass for generic GraalVM graphs. If you work with a
 different compiler you'll probably want to write your own pass.

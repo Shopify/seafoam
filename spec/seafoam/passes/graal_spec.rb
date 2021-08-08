@@ -63,6 +63,21 @@ describe Seafoam::Passes::GraalPass do
       end
     end
 
+    describe 'with :hide_pi' do
+      before :all do
+        @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
+        pass = Seafoam::Passes::GraalPass.new(hide_pi: true)
+        pass.apply @graph
+      end
+
+      it 'sets the hidden property on all frame state nodes' do
+        frame_state_nodes = @graph.nodes.values.select do |n|
+          Seafoam::Passes::GraalPass::PI_NODES.include?(n.props.dig(:node_class, :node_class))
+        end
+        expect(frame_state_nodes.all? { |n| n.props[:hidden] }).to be_truthy
+      end
+    end
+
     describe 'with :hide_floating' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
