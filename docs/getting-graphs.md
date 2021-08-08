@@ -2,10 +2,10 @@
 
 ## GraalVM Compiler as a Java compiler
 
-`-Dgraal.Dump=:2` is a simple option to enable Graal graph dumping.
+`-Dgraal.Dump=:1` is a simple option to enable Graal graph dumping.
 
 The value of `Dump` is a *dump filter*. The format of dump filters is
-[documented][dump-filters], but in simple cases `:2` will be enough and will
+[documented][dump-filters], but in simple cases `:1` will be enough and will
 give you everything.
 
 [dump-filters]: https://github.com/oracle/graal/blob/master/compiler/src/org.graalvm.compiler.debug/src/org/graalvm/compiler/debug/doc-files/DumpHelp.txt
@@ -34,13 +34,13 @@ graph without significantly effecting too much how the logic in it is compiled.
 When using `native-image` you will want to use the `-H:` format.
 
 ```
-% native-image -H:Dump=:2 -H:MethodFilter=fib Fib
+% native-image -H:Dump=:1 -H:MethodFilter=fib Fib
 ```
 
 ## TruffleRuby and other Truffle languages
 
 Use the same options as for GraalVM for Java, except they're prefixed with
-`--vm.`, for example `--vm.Dgraal.Dump=Truffle:2`.
+`--vm.`, for example `--vm.Dgraal.Dump=Truffle:1`.
 
 Use with `--engine.CompileOnly=foo`.
 
@@ -56,8 +56,11 @@ You may need to use `--experimental-options`.
 
 ## Getting basic blocks
 
-To get the graph when scheduled, so that you can see basic blocks, use `-Dgraal.PrintGraphWithSchedule=true`. Truffle graphs beyond the initial stages have scheduling information by default.
+To get the graph when scheduled, so that you can see basic blocks, use
+`-Dgraal.PrintGraphWithSchedule=true`. Truffle graphs beyond the initial stages
+have scheduling information by default.
 
 ## Getting CFG files
 
-To also get CFG files, add `-Dgraal.PrintBackendCFG=true`, or `--vm.Dgraal.PrintBackendCFG=true` for Truffle.
+To also get CFG files, add `-Dgraal.PrintBackendCFG=true`, or
+`--vm.Dgraal.PrintBackendCFG=true` for Truffle.
