@@ -6,7 +6,7 @@ require_relative '../spec_helpers'
 
 describe Seafoam::BGV::BGVParser do
   before :all do
-    @fib_java_bgv = File.expand_path('../../../examples/fib-java.bgv', __dir__)
+    @fib_java_bgv = File.expand_path('../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__)
   end
 
   it 'can read full files' do
@@ -25,7 +25,7 @@ describe Seafoam::BGV::BGVParser do
   end
 
   it 'can read full gzipped files' do
-    parser = Seafoam::BGV::BGVParser.new(File.expand_path('../../../examples/fib-java.bgv.gz', __dir__))
+    parser = Seafoam::BGV::BGVParser.new(File.expand_path('../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__))
     parser.read_file_header
     parser.skip_document_props
     loop do
@@ -53,7 +53,7 @@ describe Seafoam::BGV::BGVParser do
   end
 
   it 'can read basic blocks' do
-    parser = Seafoam::BGV::BGVParser.new(File.expand_path('../../../examples/fib-java.bgv', __dir__))
+    parser = Seafoam::BGV::BGVParser.new(File.expand_path('../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__))
     parser.read_file_header
     parser.skip_document_props
     parser.read_graph_preheader
@@ -118,7 +118,7 @@ describe Seafoam::BGV::BGVParser do
       parser = Seafoam::BGV::BGVParser.new(@fib_java_bgv)
       parser.read_file_header
       parser.skip_document_props
-      56.times do
+      5.times do
         expect(parser.read_graph_preheader).to_not be_nil
         parser.skip_graph_header
         parser.skip_graph
@@ -148,7 +148,7 @@ describe Seafoam::BGV::BGVParser do
       parser.skip_document_props
       parser.read_graph_preheader
       header = parser.read_graph_header
-      expect(header[:props]['scope']).to eq 'main.Compiling.GraalCompiler.FrontEnd.PhaseSuite.GraphBuilderPhase'
+      expect(header[:props]['scope']).to eq 'main.Compiling.GraalCompiler.FrontEnd'
     end
   end
 

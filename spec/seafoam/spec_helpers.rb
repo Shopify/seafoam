@@ -1,15 +1,13 @@
 module Seafoam
   module SpecHelpers
     SAMPLE_BGV = [
-      'fib-java.bgv',
-      'fib-js.bgv',
-      'fib-ruby.bgv',
-      'matmult-java.bgv',
-      'matmult-ruby.bgv'
-    ].map { |f| File.expand_path("../../examples/#{f}", __dir__) }
+      'fib-java.bgv.gz',
+      'fib-js.bgv.gz',
+      'fib-ruby.bgv.gz',
+    ].map { |f| File.expand_path("../../examples/graalvm-ce-java11-21.2.0/#{f}", __dir__) }
 
     def self.example_graph(file, graph_index)
-      file = File.expand_path("../../examples/#{file}.bgv", __dir__)
+      file = File.expand_path("../../examples/graalvm-ce-java11-21.2.0/#{file}.bgv.gz", __dir__)
       parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props

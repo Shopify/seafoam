@@ -7,8 +7,8 @@ require 'rspec'
 
 describe Seafoam::Commands do
   before :all do
-    @fib_java = File.expand_path('../../examples/fib-java.bgv', __dir__)
-    @fib_ruby = File.expand_path('../../examples/fib-ruby.bgv', __dir__)
+    @fib_java = File.expand_path('../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__)
+    @fib_ruby = File.expand_path('../../examples/graalvm-ce-java11-21.2.0/fib-ruby.bgv.gz', __dir__)
   end
 
   before :each do
@@ -32,19 +32,12 @@ describe Seafoam::Commands do
     it 'prints graphs' do
       @commands.send :list, @fib_java
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines.take(5)).to eq [
-        "#{@fib_java}:0  17:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhase",
-        "#{@fib_java}:1  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.PhaseSuite",
-        "#{@fib_java}:2  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
-        "#{@fib_java}:3  17:Fib.fib(int)/After parsing",
-        "#{@fib_java}:4  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.CanonicalizerPhase"
-      ]
-      expect(lines.drop(lines.length - 5)).to eq [
-        "#{@fib_java}:51  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.DeadCodeEliminationPhase",
-        "#{@fib_java}:52  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.common.PropagateDeoptimizeProbabilityPhase",
-        "#{@fib_java}:53  17:Fib.fib(int)/After phase org.graalvm.compiler.phases.schedule.SchedulePhase",
-        "#{@fib_java}:54  17:Fib.fib(int)/After phase org.graalvm.compiler.core.phases.LowTier",
-        "#{@fib_java}:55  17:Fib.fib(int)/After low tier"
+      expect(lines).to eq [
+        "#{@fib_java}:0  17:Fib.fib(int)/After parsing",
+        "#{@fib_java}:1  17:Fib.fib(int)/Before phase org.graalvm.compiler.phases.common.LoweringPhase",
+        "#{@fib_java}:2  17:Fib.fib(int)/After high tier",
+        "#{@fib_java}:3  17:Fib.fib(int)/After mid tier",
+        "#{@fib_java}:4  17:Fib.fib(int)/After low tier"
       ]
     end
 
@@ -57,12 +50,11 @@ describe Seafoam::Commands do
     it 'finds terms in files' do
       @commands.send :search, @fib_java, 'MethodCallTarget'
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines.take(5)).to eq [
+      expect(lines).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
         "#{@fib_java}:0:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
         "#{@fib_java}:1:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:2:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
+        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
       ]
     end
 
@@ -76,14 +68,11 @@ describe Seafoam::Commands do
     end
 
     it 'is case-insensitive' do
-      @commands.send :search, @fib_java, 'methodcalltarget'
+      @commands.send :search, "#{@fib_java}:0", 'methodcalltarget'
       lines = @out.string.lines.map(&:rstrip)
-      expect(lines.take(5)).to eq [
+      expect(lines).to eq [
         "#{@fib_java}:0:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:0:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:1:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:1:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir...",
-        "#{@fib_java}:2:12  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
+        "#{@fib_java}:0:17  ...class\":\"org.graalvm.compiler.nodes.java.MethodCallTargetNode\",\"name_template\":\"\",\"inputs\":[{\"dir..."
       ]
     end
 
@@ -129,12 +118,12 @@ describe Seafoam::Commands do
   describe '#props' do
     it 'prints properties for a file' do
       @commands.send :props, @fib_java
-      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n  \"vm.uuid\": \"94468\"\n}\n"
+      expect(@out.string.gsub(/\n\n/, "\n")).to eq "{\n  \"vm.uuid\": \"21734\"\n}\n"
     end
 
     it 'prints properties for a graph' do
       @commands.send :props, "#{@fib_java}:0"
-      expect(@out.string).to include '"scope": "main.Compiling.GraalCompiler.FrontEnd.PhaseSuite.GraphBuilderPhase"'
+      expect(@out.string).to include '"scope": "main.Compiling.GraalCompiler.FrontEnd"'
     end
 
     it 'prints properties for a node' do
@@ -151,7 +140,7 @@ describe Seafoam::Commands do
 
   describe '#source' do
     it 'prints source information for a node' do
-      @commands.send :source, "#{@fib_ruby}:8:2443"
+      @commands.send :source, "#{@fib_ruby}:2:2436"
       expect(@out.string).to eq <<~SOURCE
         java.lang.Math#addExact
         org.truffleruby.core.numeric.IntegerNodes$AddNode#add
@@ -160,11 +149,7 @@ describe Seafoam::Commands do
         org.truffleruby.core.inlined.InlinedAddNodeGen#execute
         org.truffleruby.language.control.IfElseNode#execute
         org.truffleruby.language.control.SequenceNode#execute
-        org.truffleruby.language.arguments.CheckArityNode#execute
-        org.truffleruby.language.control.SequenceNode#execute
-        org.truffleruby.language.methods.CatchForMethodNode#execute
-        org.truffleruby.language.methods.ExceptionTranslatingNode#execute
-        org.truffleruby.language.RubyRootNode#execute
+        org.truffleruby.language.RubyMethodRootNode#execute
         org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
         org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
       SOURCE
@@ -178,7 +163,7 @@ describe Seafoam::Commands do
 
     it 'can render all BGV files to dot' do
       Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
-        @commands.send :render, "#{file}:7", '--out', 'out.dot'
+        @commands.send :render, "#{file}:2", '--out', 'out.dot'
       end
     end
 
@@ -222,15 +207,15 @@ describe Seafoam::Commands do
   describe '#cfg2asm' do
     if Seafoam::SpecHelpers.dependencies_installed?
       it 'prints format and version' do
-        @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg', __dir__), '--no-comments')
+        @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg.gz', __dir__), '--no-comments')
         lines = @out.string.lines.map(&:rstrip)
-        expect(lines[1]).to include "0x117df59e0:\tnop	dword ptr [rax + rax]"
-        expect(lines[-1]).to include "0x117df5a47:\thlt"
+        expect(lines[1]).to include ":\tnop	dword ptr [rax + rax]"
+        expect(lines[-1]).to include ":\thlt"
       end
     else
       it 'raises an exception if Capstone is not installed' do
         expect do
-          @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg', __dir__), '--no-comments')
+          @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg.gz', __dir__), '--no-comments')
         end.to raise_error(RuntimeError, /Could not load Capstone - is it installed?/)
       end
     end
