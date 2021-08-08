@@ -241,7 +241,7 @@ the IGV feature of gradually revealing nodes.
 `render` supports these options:
 
 * `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
-* `--option key value` for custom annotators
+* `--option key value` for pass options.
 
 #### Convert a file
 
@@ -324,7 +324,7 @@ Use `seafoam file.bgv debug` to debug file parsing.
 
 ## More documentation
 
-* [Graph annotators](docs/annotators.md)
+* [Graph passes](docs/passes.md)
 * [Details of the BGV file format](docs/bgv.md)
 * [How to get graphs from various compilers](docs/getting-graphs.md)
 

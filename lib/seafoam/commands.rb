@@ -280,7 +280,7 @@ module Seafoam
         parser.read_graph_header
         graph = parser.read_graph
         if node_id
-          Annotators.apply graph
+          Passes.apply graph
           node = graph.nodes[node_id]
           raise ArgumentError, 'node not found' unless node
 
@@ -379,7 +379,7 @@ module Seafoam
       raise ArgumentError, 'render needs at least a graph' unless graph_index
       raise ArgumentError, 'render only works with a graph' unless rest == [nil, nil]
 
-      annotator_options = {
+      pass_options = {
         hide_frame_state: true,
         hide_floating: false,
         reduce_edges: true
@@ -402,11 +402,11 @@ module Seafoam
 
           spotlight_nodes = spotlight_arg.split(',').map { |n| Integer(n) }
         when '--show-frame-state'
-          annotator_options[:hide_frame_state] = false
+          pass_options[:hide_frame_state] = false
         when '--hide-floating'
-          annotator_options[:hide_floating] = true
+          pass_options[:hide_floating] = true
         when '--no-reduce-edges'
-          annotator_options[:reduce_edges] = false
+          pass_options[:reduce_edges] = false
         when '--draw-blocks'
           draw_blocks = true
         when '--option'
@@ -417,7 +417,7 @@ module Seafoam
           raise ArgumentError, "no value for --option #{key}" unless out_file
 
           value = { 'true' => true, 'false' => 'false' }.fetch(key, value)
-          annotator_options[key.to_sym] = value
+          pass_options[key.to_sym] = value
         else
           raise ArgumentError, "unexpected option #{arg}"
         end
@@ -440,7 +440,7 @@ module Seafoam
       with_graph(file, graph_index) do |parser|
         parser.skip_graph_header
         graph = parser.read_graph
-        Annotators.apply graph, annotator_options
+        Passes.apply graph, pass_options
         if spotlight_nodes
           spotlight = Spotlight.new(graph)
           spotlight_nodes.each do |node_id|

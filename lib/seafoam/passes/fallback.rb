@@ -1,15 +1,15 @@
 module Seafoam
-  module Annotators
-    # The fallback annotator always applies, and adds some basic annotations.
+  module Passes
+    # The fallback pass always applies, and adds some basic properties.
     # Works for example with Truffle AST and call graphs, but also means anyone
     # can emit a graph with 'label' properties and we can do something useful
     # with it.
-    class FallbackAnnotator < Annotator
+    class FallbackPass < Pass
       def self.applies?(_graph)
         true
       end
 
-      def annotate(graph)
+      def apply(graph)
         graph.nodes.each_value do |node|
           if node.props[:label].nil? && node.props['label']
             node.props[:label] = node.props['label']
