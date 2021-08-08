@@ -200,6 +200,10 @@ Output:
 
 #### Print node source information
 
+For Truffle graphs you need to run with `--engine.NodeSourcePositions` to get
+useful source information. This only works on JVM or on Native when built with
+`-H:+IncludeNodeSourcePositions`, which isn't set by default.
+
 ```
 % seafoam examples/fib-ruby.bgv.gz:2:2436 source
 java.lang.Math#addExact
@@ -303,8 +307,6 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 	0x124b8de99:	call	0x11a8fee20
 	0x124b8de9e:	nop	
 	0x124b8de9f:	hlt	
-
-...
 ```
 
 ## Options for GraalVM graphs

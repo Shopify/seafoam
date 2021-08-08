@@ -52,6 +52,10 @@ You may want to disable on-stack-replacement and inlining with
 `--engine.Inlining=false` and `--engine.OSR=false` in order to make graphs
 easier to understand.
 
+For source information, you want to run with `--engine.NodeSourcePositions`.
+This only works on JVM or on Native when built with
+`-H:+IncludeNodeSourcePositions`, which isn't set by default.
+
 You may need to use `--experimental-options`.
 
 ## Getting basic blocks
