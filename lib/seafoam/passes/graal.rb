@@ -401,6 +401,7 @@ module Seafoam
         org.graalvm.compiler.virtual.nodes.MaterializedObjectState
       ]
 
+      # Pi nodes add type information.
       PI_NODES = [
         'org.graalvm.compiler.nodes.PiNode',
         'org.graalvm.compiler.nodes.PiArrayNode'
