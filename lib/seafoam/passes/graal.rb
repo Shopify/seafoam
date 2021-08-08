@@ -93,6 +93,11 @@ module Seafoam
             name_template = 'π'
           end
 
+          # Use a symbol for PiArrayNode.
+          if node_class == 'org.graalvm.compiler.nodes.PiArrayNode'
+            name_template = '[π]'
+          end
+
           # Use a symbol for PhiNode.
           if node_class == 'org.graalvm.compiler.nodes.ValuePhiNode'
             name_template = 'ϕ'
