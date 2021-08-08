@@ -4,25 +4,25 @@ require 'rspec'
 
 require_relative '../spec_helpers'
 
-describe Seafoam::Annotators::GraalAnnotator do
+describe Seafoam::Passes::GraalPass do
   it 'applies to Graal graphs' do
-    expect(Seafoam::Annotators::GraalAnnotator.applies?(Seafoam::SpecHelpers.example_graph('fib-java', 0))).to be true
+    expect(Seafoam::Passes::GraalPass.applies?(Seafoam::SpecHelpers.example_graph('fib-java', 0))).to be true
   end
 
   it 'does not apply to Truffle trees' do
-    expect(Seafoam::Annotators::GraalAnnotator.applies?(Seafoam::SpecHelpers.example_graph('fib-js', 0))).to be false
+    expect(Seafoam::Passes::GraalPass.applies?(Seafoam::SpecHelpers.example_graph('fib-js', 0))).to be false
   end
 
   it 'applies to Truffle graphs' do
-    expect(Seafoam::Annotators::GraalAnnotator.applies?(Seafoam::SpecHelpers.example_graph('fib-js', 2))).to be true
+    expect(Seafoam::Passes::GraalPass.applies?(Seafoam::SpecHelpers.example_graph('fib-js', 2))).to be true
   end
 
   describe 'when run' do
     describe 'without options' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new({})
-        annotator.annotate @graph
+        pass = Seafoam::Passes::GraalPass.new({})
+        pass.apply @graph
       end
 
       it 'annotates all nodes with a kind' do
@@ -51,13 +51,13 @@ describe Seafoam::Annotators::GraalAnnotator do
     describe 'with :hide_frame_state' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new(hide_frame_state: true)
-        annotator.annotate @graph
+        pass = Seafoam::Passes::GraalPass.new(hide_frame_state: true)
+        pass.apply @graph
       end
 
       it 'sets the hidden property on all frame state nodes' do
         frame_state_nodes = @graph.nodes.values.select do |n|
-          Seafoam::Annotators::GraalAnnotator::FRAME_STATE_NODES.include?(n.props.dig(:node_class, :node_class))
+          Seafoam::Passes::GraalPass::FRAME_STATE_NODES.include?(n.props.dig(:node_class, :node_class))
         end
         expect(frame_state_nodes.all? { |n| n.props[:hidden] }).to be_truthy
       end
@@ -66,8 +66,8 @@ describe Seafoam::Annotators::GraalAnnotator do
     describe 'with :hide_floating' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new(hide_floating: true)
-        annotator.annotate @graph
+        pass = Seafoam::Passes::GraalPass.new(hide_floating: true)
+        pass.apply @graph
       end
 
       it 'sets the hidden property on all nodes without a control edge' do
@@ -81,13 +81,13 @@ describe Seafoam::Annotators::GraalAnnotator do
     describe 'with :reduce_edges' do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
-        annotator = Seafoam::Annotators::GraalAnnotator.new(reduce_edges: true)
-        annotator.annotate @graph
+        pass = Seafoam::Passes::GraalPass.new(reduce_edges: true)
+        pass.apply @graph
       end
 
       it 'inlines all constant nodes' do
         constant_nodes = @graph.nodes.values.select do |n|
-          Seafoam::Annotators::GraalAnnotator::SIMPLE_INPUTS.include?(n.props.dig(:node_class, :node_class))
+          Seafoam::Passes::GraalPass::SIMPLE_INPUTS.include?(n.props.dig(:node_class, :node_class))
         end
         expect(constant_nodes.all? { |n| n.props[:inlined] }).to be_truthy
       end

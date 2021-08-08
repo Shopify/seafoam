@@ -1,17 +1,17 @@
 module Seafoam
-  module Annotators
-    # The Graal annotator applies if it looks like it was compiled by Graal or
+  module Passes
+    # The Graal pass applies if it looks like it was compiled by Graal or
     # Truffle.
-    class GraalAnnotator < Annotator
+    class GraalPass < Pass
       def self.applies?(graph)
         graph.props.values.any? do |v|
           TRIGGERS.any? { |t| v.to_s.include?(t) }
         end
       end
 
-      def annotate(graph)
-        annotate_nodes graph
-        annotate_edges graph
+      def apply(graph)
+        apply_nodes graph
+        apply_edges graph
         hide_frame_state graph if @options[:hide_frame_state]
         hide_floating graph if @options[:hide_floating]
         reduce_edges graph if @options[:reduce_edges]
@@ -21,7 +21,7 @@ module Seafoam
       private
 
       # Annotate nodes with their label and kind
-      def annotate_nodes(graph)
+      def apply_nodes(graph)
         graph.nodes.each_value do |node|
           # The Java class of the node.
           node_class = node.props.dig(:node_class, :node_class)
@@ -208,7 +208,7 @@ module Seafoam
       end
 
       # Annotate edges with their label and kind.
-      def annotate_edges(graph)
+      def apply_edges(graph)
         graph.edges.each do |edge|
           if edge.to.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
             merge_node = edge.to.edges.find { |e| e.props[:name] == 'merge' }.from
