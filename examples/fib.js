@@ -1,4 +1,4 @@
-// % node --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --vm.Dgraal.Dump=Truffle:2 fib.js 14
+// % node --experimental-options --engine.CompileOnly=fib --engine.TraceCompilation --engine.MultiTier=false --engine.Inlining=false --vm.Dgraal.Dump=Truffle:1 --vm.Dgraal.PrintBackendCFG=true fib.js 14
 
 function fib(n) {
   if (n <= 1) {

@@ -6,7 +6,7 @@ require_relative '../spec_helpers'
 
 describe Seafoam::CFG::CFGParser do
   before :all do
-    @example_cfg = File.expand_path('../../../examples/java/exampleIf.cfg', __dir__)
+    @example_cfg = File.expand_path('../../../examples/java/exampleIf.cfg.gz', __dir__)
   end
 
   it 'correctly parses information from an nmethod' do
@@ -15,7 +15,7 @@ describe Seafoam::CFG::CFGParser do
     nmethod = parser.read_nmethod
     expect(nmethod.code.arch).to eq 'AMD64'
     expect(nmethod.code.arch_width).to eq '64'
-    expect(nmethod.code.base).to eq 0x1183037a0
-    expect(nmethod.comments.size).to eq 25
+    expect(nmethod.code.base).to eq 0x124B93700
+    expect(nmethod.comments.size).to eq 27
   end
 end

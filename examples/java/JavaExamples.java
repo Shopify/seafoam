@@ -1,6 +1,6 @@
 /*
  * % javac JavaExamples.java
- * % java -XX:-UseOnStackReplacement '-XX:CompileCommand=dontinline,*::*' -XX:+PrintCompilation -Dgraal.PrintBackendCFG=true -Dgraal.Dump=:3 JavaExamples
+ * % java -XX:-UseOnStackReplacement '-XX:CompileCommand=dontinline,*::*' -XX:+PrintCompilation -Dgraal.PrintBackendCFG=true -Dgraal.PrintGraphWithSchedule=true -Dgraal.Dump=:3 JavaExamples
  */
 
 import java.lang.reflect.Field;
@@ -41,8 +41,6 @@ class JavaExamples {
             exampleStringSwitch(new String[]{"foo", "bar", "baz"}[RANDOM.nextInt(3)], RANDOM.nextInt(), RANDOM.nextInt(), RANDOM.nextInt());
             exampleWhile(RANDOM.nextInt(10));
             exampleFor(RANDOM.nextInt(10));
-            exampleReducible(RANDOM.nextBoolean(), RANDOM.nextInt(10));
-            Irreducible.exampleIrreducible(RANDOM.nextBoolean(), RANDOM.nextInt(10));
             exampleNestedWhile(RANDOM.nextInt(10));
             exampleWhileBreak(RANDOM.nextInt(10));
             exampleNestedWhileBreak(RANDOM.nextInt(10));
@@ -212,19 +210,6 @@ class JavaExamples {
         return count;
     }
 
-    private static int exampleReducible(boolean condition, int count) {
-        int a = count;
-        if (condition) {
-            a = count - 1;
-        }
-        while (a > 0) {
-            intField = a;
-          inner:
-            a--;
-        }
-        return count;
-    }
-
     private static int exampleFor(int count) {
         for (int a = count; a > 0; a--) {
             intField = a;
@@ -301,6 +286,7 @@ class JavaExamples {
     }
 
     private static void exampleFieldWrite(ExampleObject object, int x) {
+        assert object != null; // otherwise this is a 'trivial' method and won't go past tier 1
         object.x = x;
     }
 

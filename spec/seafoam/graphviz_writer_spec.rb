@@ -9,7 +9,7 @@ require_relative 'spec_helpers'
 describe Seafoam::GraphvizWriter do
   describe '#write_graph' do
     before :all do
-      file = File.expand_path('../../examples/fib-java.bgv', __dir__)
+      file = File.expand_path('../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__)
       parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.read_graph_preheader

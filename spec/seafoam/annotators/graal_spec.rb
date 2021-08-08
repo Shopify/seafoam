@@ -20,7 +20,7 @@ describe Seafoam::Annotators::GraalAnnotator do
   describe 'when run' do
     describe 'without options' do
       before :all do
-        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 8)
+        @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
         annotator = Seafoam::Annotators::GraalAnnotator.new({})
         annotator.annotate @graph
       end
@@ -38,19 +38,19 @@ describe Seafoam::Annotators::GraalAnnotator do
       end
 
       it 'annotates not negated GuardNodes with "Guard, else ..."' do
-        expect(@graph.nodes[7101].props['negated']).to be false
-        expect(@graph.nodes[7101].props[:label]).to start_with 'Guard, else'
+        expect(@graph.nodes[2497].props['negated']).to be false
+        expect(@graph.nodes[2497].props[:label]).to start_with 'Guard, else'
       end
 
       it 'annotates negated GuardNodes with "Guard not, else ..."' do
-        expect(@graph.nodes[7102].props['negated']).to be true
-        expect(@graph.nodes[7102].props[:label]).to start_with 'Guard not, else'
+        expect(@graph.nodes[1192].props['negated']).to be true
+        expect(@graph.nodes[1192].props[:label]).to start_with 'Guard not, else'
       end
     end
 
     describe 'with :hide_frame_state' do
       before :all do
-        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
+        @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
         annotator = Seafoam::Annotators::GraalAnnotator.new(hide_frame_state: true)
         annotator.annotate @graph
       end
@@ -65,7 +65,7 @@ describe Seafoam::Annotators::GraalAnnotator do
 
     describe 'with :hide_floating' do
       before :all do
-        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
+        @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
         annotator = Seafoam::Annotators::GraalAnnotator.new(hide_floating: true)
         annotator.annotate @graph
       end
@@ -80,7 +80,7 @@ describe Seafoam::Annotators::GraalAnnotator do
 
     describe 'with :reduce_edges' do
       before :all do
-        @graph = Seafoam::SpecHelpers.example_graph('matmult-ruby', 2)
+        @graph = Seafoam::SpecHelpers.example_graph('fib-ruby', 2)
         annotator = Seafoam::Annotators::GraalAnnotator.new(reduce_edges: true)
         annotator.annotate @graph
       end

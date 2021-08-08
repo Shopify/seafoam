@@ -36,9 +36,7 @@ module Seafoam
       @out.puts JSON.pretty_generate(prepare_json(object))
     end
 
-    private
-
-    def prepare_json(object)
+    def self.prepare_json(object)
       case object
       when Float
         if object.nan?

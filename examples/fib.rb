@@ -1,4 +1,4 @@
-# % ruby --experimental-options --engine.CompileOnly=fib --engine.Inlining=false --engine.OSR=false --vm.Dgraal.Dump=Truffle:2 fib.rb 14
+# % ruby --jvm --experimental-options --engine.CompileOnly=fib --engine.TraceCompilation --engine.NodeSourcePositions --engine.MultiTier=false --engine.Inlining=false --vm.Dgraal.Dump=Truffle:1 --vm.Dgraal.PrintBackendCFG=true fib.rb 14
 
 def fib(n)
   if n <= 1
