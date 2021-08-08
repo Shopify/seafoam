@@ -21,6 +21,7 @@ module Seafoam
     def self.passes
       # We have a defined order for passes to run - these passes at the start.
       pre_passes = [
+        TrufflePass,
         GraalPass
       ]
 

@@ -24,6 +24,8 @@ module Seafoam
       # Annotate nodes with their label and kind
       def apply_nodes(graph)
         graph.nodes.each_value do |node|
+          next if node.props[:label]
+
           # The Java class of the node.
           node_class = node.props.dig(:node_class, :node_class)
 
@@ -321,19 +323,18 @@ module Seafoam
       # useful day-to-day for understanding the graph. Connect the user to the
       # actual object, which may be several steps away.
       def hide_pi(graph)
-        graph.edges.each do |edge|
-          next unless PI_NODES.include?(edge.from.props.dig(:node_class, :node_class))
+        loop do
+          umodified = true
+          graph.edges.each do |edge|
+            next unless Graal::Pi::PI_NODES.include?(edge.from.props.dig(:node_class, :node_class))
 
-          object = follow_pi_object(edge.from)
-          graph.create_edge object, edge.to, edge.props.merge({ synthetic: true })
-          edge.props[:hidden] = true
+            object = Graal::Pi.follow_pi_object(edge.from)
+            graph.create_edge object, edge.to, edge.props.merge({ synthetic: true })
+            graph.remove_edge edge
+            umodified = false
+          end
+          break if umodified
         end
-      end
-
-      # Find the actual value behind potentially a chain of pi nodes.
-      def follow_pi_object(node)
-        node = node.edges.find { |edge| edge.props[:name] == 'object' }.from while PI_NODES.include?(node.props.dig(:node_class, :node_class))
-        node
       end
 
       # Hide floating nodes. This highlights just the control flow backbone.
@@ -399,12 +400,6 @@ module Seafoam
       FRAME_STATE_NODES = %w[
         org.graalvm.compiler.nodes.FrameState
         org.graalvm.compiler.virtual.nodes.MaterializedObjectState
-      ]
-
-      # Pi nodes add type information.
-      PI_NODES = [
-        'org.graalvm.compiler.nodes.PiNode',
-        'org.graalvm.compiler.nodes.PiArrayNode'
       ]
     end
   end
