@@ -13,6 +13,7 @@ module Seafoam
         apply_nodes graph
         apply_edges graph
         hide_frame_state graph if @options[:hide_frame_state]
+        hide_pi graph if @options[:hide_pi]
         hide_floating graph if @options[:hide_floating]
         reduce_edges graph if @options[:reduce_edges]
         hide_unused_nodes graph
@@ -316,6 +317,25 @@ module Seafoam
         end
       end
 
+      # Hide pi nodes - they add information for optimisation, but not generally
+      # useful day-to-day for understanding the graph. Connect the user to the
+      # actual object, which may be several steps away.
+      def hide_pi(graph)
+        graph.edges.each do |edge|
+          next unless PI_NODES.include?(edge.from.props.dig(:node_class, :node_class))
+
+          object = follow_pi_object(edge.from)
+          graph.create_edge object, edge.to, edge.props.merge({ synthetic: true })
+          edge.props[:hidden] = true
+        end
+      end
+
+      # Find the actual value behind potentially a chain of pi nodes.
+      def follow_pi_object(node)
+        node = node.edges.find { |edge| edge.props[:name] == 'object' }.from while PI_NODES.include?(node.props.dig(:node_class, :node_class))
+        node
+      end
+
       # Hide floating nodes. This highlights just the control flow backbone.
       def hide_floating(graph)
         graph.nodes.each_value do |node|
@@ -337,10 +357,10 @@ module Seafoam
         end
       end
 
-      # Hide nodes that have no non-hidden users and no control flow in. These
-      # would display as a node floating unconnected to the rest of the graph
-      # otherwise. An exception is made for node with an anchor edge coming in,
-      # as some guards are anchored like this.
+      # Hide nodes that have no non-hidden users or edges and no control flow
+      # in. These would display as a node floating unconnected to the rest of
+      # the graph otherwise. An exception is made for node with an anchor edge
+      # coming in, as some guards are anchored like this.
       def hide_unused_nodes(graph)
         loop do
           modified = false
@@ -349,7 +369,7 @@ module Seafoam
             # don't hide them.
             next if node.props['truffleCallees']
 
-            next unless node.outputs.all? { |edge| edge.to.props[:hidden] } &&
+            next unless node.outputs.all? { |edge| edge.to.props[:hidden] || edge.props[:hidden] } &&
                         node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
                         node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
 
@@ -379,6 +399,11 @@ module Seafoam
       FRAME_STATE_NODES = %w[
         org.graalvm.compiler.nodes.FrameState
         org.graalvm.compiler.virtual.nodes.MaterializedObjectState
+      ]
+
+      PI_NODES = [
+        'org.graalvm.compiler.nodes.PiNode',
+        'org.graalvm.compiler.nodes.PiArrayNode'
       ]
     end
   end
