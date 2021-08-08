@@ -244,7 +244,7 @@ module Seafoam
     end
 
     def search_object(tag, object, terms)
-      full_text = JSON.generate(object)
+      full_text = JSON.generate(JSONWriter.prepare_json(object))
       full_text_down = full_text.downcase
       start = 0
       terms.each do |t|
