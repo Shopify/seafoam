@@ -286,6 +286,7 @@ class JavaExamples {
     }
 
     private static void exampleFieldWrite(ExampleObject object, int x) {
+        assert object != null; // otherwise this is a 'trivial' method and won't go past tier 1
         object.x = x;
     }
 
