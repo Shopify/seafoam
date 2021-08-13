@@ -19,14 +19,21 @@ module Seafoam
 
     # Get a list of all passes in the system.
     def self.passes
-      # Get all subclasses of Pass.
-      passes = Pass::SUBCLASSES.dup
+      # We have a defined order for passes to run - these passes at the start.
+      pre_passes = [
+        TrufflePass,
+        GraalPass
+      ]
 
-      # We want the FallbackPass to run last.
-      passes.delete FallbackPass
-      passes.push FallbackPass
+      # The fallback pass runs last.
+      post_passes = [
+        FallbackPass
+      ]
 
-      passes
+      # Any extra passes in the middle.
+      extra_passes = Pass::SUBCLASSES.dup - pre_passes - post_passes
+
+      pre_passes + extra_passes + post_passes
     end
   end
 

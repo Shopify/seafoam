@@ -72,7 +72,7 @@ describe Seafoam::Passes::GraalPass do
 
       it 'sets the hidden property on all frame state nodes' do
         frame_state_nodes = @graph.nodes.values.select do |n|
-          Seafoam::Passes::GraalPass::PI_NODES.include?(n.props.dig(:node_class, :node_class))
+          Seafoam::Graal::Pi::PI_NODES.include?(n.props.dig(:node_class, :node_class))
         end
         expect(frame_state_nodes.all? { |n| n.props[:hidden] }).to be_truthy
       end

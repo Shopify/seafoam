@@ -9,6 +9,7 @@ The *Ideal Graph Visualizer*, or *IGV*, is the tool usually used to work with
 GraalVM compiler graphs. Seafoam aims to solve several problems with IGV. Unlike
 IGV, Seafoam:
 
+* has special passes to make Truffle graphs easier to read
 * is open source and can be used according to the MIT license
 * supports gzip-compressed BGV files
 * is able to some extent seek BGV files to load specific graphs without loading the rest of the file
@@ -311,6 +312,7 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 
 ## Options for GraalVM graphs
 
+* `--full-truffle-args` shows full Truffle argument nodes, which are simplified by default
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--show-pi` shows 'pi' nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow

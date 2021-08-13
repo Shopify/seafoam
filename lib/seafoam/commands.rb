@@ -380,6 +380,7 @@ module Seafoam
       raise ArgumentError, 'render only works with a graph' unless rest == [nil, nil]
 
       pass_options = {
+        simplify_truffle_args: true,
         hide_frame_state: true,
         hide_pi: true,
         hide_floating: false,
@@ -402,6 +403,8 @@ module Seafoam
           raise ArgumentError, 'no list for --spotlight' unless spotlight_arg
 
           spotlight_nodes = spotlight_arg.split(',').map { |n| Integer(n) }
+        when '--full-truffle-args'
+          pass_options[:simplify_truffle_args] = false
         when '--show-frame-state'
           pass_options[:hide_frame_state] = false
         when '--show-pi'
@@ -567,6 +570,7 @@ module Seafoam
       @out.puts '                    graph.svg'
       @out.puts '                    graph.png'
       @out.puts '                    graph.dot'
+      @out.puts '               --full-truffle-args'
       @out.puts '               --show-frame-state'
       @out.puts '               --show-pi'
       @out.puts '               --hide-floating'
