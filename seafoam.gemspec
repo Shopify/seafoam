@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.homepage = 'https://github.com/Shopify/seafoam'
   spec.license = 'MIT'
 
-  spec.files = `git ls-files`.split("\n").reject { |f| f.end_with?('.bgv') || f.end_with?('.cfg') }
+  spec.files = `git ls-files`.split("\n").reject { |f| f.end_with?('.gz') }
   spec.bindir = 'bin'
   spec.executables = %w[seafoam bgv2json bgv2isabelle cfg2asm]
 
