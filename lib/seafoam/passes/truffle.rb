@@ -31,6 +31,8 @@ module Seafoam
           index = index_node.props['rawvalue']
 
           arg_node = graph.create_node(graph.new_id, { synthetic: true, inlined: true, label: "T(#{index})", kind: 'input' })
+          load_block = graph.blocks.find { |block| block.nodes.include?(node) }
+          load_block.nodes.push arg_node if load_block
 
           node.outputs.each do |output|
             next if output.props[:name] == 'next'

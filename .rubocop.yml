@@ -24,6 +24,9 @@ Style/GuardClause:
 Style/IfUnlessModifier:
   Enabled: false
 
+Style/SafeNavigation:
+  Enabled: false
+
 Lint/InterpolationCheck:
   Enabled: false
 

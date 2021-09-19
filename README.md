@@ -244,6 +244,14 @@ the IGV feature of gradually revealing nodes.
 * `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
 * `--option key value` for pass options.
 
+#### Scheduling
+
+Give a schedule for a graph.
+
+```
+% seafoam examples/fib-java.bgv.gz:0 schedule
+```
+
 #### Convert a file
 
 Convert a BGV file to the Isabelle graph format.

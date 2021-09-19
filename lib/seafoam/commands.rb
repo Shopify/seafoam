@@ -37,6 +37,8 @@ module Seafoam
           source name, *args
         when 'render'
           render name, *args
+        when 'schedule'
+          schedule name, *args
         when 'debug'
           debug name, *args
         else
@@ -473,6 +475,38 @@ module Seafoam
             raise 'Could not run Graphviz - is it installed?'
           end
           autoopen out_file unless explicit_out_file
+        end
+      end
+    end
+
+    # seafoam file.bgv:n schedule options...
+    def schedule(name, *args)
+      file, graph_index, *rest = parse_name(name)
+      raise ArgumentError, 'schedule needs at least a graph' unless graph_index
+      raise ArgumentError, 'schedule only works with a graph' unless rest == [nil, nil]
+
+      pass_options = {
+        simplify_truffle_args: true,
+        hide_frame_state: true,
+        hide_pi: true,
+        hide_floating: false
+      }
+      until args.empty?
+        arg = args.shift
+        raise ArgumentError, "unexpected option #{arg}"
+      end
+
+      with_graph(file, graph_index) do |parser|
+        parser.skip_graph_header
+        graph = parser.read_graph
+        Passes.apply graph, pass_options
+        scheduler = Scheduler.new(graph)
+        scheduler.schedule
+        scheduler.blocks.each do |block|
+          puts "#{block.id}:"
+          block.nodes.each do |node|
+            puts "  #{node.id}(#{node.inputs.map { |i| i.from.id }.join(', ')})"
+          end
         end
       end
     end
