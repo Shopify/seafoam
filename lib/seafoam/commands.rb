@@ -614,10 +614,15 @@ module Seafoam
 
     # Open a file for the user if possible.
     def autoopen(file)
-      if RUBY_PLATFORM.include?('darwin') && @out.tty?
+      return unless @out.tty?
+
+      case RUBY_PLATFORM
+      when /darwin/
         system 'open', file
-        # Don't worry if it fails.
+      when /linux/
+        system 'xdg-open', file
       end
+      # Don't worry if it fails.
     end
   end
 end
