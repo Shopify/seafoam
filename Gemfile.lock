@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    seafoam (0.8)
+    seafoam (0.9)
       crabstone (~> 4.0)
 
 GEM
