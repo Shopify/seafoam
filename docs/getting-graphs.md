@@ -24,8 +24,12 @@ graph without significantly effecting too much how the logic in it is compiled.
   -Dgraal.PartialUnroll=false \
   -Dgraal.LoopPeeling=false \
   -Dgraal.LoopUnswitch=false \
-  -Dgraal.OptLoopTransform=false \
-  -Dgraal.OptScheduleOutOfLoops=false \
+  -Dgraal.OptScheduleOutOfLoops=false
+```
+
+Also on Graal EE:
+
+```
   -Dgraal.VectorizeLoops=false
 ```
 
@@ -41,6 +45,20 @@ When using `native-image` you will want to use the `-H:` format.
 
 Use the same options as for GraalVM for Java, except they're prefixed with
 `--vm.`, for example `--vm.Dgraal.Dump=Truffle:1`.
+
+```
+  --vm.Dgraal.FullUnroll=false \
+  --vm.Dgraal.PartialUnroll=false \
+  --vm.Dgraal.LoopPeeling=false \
+  --vm.Dgraal.LoopUnswitch=false \
+  --vm.Dgraal.OptScheduleOutOfLoops=false
+```
+
+On Graal EE:
+
+```
+  --vm.Dgraal.VectorizeLoops=false
+```
 
 Use with `--engine.CompileOnly=foo`.
 
