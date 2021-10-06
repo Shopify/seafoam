@@ -262,8 +262,6 @@ module Seafoam
           # loopBegin edges point from LoopEndNode (continue) and LoopExitNode
           # (break) to the LoopBeginNode. Both are drawn reversed.
           when 'loopBegin'
-            edge.props[:hidden] = true
-
             case edge.to.props.dig(:node_class, :node_class)
             when 'org.graalvm.compiler.nodes.LoopEndNode'
               # If it's from the LoopEnd then it's the control edge to follow.
