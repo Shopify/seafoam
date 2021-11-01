@@ -247,9 +247,14 @@ module Seafoam
               edge.props[:label] = 'unwind'
             end
 
+          # XXXXXX
+          when 'callTarget'
+            edge.props[:label] = nil
+            edge.props[:kind] = 'info'
+
           # Info edges, which are drawn reversed as they point from the user
           # to the info.
-          when 'frameState', 'callTarget', 'stateAfter'
+          when 'frameState', 'stateAfter'
             edge.props[:label] = nil
             edge.props[:kind] = 'info'
             edge.props[:reverse] = true

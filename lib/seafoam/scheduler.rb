@@ -29,6 +29,12 @@ module Seafoam
         block.nodes.push(*input_block.nodes)
         blocks.push block
       end
+
+      @graph.nodes.each_value do |node|
+        unless blocks.flat_map(&:nodes).include?(node)
+          blocks.first.nodes.push node
+        end
+      end
     end
 
     # Put every node into a basic block.
@@ -51,6 +57,7 @@ module Seafoam
           raise "can't find a ready node out of #{to_schedule.map(&:id).join(', ')}" unless next_index
 
           next_node = to_schedule.delete_at(next_index)
+
           scheduled.add next_node
           block.nodes.push next_node
         end

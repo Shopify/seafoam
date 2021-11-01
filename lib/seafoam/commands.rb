@@ -39,6 +39,8 @@ module Seafoam
           render name, *args
         when 'schedule'
           schedule name, *args
+        when 'decompile'
+          decompile name, *args
         when 'debug'
           debug name, *args
         else
@@ -503,11 +505,45 @@ module Seafoam
         scheduler = Scheduler.new(graph)
         scheduler.schedule
         scheduler.blocks.each do |block|
-          puts "#{block.id}:"
+          puts "block#{block.id}:"
           block.nodes.each do |node|
             puts "  #{node.id}(#{node.inputs.map { |i| i.from.id }.join(', ')})"
           end
         end
+      end
+    end
+
+    # seafoam file.bgv:n decompile options...
+    def decompile(name, *args)
+      file, graph_index, *rest = parse_name(name)
+      raise ArgumentError, 'decompile needs at least a graph' unless graph_index
+      raise ArgumentError, 'decompile only works with a graph' unless rest == [nil, nil]
+
+      pass_options = {
+        simplify_truffle_args: true,
+        hide_frame_state: true,
+        hide_pi: true,
+        hide_floating: false
+      }
+      until args.empty?
+        arg = args.shift
+        raise ArgumentError, "unexpected option #{arg}"
+      end
+
+      with_graph(file, graph_index) do |parser|
+        parser.skip_graph_header
+        graph = parser.read_graph
+        Passes.apply graph, pass_options
+
+        scheduler = Scheduler.new(graph)
+        scheduler.schedule
+        schedule = scheduler.blocks
+        
+        decompiler = Decompiler::FlatDecompiler.new
+        ast = decompiler.to_ast(schedule)
+
+        gen = Decompiler::Pseudo.new(@out)
+        gen.decompile ast
       end
     end
 
