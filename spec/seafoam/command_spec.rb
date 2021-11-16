@@ -19,10 +19,20 @@ describe Seafoam::Commands do
   end
 
   describe '#info' do
-    it 'prints format and version' do
-      @commands.send :info, @fib_java
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq 'BGV 7.0'
+    describe 'txt format' do
+      it 'prints format and version' do
+        @commands.send :info, @fib_java, Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines.first).to eq 'BGV 7.0'
+      end
+    end
+
+    describe 'json format' do
+      it 'prints format and version' do
+        @commands.send :info, @fib_java, Seafoam::Formatters::Json
+        lines = @out.string.lines.map(&:rstrip)
+        expect(JSON.parse(lines.first)).to eq({ 'major_version' => 7, 'minor_version' => 0 })
+      end
     end
 
     it 'does not work on a graph' do

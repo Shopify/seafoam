@@ -11,6 +11,14 @@ module Seafoam
     # Run the general seafoam command.
     def seafoam(*args)
       first, *args = args
+
+      if first == '--json'
+        formatter_module = Seafoam::Formatters::Json
+        first, *args = args
+      else
+        formatter_module = Seafoam::Formatters::Text
+      end
+
       case first
       when nil, 'help', '-h', '--help', '-help'
         raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
@@ -25,7 +33,7 @@ module Seafoam
         when nil
           help(*args)
         when 'info'
-          info name, *args
+          info name, formatter_module, *args
         when 'list'
           list name, *args
         when 'search'
@@ -186,15 +194,16 @@ module Seafoam
     private
 
     # seafoam file.bgv info
-    def info(name, *args)
+    def info(name, formatter_module, *args)
       file, *rest = parse_name(name)
       raise ArgumentError, 'info only works with a file' unless rest == [nil, nil, nil]
-
       raise ArgumentError, 'info does not take arguments' unless args.empty?
 
       parser = BGV::BGVParser.new(file)
       major, minor = parser.read_file_header(version_check: false)
-      @out.puts "BGV #{major}.#{minor}"
+      formatter = formatter_module::InfoFormatter.new(major, minor)
+
+      @out.puts formatter.format
     end
 
     # seafoam file.bgv list
