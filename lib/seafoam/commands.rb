@@ -35,7 +35,7 @@ module Seafoam
         when 'info'
           info name, formatter_module, *args
         when 'list'
-          list name, *args
+          list name, formatter_module, *args
         when 'search'
           search name, *args
         when 'edges'
@@ -207,23 +207,26 @@ module Seafoam
     end
 
     # seafoam file.bgv list
-    def list(name, *args)
+    def list(name, formatter_module, *args)
       file, *rest = parse_name(name)
       raise ArgumentError, 'list only works with a file' unless rest == [nil, nil, nil]
-
       raise ArgumentError, 'list does not take arguments' unless args.empty?
 
       parser = BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
+      entries = []
       loop do
         index, = parser.read_graph_preheader
         break unless index
 
         graph_header = parser.read_graph_header
-        @out.puts "#{file}:#{index}  #{parser.graph_name(graph_header)}"
+        entries << formatter_module::ListFormatter::Entry.new(file, parser.graph_name(graph_header), index)
         parser.skip_graph
       end
+
+      formatter = formatter_module::ListFormatter.new(entries)
+      @out.puts formatter.format
     end
 
     # seafoam file.bgv:n... search term...

@@ -19,6 +19,19 @@ module Seafoam
           @minor_version = minor_version
         end
       end
+
+      # Formats the output of the `list` command.
+      class ListFormatter
+        include Formatter
+
+        Entry = Struct.new(:file, :graph_name_components, :index)
+
+        attr_reader :entries
+
+        def initialize(entries)
+          @entries = entries
+        end
+      end
     end
   end
 end

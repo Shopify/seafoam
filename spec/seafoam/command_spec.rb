@@ -41,16 +41,32 @@ describe Seafoam::Commands do
   end
 
   describe '#list' do
-    it 'prints graphs' do
-      @commands.send :list, @fib_java
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
-        "#{@fib_java}:0  17:Fib.fib(int)/After parsing",
-        "#{@fib_java}:1  17:Fib.fib(int)/Before phase org.graalvm.compiler.phases.common.LoweringPhase",
-        "#{@fib_java}:2  17:Fib.fib(int)/After high tier",
-        "#{@fib_java}:3  17:Fib.fib(int)/After mid tier",
-        "#{@fib_java}:4  17:Fib.fib(int)/After low tier"
-      ]
+    describe 'txt format' do
+      it 'prints graphs' do
+        @commands.send :list, @fib_java, Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq [
+          "#{@fib_java}:0  17:Fib.fib(int)/After parsing",
+          "#{@fib_java}:1  17:Fib.fib(int)/Before phase org.graalvm.compiler.phases.common.LoweringPhase",
+          "#{@fib_java}:2  17:Fib.fib(int)/After high tier",
+          "#{@fib_java}:3  17:Fib.fib(int)/After mid tier",
+          "#{@fib_java}:4  17:Fib.fib(int)/After low tier"
+        ]
+      end
+    end
+
+    describe 'json format' do
+      it 'prints graphs' do
+        @commands.send :list, @fib_java, Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+        expect(decoded).to eq [
+          { 'graph_index' => 0, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After parsing'] },
+          { 'graph_index' => 1, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'Before phase org.graalvm.compiler.phases.common.LoweringPhase'] },
+          { 'graph_index' => 2, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After high tier'] },
+          { 'graph_index' => 3, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After mid tier'] },
+          { 'graph_index' => 4, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After low tier'] }
+        ]
+      end
     end
 
     it 'does not work on a graph' do
