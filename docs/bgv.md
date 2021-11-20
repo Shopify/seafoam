@@ -32,6 +32,7 @@ GroupDocumentGraph {
 BeginGroup {
   sint8 token = BEGIN_GROUP
   PoolObject name
+  PoolObject short_name
   PoolObject method
   sint32 bci
   Props props
@@ -43,13 +44,15 @@ CloseGroup {
 
 Document {
   sint8 token = BEGIN_DOCUMENT
-  Pops props
+  Props props
 }
 
 Graph {
   sint8 token = BEGIN_GRAPH
+  sint32 id
   String format
-  Args args
+  sint32 args_count
+  PropObject[args_count] args
   GraphBody body
 }
 
@@ -65,13 +68,22 @@ Node {
   sint32 id
   PoolObject node_class
   bool has_predecessor
-  Pops props
+  Props props
   Edge[node_class.inputs.size] edges_in
   Edge[node_class.outputs.size] edges_out
 }
 
 Edge {
-  sint32[inputs_count] nodes
+  DirectEdge | IndirectEdge
+}
+
+DirectEdge {
+  sint32 node
+}
+
+IndirectEdge {
+  sint16 node_count
+  sint32[node_count] nodes
 }
 
 Blocks {
@@ -123,6 +135,16 @@ PropObject {
     struct {
       sint8 PROPERTY_ARRAY
       union {
+        struct {
+          sint8 PROPERTY_DOUBLE
+          sint32 times
+          float64[times] values
+        }
+        struct {
+          sint8 PROPERTY_INT
+          sint32 times
+          sint32[times] values
+        }
         struct {
           sint8 PROPERTY_POOL
           sint32 times
@@ -193,9 +215,10 @@ PoolObject {
           sint32 modifiers
         }
         struct {
-          sint8 type = POOL_NODE_SIGNATURE
+          sint8 type = POOL_SIGNATURE
           sint16 args_count
           PoolObject args[args_count]
+          PoolObject return
         }
         struct {
           sint8 type = POOL_NODE_SOURCE_POSITION
