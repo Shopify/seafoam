@@ -219,6 +219,19 @@ org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
 org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
 ```
 
+#### Describe a graph
+
+Describe the key features of a graph without rendering it.
+
+```
+% seafoam examples/fib-java.bgv.gz:1 describe
+21 nodes, branches, calls
+```
+
+The graph description is a useful way to quickly catch unexpected or undesired
+attributes in a graph and makes comparing two graphs to each other straightforward.
+Such a comparison could be the basis of a regression test.
+
 #### Render a graph
 
 Render a graph as a PDF image and have it opened automatically.

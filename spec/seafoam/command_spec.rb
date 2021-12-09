@@ -5,6 +5,8 @@ require 'seafoam'
 
 require 'rspec'
 
+require_relative 'spec_helpers'
+
 describe Seafoam::Commands do
   before :all do
     @fib_java = File.expand_path('../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__)
@@ -224,6 +226,18 @@ describe Seafoam::Commands do
   describe '#debug' do
     it 'does not work with a graph' do
       expect { @commands.send :debug, "#{@fib_java}:0" }.to raise_error(ArgumentError)
+    end
+  end
+
+  describe '#describe' do
+    it 'does not work if a graph index is not supplied' do
+      expect { @commands.send :describe, @fib_java }.to raise_error(ArgumentError)
+    end
+
+    it 'prints a description of a particular graph index' do
+      @commands.send :describe, "#{@fib_java}:4"
+      lines = @out.string.lines.map(&:rstrip)
+      expect(lines.first).to eq('20 nodes, branches, calls')
     end
   end
 

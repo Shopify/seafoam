@@ -1,4 +1,5 @@
 require 'json'
+require 'set'
 
 module Seafoam
   # Implementations of the command-line commands that you can run in Seafoam.
@@ -39,6 +40,8 @@ module Seafoam
           render name, *args
         when 'debug'
           debug name, *args
+        when 'describe'
+          describe name, *args
         else
           raise ArgumentError, "unknown command #{command}"
         end
@@ -373,6 +376,56 @@ module Seafoam
       end
     end
 
+    # seafoam file.bgv:n describe
+    def describe(name, *args)
+      file, graph_index, *rest = parse_name(name)
+
+      if graph_index.nil? || !rest.all?(&:nil?)
+        raise ArgumentError, 'describe only works with a graph'
+      end
+      raise ArgumentError, 'describe does not take arguments' unless args.empty?
+
+      parser = BGV::BGVParser.new(file)
+      parser.read_file_header
+      parser.skip_document_props
+
+      loop do
+        index, = parser.read_graph_preheader
+        break unless index
+
+        parser.skip_graph_header
+
+        if index != graph_index
+          parser.skip_graph
+          next
+        end
+
+        graph = parser.read_graph
+        notes = Set.new
+
+        graph.nodes.each_value do |node|
+          node_class = node.props.dig(:node_class, :node_class)
+          case node_class
+          when 'org.graalvm.compiler.nodes.IfNode'
+            notes.add 'branches'
+          when 'org.graalvm.compiler.nodes.LoopBeginNode'
+            notes.add 'loops'
+          when 'org.graalvm.compiler.nodes.InvokeNode', 'org.graalvm.compiler.nodes.InvokeWithExceptionNode'
+            notes.add 'calls'
+          end
+        end
+
+        notes.add 'deopts' if graph.nodes[0].outputs.map(&:to)
+                                   .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
+
+        notes.add 'linear' unless notes.include?('branches') || notes.include?('loops')
+
+        @out.puts ["#{graph.nodes.size} nodes", *notes].join(', ')
+
+        break
+      end
+    end
+
     # seafoam file.bgv:n render options...
     def render(name, *args)
       file, graph_index, *rest = parse_name(name)
@@ -564,6 +617,7 @@ module Seafoam
       @out.puts '        file.bgv[:graph][:node[-edge]] edges'
       @out.puts '        file.bgv[:graph][:node[-edge]] props'
       @out.puts '        file.bgv:graph:node source'
+      @out.puts '        file.bgv:graph describe'
       @out.puts '        file.bgv:graph render'
       @out.puts '              --spotlight n,n,n...'
       @out.puts '              --out graph.pdf'
