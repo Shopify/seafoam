@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    seafoam (0.9)
+    seafoam (0.10)
       crabstone (~> 4.0)
 
 GEM
@@ -12,7 +12,7 @@ GEM
     crabstone (4.0.3)
       ffi
     diff-lcs (1.4.4)
-    ffi (1.15.3)
+    ffi (1.15.5)
     parallel (1.20.1)
     parser (3.0.2.0)
       ast (~> 2.4.1)
