@@ -1,6 +1,15 @@
 module Seafoam
   module Formatters
     module Text
+      # A plain-text formatter for the `describe` command.
+      class DescribeFormatter < Seafoam::Formatters::Base::DescribeFormatter
+        def format
+          notes = Seafoam::Graal::GraphDescription::ATTRIBUTES.select { |attr| description.send(attr) }
+
+          ["#{graph.nodes.size} nodes", *notes].join(', ')
+        end
+      end
+
       # A plain-text formatter for the `edges` command.
       class EdgesFormatter < Seafoam::Formatters::Base::EdgesFormatter
         def render_edges_entry(edges)

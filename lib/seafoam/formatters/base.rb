@@ -8,6 +8,18 @@ module Seafoam
         end
       end
 
+      # Formats the output of the `describe` command.
+      class DescribeFormatter
+        include Formatter
+
+        attr_reader :graph, :description
+
+        def initialize(graph, description)
+          @graph = graph
+          @description = description
+        end
+      end
+
       # Formats the output of the `edges` command.
       class EdgesFormatter
         include Formatter

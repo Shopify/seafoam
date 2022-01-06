@@ -49,7 +49,7 @@ module Seafoam
         when 'debug'
           debug name, *args
         when 'describe'
-          describe name, *args
+          describe name, formatter_module, *args
         else
           raise ArgumentError, "unknown command #{command}"
         end
@@ -385,7 +385,7 @@ module Seafoam
     end
 
     # seafoam file.bgv:n describe
-    def describe(name, *args)
+    def describe(name, formatter_module, *args)
       file, graph_index, *rest = parse_name(name)
 
       if graph_index.nil? || !rest.all?(&:nil?)
@@ -409,26 +409,25 @@ module Seafoam
         end
 
         graph = parser.read_graph
-        notes = Set.new
+        description = Seafoam::Graal::GraphDescription.new
 
         graph.nodes.each_value do |node|
           node_class = node.props.dig(:node_class, :node_class)
           case node_class
           when 'org.graalvm.compiler.nodes.IfNode'
-            notes.add 'branches'
+            description.branches = true
           when 'org.graalvm.compiler.nodes.LoopBeginNode'
-            notes.add 'loops'
+            description.loops = true
           when 'org.graalvm.compiler.nodes.InvokeNode', 'org.graalvm.compiler.nodes.InvokeWithExceptionNode'
-            notes.add 'calls'
+            description.calls = true
           end
         end
 
-        notes.add 'deopts' if graph.nodes[0].outputs.map(&:to)
-                                   .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
+        description.deopts = graph.nodes[0].outputs.map(&:to)
+                                  .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
 
-        notes.add 'linear' unless notes.include?('branches') || notes.include?('loops')
-
-        @out.puts ["#{graph.nodes.size} nodes", *notes].join(', ')
+        formatter = formatter_module::DescribeFormatter.new(graph, description)
+        @out.puts formatter.format
 
         break
       end

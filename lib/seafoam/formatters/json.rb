@@ -3,6 +3,16 @@ require 'json'
 module Seafoam
   module Formatters
     module Json
+      # A JSON-based formatter for the `describe` command.
+      class DescribeFormatter < Seafoam::Formatters::Base::DescribeFormatter
+        def format
+          ret = Seafoam::Graal::GraphDescription::ATTRIBUTES.map { |attr| [attr, description.send(attr)] }.to_h
+          ret[:node_count] = graph.nodes.size
+
+          ret.to_json
+        end
+      end
+
       # A JSON-based formatter for the `edges` command.
       class EdgesFormatter < Seafoam::Formatters::Base::EdgesFormatter
         def render_edges_entry(edges)

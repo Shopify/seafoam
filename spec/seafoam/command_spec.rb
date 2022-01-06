@@ -352,14 +352,36 @@ describe Seafoam::Commands do
   end
 
   describe '#describe' do
-    it 'does not work if a graph index is not supplied' do
-      expect { @commands.send :describe, @fib_java }.to raise_error(ArgumentError)
+    describe 'txt format' do
+      it 'does not work if a graph index is not supplied' do
+        expect { @commands.send :describe, @fib_java, Seafoam::Formatters::Text }.to raise_error(ArgumentError)
+      end
+
+      it 'prints a description of a particular graph index' do
+        @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines.first).to eq('20 nodes, branches, calls')
+      end
     end
 
-    it 'prints a description of a particular graph index' do
-      @commands.send :describe, "#{@fib_java}:4"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq('20 nodes, branches, calls')
+    describe 'json format' do
+      it 'does not work if a graph index is not supplied' do
+        expect { @commands.send :describe, @fib_java, Seafoam::Formatters::Json }.to raise_error(ArgumentError)
+      end
+
+      it 'prints a description of a particular graph index' do
+        @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+
+        expect(decoded).to eq({
+                                'node_count' => 20,
+                                'branches' => true,
+                                'calls' => true,
+                                'loops' => false,
+                                'deopts' => false,
+                                'linear' => false
+                              })
+      end
     end
   end
 
