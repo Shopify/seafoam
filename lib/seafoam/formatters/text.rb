@@ -16,6 +16,19 @@ module Seafoam
           end.join("\n")
         end
       end
+
+      # A plain-text formatter for the `source` command.
+      class SourceFormatter < Seafoam::Formatters::Base::SourceFormatter
+        def format
+          Seafoam::Graal::Source.walk(source_position, &method(:render_method)).join("\n")
+        end
+
+        def render_method(method)
+          declaring_class = method[:declaring_class]
+          name = method[:method_name]
+          "#{declaring_class}##{name}"
+        end
+      end
     end
   end
 end

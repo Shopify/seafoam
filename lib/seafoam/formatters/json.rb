@@ -25,6 +25,22 @@ module Seafoam
           end.to_json
         end
       end
+
+      # A JSON-based formatter for the `source` command.
+      class SourceFormatter < Seafoam::Formatters::Base::SourceFormatter
+        def format
+          Seafoam::Graal::Source.walk(source_position, &method(:render_method)).to_json
+        end
+
+        def render_method(method)
+          declaring_class = method[:declaring_class]
+          name = method[:method_name]
+          {
+            class: declaring_class,
+            method: name
+          }
+        end
+      end
     end
   end
 end

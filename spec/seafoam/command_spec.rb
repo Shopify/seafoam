@@ -167,20 +167,41 @@ describe Seafoam::Commands do
   end
 
   describe '#source' do
-    it 'prints source information for a node' do
-      @commands.send :source, "#{@fib_ruby}:2:2436"
-      expect(@out.string).to eq <<~SOURCE
-        java.lang.Math#addExact
-        org.truffleruby.core.numeric.IntegerNodes$AddNode#add
-        org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
-        org.truffleruby.core.inlined.InlinedAddNode#intAdd
-        org.truffleruby.core.inlined.InlinedAddNodeGen#execute
-        org.truffleruby.language.control.IfElseNode#execute
-        org.truffleruby.language.control.SequenceNode#execute
-        org.truffleruby.language.RubyMethodRootNode#execute
-        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
-        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
-      SOURCE
+    describe 'txt format' do
+      it 'prints source information for a node' do
+        @commands.send :source, "#{@fib_ruby}:2:2436", Seafoam::Formatters::Text
+        expect(@out.string).to eq <<~SOURCE
+          java.lang.Math#addExact
+          org.truffleruby.core.numeric.IntegerNodes$AddNode#add
+          org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
+          org.truffleruby.core.inlined.InlinedAddNode#intAdd
+          org.truffleruby.core.inlined.InlinedAddNodeGen#execute
+          org.truffleruby.language.control.IfElseNode#execute
+          org.truffleruby.language.control.SequenceNode#execute
+          org.truffleruby.language.RubyMethodRootNode#execute
+          org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
+          org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
+        SOURCE
+      end
+    end
+
+    describe 'json format' do
+      it 'prints source information for a node' do
+        @commands.send :source, "#{@fib_ruby}:2:2436", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+        expect(decoded).to eq [
+          { 'class' => 'java.lang.Math', 'method' => 'addExact' },
+          { 'class' => 'org.truffleruby.core.numeric.IntegerNodes$AddNode', 'method' => 'add' },
+          { 'class' => 'org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen', 'method' => 'executeAdd' },
+          { 'class' => 'org.truffleruby.core.inlined.InlinedAddNode', 'method' => 'intAdd' },
+          { 'class' => 'org.truffleruby.core.inlined.InlinedAddNodeGen', 'method' => 'execute' },
+          { 'class' => 'org.truffleruby.language.control.IfElseNode', 'method' => 'execute' },
+          { 'class' => 'org.truffleruby.language.control.SequenceNode', 'method' => 'execute' },
+          { 'class' => 'org.truffleruby.language.RubyMethodRootNode', 'method' => 'execute' },
+          { 'class' => 'org.graalvm.compiler.truffle.runtime.OptimizedCallTarget', 'method' => 'executeRootNode' },
+          { 'class' => 'org.graalvm.compiler.truffle.runtime.OptimizedCallTarget', 'method' => 'profiledPERoot' }
+        ]
+      end
     end
   end
 

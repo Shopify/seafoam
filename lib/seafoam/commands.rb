@@ -43,7 +43,7 @@ module Seafoam
         when 'props'
           props name, *args
         when 'source'
-          source name, *args
+          source name, formatter_module, *args
         when 'render'
           render name, *args
         when 'debug'
@@ -372,7 +372,7 @@ module Seafoam
     end
 
     # seafoam file.bgv:n:n source
-    def source(name, *args)
+    def source(name, formatter_module, *args)
       file, graph_index, node_id, edge_id = parse_name(name)
       raise ArgumentError, 'source needs a node' unless node_id
       raise ArgumentError, 'source only works with a node' if edge_id
@@ -384,7 +384,8 @@ module Seafoam
         node = graph.nodes[node_id]
         raise ArgumentError, 'node not found' unless node
 
-        @out.puts Graal::Source.render(node.props['nodeSourcePosition'])
+        formatter = formatter_module::SourceFormatter.new(node.props['nodeSourcePosition'])
+        @out.puts formatter.format
       end
     end
 

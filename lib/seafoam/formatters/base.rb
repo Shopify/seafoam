@@ -32,6 +32,17 @@ module Seafoam
           @entries = entries
         end
       end
+
+      # Formats the output of the `source` command.
+      class SourceFormatter
+        include Formatter
+
+        attr_reader :source_position
+
+        def initialize(source_position)
+          @source_position = source_position
+        end
+      end
     end
   end
 end
