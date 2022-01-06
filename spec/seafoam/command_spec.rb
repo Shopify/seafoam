@@ -110,36 +110,111 @@ describe Seafoam::Commands do
   end
 
   describe '#edges' do
-    it 'prints the number of edges and nodes for a graph' do
-      @commands.send :edges, "#{@fib_java}:0"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq '21 nodes, 30 edges'
+    describe 'txt format' do
+      it 'prints the number of edges and nodes for a graph' do
+        @commands.send :edges, "#{@fib_java}:0", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq ['21 nodes, 30 edges']
+      end
+
+      it 'prints the edges for a node' do
+        @commands.send :edges, "#{@fib_java}:0:13", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq [
+          'Input:',
+          '  13 (Call Fib.fib) <-() 6 (Begin)',
+          '  13 (Call Fib.fib) <-() 14 (FrameState Fib#fib Fib.java:20)',
+          '  13 (Call Fib.fib) <-() 12 (MethodCallTarget)',
+          'Output:',
+          '  13 (Call Fib.fib) ->() 18 (Call Fib.fib)',
+          '  13 (Call Fib.fib) ->(values) 14 (FrameState Fib#fib Fib.java:20)',
+          '  13 (Call Fib.fib) ->(values) 19 (FrameState Fib#fib Fib.java:20)',
+          '  13 (Call Fib.fib) ->(x) 20 (+)'
+        ]
+      end
+
+      it 'prints details for an edge' do
+        @commands.send :edges, "#{@fib_java}:0:13-18", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq ['13 (Call Fib.fib) ->() 18 (Call Fib.fib)']
+      end
+
+      it 'does not work on a file' do
+        expect { @commands.send :edges, @fib_java, Seafoam::Formatters::Text }.to raise_error(ArgumentError)
+      end
     end
 
-    it 'prints the edges for a node' do
-      @commands.send :edges, "#{@fib_java}:0:13"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
-        'Input:',
-        '  13 (Call Fib.fib) <-() 6 (Begin)',
-        '  13 (Call Fib.fib) <-() 14 (FrameState Fib#fib Fib.java:20)',
-        '  13 (Call Fib.fib) <-() 12 (MethodCallTarget)',
-        'Output:',
-        '  13 (Call Fib.fib) ->() 18 (Call Fib.fib)',
-        '  13 (Call Fib.fib) ->(values) 14 (FrameState Fib#fib Fib.java:20)',
-        '  13 (Call Fib.fib) ->(values) 19 (FrameState Fib#fib Fib.java:20)',
-        '  13 (Call Fib.fib) ->(x) 20 (+)'
-      ]
-    end
+    describe 'json format' do
+      it 'prints the number of edges and nodes for a graph' do
+        @commands.send :edges, "#{@fib_java}:0", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
 
-    it 'prints details for an edge' do
-      @commands.send :edges, "#{@fib_java}:0:13-18"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq '13 (Call Fib.fib) ->() 18 (Call Fib.fib)'
-    end
+        expect(decoded).to eq({ 'node_count' => 21, 'edge_count' => 30 })
+      end
 
-    it 'does not work on a file' do
-      expect { @commands.send :edges, @fib_java }.to raise_error(ArgumentError)
+      it 'prints the edges for a node' do
+        @commands.send :edges, "#{@fib_java}:0:13", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+
+        expect(decoded).to eq({
+                                'input' => [
+                                  {
+                                    'from' => { 'id' => '6', 'label' => 'Begin' },
+                                    'to' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  },
+                                  {
+                                    'from' => { 'id' => '14', 'label' => 'FrameState Fib#fib Fib.java:20' },
+                                    'to' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  },
+                                  {
+                                    'from' => { 'id' => '12', 'label' => 'MethodCallTarget' },
+                                    'to' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  }
+                                ],
+                                'output' => [
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '18', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  },
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '14', 'label' => 'FrameState Fib#fib Fib.java:20' },
+                                    'label' => 'values'
+                                  },
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '19', 'label' => 'FrameState Fib#fib Fib.java:20' },
+                                    'label' => 'values'
+                                  },
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '20', 'label' => '+' },
+                                    'label' => 'x'
+                                  }
+                                ]
+                              })
+      end
+
+      it 'prints details for an edge' do
+        @commands.send :edges, "#{@fib_java}:0:13-18", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+
+        expect(decoded).to eq [
+          {
+            'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+            'to' => { 'id' => '18', 'label' => 'Call Fib.fib' },
+            'label' => nil
+          }
+        ]
+      end
+
+      it 'does not work on a file' do
+        expect { @commands.send :edges, @fib_java, Seafoam::Formatters::Json }.to raise_error(ArgumentError)
+      end
     end
   end
 

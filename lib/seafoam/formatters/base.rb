@@ -8,6 +8,51 @@ module Seafoam
         end
       end
 
+      # Formats the output of the `edges` command.
+      class EdgesFormatter
+        include Formatter
+
+        EdgesEntry = Struct.new(:edges) do
+          def render(formatter)
+            formatter.render_edges_entry(edges)
+          end
+        end
+
+        NodeEntry = Struct.new(:node) do
+          def render(formatter)
+            formatter.render_node_entry(node)
+          end
+        end
+
+        SummaryEntry = Struct.new(:node_count, :edge_count) do
+          def render(formatter)
+            formatter.render_summary_entry(node_count, edge_count)
+          end
+        end
+
+        attr_reader :entry
+
+        def initialize(entry)
+          @entry = entry
+        end
+
+        def format
+          entry.render(self)
+        end
+
+        def render_edges_entry(edges)
+          raise NotImplementedError
+        end
+
+        def render_node_entry(node)
+          raise NotImplementedError
+        end
+
+        def render_summary_entry(node_count, edge_count)
+          raise NotImplementedError
+        end
+      end
+
       # Formats the output of the `info` command.
       class InfoFormatter
         include Formatter

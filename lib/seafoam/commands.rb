@@ -39,7 +39,7 @@ module Seafoam
         when 'search'
           search name, *args
         when 'edges'
-          edges name, *args
+          edges name, formatter_module, *args
         when 'props'
           props name, *args
         when 'source'
@@ -285,11 +285,12 @@ module Seafoam
     end
 
     # seafoam file.bgv:n... edges
-    def edges(name, *args)
+    def edges(name, formatter_module, *args)
       file, graph_index, node_id, edge_id = parse_name(name)
       raise ArgumentError, 'edges needs at least a graph' unless graph_index
-
       raise ArgumentError, 'edges does not take arguments' unless args.empty?
+
+      entry = nil
 
       with_graph(file, graph_index) do |parser|
         parser.read_graph_header
@@ -306,24 +307,18 @@ module Seafoam
             edges = node.outputs.select { |edge| edge.to == to }
             raise ArgumentError, 'edge not found' if edges.empty?
 
-            edges.each do |edge|
-              @out.puts "#{edge.from.id_and_label} ->(#{edge.props[:label]}) #{edge.to.id_and_label}"
-            end
+            entry = formatter_module::EdgesFormatter::EdgesEntry.new(edges)
           else
-            @out.puts 'Input:'
-            node.inputs.each do |input|
-              @out.puts "  #{node.id_and_label} <-(#{input.props[:label]}) #{input.from.id_and_label}"
-            end
-            @out.puts 'Output:'
-            node.outputs.each do |output|
-              @out.puts "  #{node.id_and_label} ->(#{output.props[:label]}) #{output.to.id_and_label}"
-            end
+            entry = formatter_module::EdgesFormatter::NodeEntry.new(node)
           end
           break
         else
-          @out.puts "#{graph.nodes.count} nodes, #{graph.edges.count} edges"
+          entry = formatter_module::EdgesFormatter::SummaryEntry.new(graph.nodes.count, graph.edges.count)
         end
       end
+
+      formatter = formatter_module::EdgesFormatter.new(entry)
+      @out.puts formatter.format
     end
 
     # seafoam file.bgv... props

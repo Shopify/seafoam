@@ -3,6 +3,32 @@ require 'json'
 module Seafoam
   module Formatters
     module Json
+      # A JSON-based formatter for the `edges` command.
+      class EdgesFormatter < Seafoam::Formatters::Base::EdgesFormatter
+        def render_edges_entry(edges)
+          edges.map { |edge| build_edge(edge) }.to_json
+        end
+
+        def render_node_entry(node)
+          {
+            input: node.inputs.map { |input| build_edge(input) },
+            output: node.outputs.map { |output| build_edge(output) }
+          }.to_json
+        end
+
+        def render_summary_entry(node_count, edge_count)
+          { node_count: node_count, edge_count: edge_count }.to_json
+        end
+
+        def build_node(node)
+          { id: node.id.to_s, label: node.props[:label] }
+        end
+
+        def build_edge(edge)
+          { from: build_node(edge.from), to: build_node(edge.to), label: edge.props[:label] }
+        end
+      end
+
       # A JSON-based formatter for the `info` command.
       class InfoFormatter < Seafoam::Formatters::Base::InfoFormatter
         def format
