@@ -130,6 +130,16 @@ Note that a *graph ID* is an ID found in BGV files, but is not unique. A
 BGV 7.0
 ```
 
+To simplify automation use cases, you can also capture the output as JSON:
+
+```
+% seafoam --json examples/fib-java.bgv.gz info | jq --sort-keys
+{
+  "major_version": 7,
+  "minor_version": 0
+}
+```
+
 #### List graphs in a file
 
 ```
@@ -142,6 +152,31 @@ examples/fib-java.bgv.gz:4  17:Fib.fib(int)/After low tier
 ...
 ```
 
+To simplify automation use cases, you can also capture the output as JSON:
+
+```
+% seafoam --json examples/fib-java.bgv.gz list | jq --sort-keys
+[
+  {
+    "graph_file": "examples/fib-java.bgv.gz",
+    "graph_index": 0,
+    "graph_name_components": [
+      "17:Fib.fib(int)",
+      "After parsing"
+    ]
+  },
+  {
+    "graph_file": "examples/fib-java.bgv.gz",
+    "graph_index": 1,
+    "graph_name_components": [
+      "17:Fib.fib(int)",
+      "Before phase org.graalvm.compiler.phases.common.LoweringPhase"
+    ]
+  },
+  ...
+]
+```
+
 #### Search for strings in a graph, or node or edge within a graph
 
 ```
@@ -149,6 +184,8 @@ examples/fib-java.bgv.gz:4  17:Fib.fib(int)/After low tier
 examples/fib-java.bgv.gz:0:0  ...node_class":"org.graalvm.compiler.nodes.StartNode","name_template":"Start","inputs":[...
 examples/fib-java.bgv.gz:0:0  ...piler.nodes.StartNode","name_template":"Start","inputs":[{"direct":true,"name":"state...
 ```
+
+NB: This command is intended for interactive usage and as such, has no JSON output option.
 
 #### Print edges of a graph, or node or edge within a graph
 
@@ -167,6 +204,69 @@ Output:
   13 (Call Fib.fib) ->(x) 20 (+)
 % seafoam examples/fib-java.bgv.gz:0:13-20 edges
 13 (Call Fib.fib) ->(x) 20 (+)
+```
+
+To simplify automation use cases, you can also capture the output as JSON:
+
+```
+% seafoam --json examples/fib-java.bgv.gz:0 edges | jq --sort-keys
+{
+  "edge_count": 30,
+  "node_count": 21
+}
+
+seafoam --json examples/fib-java.bgv.gz:0 edges | jq --sort-keys
+{
+  "edge_count": 30,
+  "node_count": 21
+}
+
+% seafoam --json examples/fib-java.bgv.gz:0:13 edges | jq --sort-keys
+{
+  "input": [
+    {
+      "from": {
+        "id": "6",
+        "label": "Begin"
+      },
+      "label": null,
+      "to": {
+        "id": "13",
+        "label": "Call Fib.fib"
+      }
+    },
+    ...
+  ],
+  "output": [
+    {
+      "from": {
+        "id": "13",
+        "label": "Call Fib.fib"
+      },
+      "label": null,
+      "to": {
+        "id": "18",
+        "label": "Call Fib.fib"
+      }
+    },
+    ...
+  ]
+}
+
+% seafoam --json examples/fib-java.bgv.gz:0:13-20 edges | jq --sort-keys
+[
+  {
+    "from": {
+      "id": "13",
+      "label": "Call Fib.fib"
+    },
+    "label": "x",
+    "to": {
+      "id": "20",
+      "label": "+"
+    }
+  }
+]
 ```
 
 #### Print properties of a file, graph, or node or edge within a graph
@@ -196,8 +296,9 @@ Output:
   "type": "Value",
   "index": 0
 }
-
 ```
+
+NB: The output from the `props` command is always in JSON so there is no need to supply the `--json` flag.
 
 #### Print node source information
 
@@ -219,6 +320,54 @@ org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
 org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
 ```
 
+To simplify automation use cases, you can also capture the output as JSON:
+
+```
+% seafoam --json examples/fib-ruby.bgv.gz:2:2436 source | jq --sort-keys
+[
+  {
+    "class": "java.lang.Math",
+    "method": "addExact"
+  },
+  {
+    "class": "org.truffleruby.core.numeric.IntegerNodes$AddNode",
+    "method": "add"
+  },
+  {
+    "class": "org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen",
+    "method": "executeAdd"
+  },
+  {
+    "class": "org.truffleruby.core.inlined.InlinedAddNode",
+    "method": "intAdd"
+  },
+  {
+    "class": "org.truffleruby.core.inlined.InlinedAddNodeGen",
+    "method": "execute"
+  },
+  {
+    "class": "org.truffleruby.language.control.IfElseNode",
+    "method": "execute"
+  },
+  {
+    "class": "org.truffleruby.language.control.SequenceNode",
+    "method": "execute"
+  },
+  {
+    "class": "org.truffleruby.language.RubyMethodRootNode",
+    "method": "execute"
+  },
+  {
+    "class": "org.graalvm.compiler.truffle.runtime.OptimizedCallTarget",
+    "method": "executeRootNode"
+  },
+  {
+    "class": "org.graalvm.compiler.truffle.runtime.OptimizedCallTarget",
+    "method": "profiledPERoot"
+  }
+]
+```
+
 #### Describe a graph
 
 Describe the key features of a graph without rendering it.
@@ -231,6 +380,20 @@ Describe the key features of a graph without rendering it.
 The graph description is a useful way to quickly catch unexpected or undesired
 attributes in a graph and makes comparing two graphs to each other straightforward.
 Such a comparison could be the basis of a regression test.
+
+To simplify automation use cases, you can also capture the output as JSON:
+
+```
+% seafoam --json examples/fib-java.bgv.gz:1 describe | jq --sort-keys
+{
+  "branches": true,
+  "calls": true,
+  "deopts": false,
+  "linear": false,
+  "loops": false,
+  "node_count": 21
+}
+```
 
 #### Render a graph
 
@@ -337,6 +500,8 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 Exception backtraces are printed if `$DEBUG` (`-d`) is set.
 
 Use `seafoam file.bgv debug` to debug file parsing.
+
+NB: This command is intended for interactive usage and as such, has no JSON output option.
 
 ## More documentation
 
