@@ -19,10 +19,20 @@ describe Seafoam::Commands do
   end
 
   describe '#info' do
-    it 'prints format and version' do
-      @commands.send :info, @fib_java
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq 'BGV 7.0'
+    describe 'txt format' do
+      it 'prints format and version' do
+        @commands.send :info, @fib_java, Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines.first).to eq 'BGV 7.0'
+      end
+    end
+
+    describe 'json format' do
+      it 'prints format and version' do
+        @commands.send :info, @fib_java, Seafoam::Formatters::Json
+        lines = @out.string.lines.map(&:rstrip)
+        expect(JSON.parse(lines.first)).to eq({ 'major_version' => 7, 'minor_version' => 0 })
+      end
     end
 
     it 'does not work on a graph' do
@@ -31,16 +41,32 @@ describe Seafoam::Commands do
   end
 
   describe '#list' do
-    it 'prints graphs' do
-      @commands.send :list, @fib_java
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
-        "#{@fib_java}:0  17:Fib.fib(int)/After parsing",
-        "#{@fib_java}:1  17:Fib.fib(int)/Before phase org.graalvm.compiler.phases.common.LoweringPhase",
-        "#{@fib_java}:2  17:Fib.fib(int)/After high tier",
-        "#{@fib_java}:3  17:Fib.fib(int)/After mid tier",
-        "#{@fib_java}:4  17:Fib.fib(int)/After low tier"
-      ]
+    describe 'txt format' do
+      it 'prints graphs' do
+        @commands.send :list, @fib_java, Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq [
+          "#{@fib_java}:0  17:Fib.fib(int)/After parsing",
+          "#{@fib_java}:1  17:Fib.fib(int)/Before phase org.graalvm.compiler.phases.common.LoweringPhase",
+          "#{@fib_java}:2  17:Fib.fib(int)/After high tier",
+          "#{@fib_java}:3  17:Fib.fib(int)/After mid tier",
+          "#{@fib_java}:4  17:Fib.fib(int)/After low tier"
+        ]
+      end
+    end
+
+    describe 'json format' do
+      it 'prints graphs' do
+        @commands.send :list, @fib_java, Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+        expect(decoded).to eq [
+          { 'graph_index' => 0, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After parsing'] },
+          { 'graph_index' => 1, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'Before phase org.graalvm.compiler.phases.common.LoweringPhase'] },
+          { 'graph_index' => 2, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After high tier'] },
+          { 'graph_index' => 3, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After mid tier'] },
+          { 'graph_index' => 4, 'graph_file' => @fib_java, 'graph_name_components' => ['17:Fib.fib(int)', 'After low tier'] }
+        ]
+      end
     end
 
     it 'does not work on a graph' do
@@ -84,36 +110,111 @@ describe Seafoam::Commands do
   end
 
   describe '#edges' do
-    it 'prints the number of edges and nodes for a graph' do
-      @commands.send :edges, "#{@fib_java}:0"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq '21 nodes, 30 edges'
+    describe 'txt format' do
+      it 'prints the number of edges and nodes for a graph' do
+        @commands.send :edges, "#{@fib_java}:0", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq ['21 nodes, 30 edges']
+      end
+
+      it 'prints the edges for a node' do
+        @commands.send :edges, "#{@fib_java}:0:13", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq [
+          'Input:',
+          '  13 (Call Fib.fib) <-() 6 (Begin)',
+          '  13 (Call Fib.fib) <-() 14 (FrameState Fib#fib Fib.java:20)',
+          '  13 (Call Fib.fib) <-() 12 (MethodCallTarget)',
+          'Output:',
+          '  13 (Call Fib.fib) ->() 18 (Call Fib.fib)',
+          '  13 (Call Fib.fib) ->(values) 14 (FrameState Fib#fib Fib.java:20)',
+          '  13 (Call Fib.fib) ->(values) 19 (FrameState Fib#fib Fib.java:20)',
+          '  13 (Call Fib.fib) ->(x) 20 (+)'
+        ]
+      end
+
+      it 'prints details for an edge' do
+        @commands.send :edges, "#{@fib_java}:0:13-18", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines).to eq ['13 (Call Fib.fib) ->() 18 (Call Fib.fib)']
+      end
+
+      it 'does not work on a file' do
+        expect { @commands.send :edges, @fib_java, Seafoam::Formatters::Text }.to raise_error(ArgumentError)
+      end
     end
 
-    it 'prints the edges for a node' do
-      @commands.send :edges, "#{@fib_java}:0:13"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines).to eq [
-        'Input:',
-        '  13 (Call Fib.fib) <-() 6 (Begin)',
-        '  13 (Call Fib.fib) <-() 14 (FrameState Fib#fib Fib.java:20)',
-        '  13 (Call Fib.fib) <-() 12 (MethodCallTarget)',
-        'Output:',
-        '  13 (Call Fib.fib) ->() 18 (Call Fib.fib)',
-        '  13 (Call Fib.fib) ->(values) 14 (FrameState Fib#fib Fib.java:20)',
-        '  13 (Call Fib.fib) ->(values) 19 (FrameState Fib#fib Fib.java:20)',
-        '  13 (Call Fib.fib) ->(x) 20 (+)'
-      ]
-    end
+    describe 'json format' do
+      it 'prints the number of edges and nodes for a graph' do
+        @commands.send :edges, "#{@fib_java}:0", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
 
-    it 'prints details for an edge' do
-      @commands.send :edges, "#{@fib_java}:0:13-18"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq '13 (Call Fib.fib) ->() 18 (Call Fib.fib)'
-    end
+        expect(decoded).to eq({ 'node_count' => 21, 'edge_count' => 30 })
+      end
 
-    it 'does not work on a file' do
-      expect { @commands.send :edges, @fib_java }.to raise_error(ArgumentError)
+      it 'prints the edges for a node' do
+        @commands.send :edges, "#{@fib_java}:0:13", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+
+        expect(decoded).to eq({
+                                'input' => [
+                                  {
+                                    'from' => { 'id' => '6', 'label' => 'Begin' },
+                                    'to' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  },
+                                  {
+                                    'from' => { 'id' => '14', 'label' => 'FrameState Fib#fib Fib.java:20' },
+                                    'to' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  },
+                                  {
+                                    'from' => { 'id' => '12', 'label' => 'MethodCallTarget' },
+                                    'to' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  }
+                                ],
+                                'output' => [
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '18', 'label' => 'Call Fib.fib' },
+                                    'label' => nil
+                                  },
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '14', 'label' => 'FrameState Fib#fib Fib.java:20' },
+                                    'label' => 'values'
+                                  },
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '19', 'label' => 'FrameState Fib#fib Fib.java:20' },
+                                    'label' => 'values'
+                                  },
+                                  {
+                                    'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+                                    'to' => { 'id' => '20', 'label' => '+' },
+                                    'label' => 'x'
+                                  }
+                                ]
+                              })
+      end
+
+      it 'prints details for an edge' do
+        @commands.send :edges, "#{@fib_java}:0:13-18", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+
+        expect(decoded).to eq [
+          {
+            'from' => { 'id' => '13', 'label' => 'Call Fib.fib' },
+            'to' => { 'id' => '18', 'label' => 'Call Fib.fib' },
+            'label' => nil
+          }
+        ]
+      end
+
+      it 'does not work on a file' do
+        expect { @commands.send :edges, @fib_java, Seafoam::Formatters::Json }.to raise_error(ArgumentError)
+      end
     end
   end
 
@@ -141,20 +242,41 @@ describe Seafoam::Commands do
   end
 
   describe '#source' do
-    it 'prints source information for a node' do
-      @commands.send :source, "#{@fib_ruby}:2:2436"
-      expect(@out.string).to eq <<~SOURCE
-        java.lang.Math#addExact
-        org.truffleruby.core.numeric.IntegerNodes$AddNode#add
-        org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
-        org.truffleruby.core.inlined.InlinedAddNode#intAdd
-        org.truffleruby.core.inlined.InlinedAddNodeGen#execute
-        org.truffleruby.language.control.IfElseNode#execute
-        org.truffleruby.language.control.SequenceNode#execute
-        org.truffleruby.language.RubyMethodRootNode#execute
-        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
-        org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
-      SOURCE
+    describe 'txt format' do
+      it 'prints source information for a node' do
+        @commands.send :source, "#{@fib_ruby}:2:2436", Seafoam::Formatters::Text
+        expect(@out.string).to eq <<~SOURCE
+          java.lang.Math#addExact
+          org.truffleruby.core.numeric.IntegerNodes$AddNode#add
+          org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen#executeAdd
+          org.truffleruby.core.inlined.InlinedAddNode#intAdd
+          org.truffleruby.core.inlined.InlinedAddNodeGen#execute
+          org.truffleruby.language.control.IfElseNode#execute
+          org.truffleruby.language.control.SequenceNode#execute
+          org.truffleruby.language.RubyMethodRootNode#execute
+          org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#executeRootNode
+          org.graalvm.compiler.truffle.runtime.OptimizedCallTarget#profiledPERoot
+        SOURCE
+      end
+    end
+
+    describe 'json format' do
+      it 'prints source information for a node' do
+        @commands.send :source, "#{@fib_ruby}:2:2436", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+        expect(decoded).to eq [
+          { 'class' => 'java.lang.Math', 'method' => 'addExact' },
+          { 'class' => 'org.truffleruby.core.numeric.IntegerNodes$AddNode', 'method' => 'add' },
+          { 'class' => 'org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen', 'method' => 'executeAdd' },
+          { 'class' => 'org.truffleruby.core.inlined.InlinedAddNode', 'method' => 'intAdd' },
+          { 'class' => 'org.truffleruby.core.inlined.InlinedAddNodeGen', 'method' => 'execute' },
+          { 'class' => 'org.truffleruby.language.control.IfElseNode', 'method' => 'execute' },
+          { 'class' => 'org.truffleruby.language.control.SequenceNode', 'method' => 'execute' },
+          { 'class' => 'org.truffleruby.language.RubyMethodRootNode', 'method' => 'execute' },
+          { 'class' => 'org.graalvm.compiler.truffle.runtime.OptimizedCallTarget', 'method' => 'executeRootNode' },
+          { 'class' => 'org.graalvm.compiler.truffle.runtime.OptimizedCallTarget', 'method' => 'profiledPERoot' }
+        ]
+      end
     end
   end
 
@@ -230,14 +352,36 @@ describe Seafoam::Commands do
   end
 
   describe '#describe' do
-    it 'does not work if a graph index is not supplied' do
-      expect { @commands.send :describe, @fib_java }.to raise_error(ArgumentError)
+    describe 'txt format' do
+      it 'does not work if a graph index is not supplied' do
+        expect { @commands.send :describe, @fib_java, Seafoam::Formatters::Text }.to raise_error(ArgumentError)
+      end
+
+      it 'prints a description of a particular graph index' do
+        @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Text
+        lines = @out.string.lines.map(&:rstrip)
+        expect(lines.first).to eq('20 nodes, branches, calls')
+      end
     end
 
-    it 'prints a description of a particular graph index' do
-      @commands.send :describe, "#{@fib_java}:4"
-      lines = @out.string.lines.map(&:rstrip)
-      expect(lines.first).to eq('20 nodes, branches, calls')
+    describe 'json format' do
+      it 'does not work if a graph index is not supplied' do
+        expect { @commands.send :describe, @fib_java, Seafoam::Formatters::Json }.to raise_error(ArgumentError)
+      end
+
+      it 'prints a description of a particular graph index' do
+        @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Json
+        decoded = JSON.parse(@out.string)
+
+        expect(decoded).to eq({
+                                'node_count' => 20,
+                                'branches' => true,
+                                'calls' => true,
+                                'loops' => false,
+                                'deopts' => false,
+                                'linear' => false
+                              })
+      end
     end
   end
 

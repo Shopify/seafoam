@@ -2,21 +2,17 @@ module Seafoam
   module Graal
     # Routines for understanding source positions in Graal.
     module Source
-      def self.render(source_position)
-        lines = []
+      def self.walk(source_position, &block)
+        results = []
+
         caller = source_position
         while caller
           method = caller[:method]
-          lines.push render_method(method)
+          results.push block.call(method)
           caller = caller[:caller]
         end
-        lines.join("\n")
-      end
 
-      def self.render_method(method)
-        declaring_class = method[:declaring_class]
-        name = method[:method_name]
-        "#{declaring_class}##{name}"
+        results
       end
     end
   end

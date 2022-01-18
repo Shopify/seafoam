@@ -162,8 +162,7 @@ module Seafoam
           count += 1
           arg
         end
-        components = groups_names + [name]
-        components.join('/')
+        groups_names + [name]
       end
 
       private

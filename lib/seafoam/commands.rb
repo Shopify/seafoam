@@ -11,6 +11,14 @@ module Seafoam
     # Run the general seafoam command.
     def seafoam(*args)
       first, *args = args
+
+      if first == '--json'
+        formatter_module = Seafoam::Formatters::Json
+        first, *args = args
+      else
+        formatter_module = Seafoam::Formatters::Text
+      end
+
       case first
       when nil, 'help', '-h', '--help', '-help'
         raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
@@ -25,23 +33,23 @@ module Seafoam
         when nil
           help(*args)
         when 'info'
-          info name, *args
+          info name, formatter_module, *args
         when 'list'
-          list name, *args
+          list name, formatter_module, *args
         when 'search'
           search name, *args
         when 'edges'
-          edges name, *args
+          edges name, formatter_module, *args
         when 'props'
           props name, *args
         when 'source'
-          source name, *args
+          source name, formatter_module, *args
         when 'render'
           render name, *args
         when 'debug'
           debug name, *args
         when 'describe'
-          describe name, *args
+          describe name, formatter_module, *args
         else
           raise ArgumentError, "unknown command #{command}"
         end
@@ -186,35 +194,39 @@ module Seafoam
     private
 
     # seafoam file.bgv info
-    def info(name, *args)
+    def info(name, formatter_module, *args)
       file, *rest = parse_name(name)
       raise ArgumentError, 'info only works with a file' unless rest == [nil, nil, nil]
-
       raise ArgumentError, 'info does not take arguments' unless args.empty?
 
       parser = BGV::BGVParser.new(file)
       major, minor = parser.read_file_header(version_check: false)
-      @out.puts "BGV #{major}.#{minor}"
+      formatter = formatter_module::InfoFormatter.new(major, minor)
+
+      @out.puts formatter.format
     end
 
     # seafoam file.bgv list
-    def list(name, *args)
+    def list(name, formatter_module, *args)
       file, *rest = parse_name(name)
       raise ArgumentError, 'list only works with a file' unless rest == [nil, nil, nil]
-
       raise ArgumentError, 'list does not take arguments' unless args.empty?
 
       parser = BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
+      entries = []
       loop do
         index, = parser.read_graph_preheader
         break unless index
 
         graph_header = parser.read_graph_header
-        @out.puts "#{file}:#{index}  #{parser.graph_name(graph_header)}"
+        entries << formatter_module::ListFormatter::Entry.new(file, parser.graph_name(graph_header), index)
         parser.skip_graph
       end
+
+      formatter = formatter_module::ListFormatter.new(entries)
+      @out.puts formatter.format
     end
 
     # seafoam file.bgv:n... search term...
@@ -273,11 +285,12 @@ module Seafoam
     end
 
     # seafoam file.bgv:n... edges
-    def edges(name, *args)
+    def edges(name, formatter_module, *args)
       file, graph_index, node_id, edge_id = parse_name(name)
       raise ArgumentError, 'edges needs at least a graph' unless graph_index
-
       raise ArgumentError, 'edges does not take arguments' unless args.empty?
+
+      entry = nil
 
       with_graph(file, graph_index) do |parser|
         parser.read_graph_header
@@ -294,24 +307,18 @@ module Seafoam
             edges = node.outputs.select { |edge| edge.to == to }
             raise ArgumentError, 'edge not found' if edges.empty?
 
-            edges.each do |edge|
-              @out.puts "#{edge.from.id_and_label} ->(#{edge.props[:label]}) #{edge.to.id_and_label}"
-            end
+            entry = formatter_module::EdgesFormatter::EdgesEntry.new(edges)
           else
-            @out.puts 'Input:'
-            node.inputs.each do |input|
-              @out.puts "  #{node.id_and_label} <-(#{input.props[:label]}) #{input.from.id_and_label}"
-            end
-            @out.puts 'Output:'
-            node.outputs.each do |output|
-              @out.puts "  #{node.id_and_label} ->(#{output.props[:label]}) #{output.to.id_and_label}"
-            end
+            entry = formatter_module::EdgesFormatter::NodeEntry.new(node)
           end
           break
         else
-          @out.puts "#{graph.nodes.count} nodes, #{graph.edges.count} edges"
+          entry = formatter_module::EdgesFormatter::SummaryEntry.new(graph.nodes.count, graph.edges.count)
         end
       end
+
+      formatter = formatter_module::EdgesFormatter.new(entry)
+      @out.puts formatter.format
     end
 
     # seafoam file.bgv... props
@@ -360,7 +367,7 @@ module Seafoam
     end
 
     # seafoam file.bgv:n:n source
-    def source(name, *args)
+    def source(name, formatter_module, *args)
       file, graph_index, node_id, edge_id = parse_name(name)
       raise ArgumentError, 'source needs a node' unless node_id
       raise ArgumentError, 'source only works with a node' if edge_id
@@ -372,12 +379,13 @@ module Seafoam
         node = graph.nodes[node_id]
         raise ArgumentError, 'node not found' unless node
 
-        @out.puts Graal::Source.render(node.props['nodeSourcePosition'])
+        formatter = formatter_module::SourceFormatter.new(node.props['nodeSourcePosition'])
+        @out.puts formatter.format
       end
     end
 
     # seafoam file.bgv:n describe
-    def describe(name, *args)
+    def describe(name, formatter_module, *args)
       file, graph_index, *rest = parse_name(name)
 
       if graph_index.nil? || !rest.all?(&:nil?)
@@ -401,26 +409,25 @@ module Seafoam
         end
 
         graph = parser.read_graph
-        notes = Set.new
+        description = Seafoam::Graal::GraphDescription.new
 
         graph.nodes.each_value do |node|
           node_class = node.props.dig(:node_class, :node_class)
           case node_class
           when 'org.graalvm.compiler.nodes.IfNode'
-            notes.add 'branches'
+            description.branches = true
           when 'org.graalvm.compiler.nodes.LoopBeginNode'
-            notes.add 'loops'
+            description.loops = true
           when 'org.graalvm.compiler.nodes.InvokeNode', 'org.graalvm.compiler.nodes.InvokeWithExceptionNode'
-            notes.add 'calls'
+            description.calls = true
           end
         end
 
-        notes.add 'deopts' if graph.nodes[0].outputs.map(&:to)
-                                   .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
+        description.deopts = graph.nodes[0].outputs.map(&:to)
+                                  .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
 
-        notes.add 'linear' unless notes.include?('branches') || notes.include?('loops')
-
-        @out.puts ["#{graph.nodes.size} nodes", *notes].join(', ')
+        formatter = formatter_module::DescribeFormatter.new(graph, description)
+        @out.puts formatter.format
 
         break
       end
