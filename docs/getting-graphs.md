@@ -15,12 +15,11 @@ part) to restrict  compilation to a single method to give smaller dumps, and to
 some extent make graphs simpler by avoiding what you want to look at being
 inlined, or other things being inlined into it.
 
-Graal tends to be quite aggressive about loop unrolling, which can produce
+Graal tends to be quite aggressive about loop peeling, which can produce
 massive graphs with the logic repeated. I often use these flags to simplify the
 graph without significantly effecting too much how the logic in it is compiled.
 
 ```
-  -Dgraal.FullUnroll=false \
   -Dgraal.PartialUnroll=false \
   -Dgraal.LoopPeeling=false \
   -Dgraal.LoopUnswitch=false \
@@ -47,7 +46,6 @@ Use the same options as for GraalVM for Java, except they're prefixed with
 `--vm.`, for example `--vm.Dgraal.Dump=Truffle:1`.
 
 ```
-  --vm.Dgraal.FullUnroll=false \
   --vm.Dgraal.PartialUnroll=false \
   --vm.Dgraal.LoopPeeling=false \
   --vm.Dgraal.LoopUnswitch=false \
