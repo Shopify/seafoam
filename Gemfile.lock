@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    seafoam (0.10)
+    seafoam (0.11)
       crabstone (~> 4.0)
 
 GEM
@@ -58,4 +58,4 @@ DEPENDENCIES
   seafoam!
 
 BUNDLED WITH
-   2.2.25
+   2.3.5
