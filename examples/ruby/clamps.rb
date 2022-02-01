@@ -1,4 +1,4 @@
-# ruby --experimental-options --engine.CompileOnly=clamp_low,clamp_high --vm.Dgraal.Dump=Truffle:2 --vm.Dgraal.PrintBackendCFG=true clamps.rb 
+# ruby --experimental-options --engine.CompileOnly=clamp_low,clamp_high --vm.Dgraal.Dump=Truffle:2 clamps.rb 
 
 def clamp_high(min, max, value)
   [min, max, value].sort[1]

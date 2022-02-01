@@ -1,6 +1,6 @@
 /*
  * % javac Fib.java
- * % java -XX:CompileOnly=Fib::fib -XX:+PrintCompilation -Dgraal.Dump=:1 -Dgraal.PrintBackendCFG=true -Dgraal.PrintGraphWithSchedule=true Fib 14
+ * % java -XX:CompileOnly=Fib::fib -XX:+PrintCompilation -Dgraal.Dump=:1 -Dgraal.PrintGraphWithSchedule=true Fib 14
  */
 
 class Fib {

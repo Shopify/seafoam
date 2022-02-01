@@ -328,23 +328,6 @@ describe Seafoam::Commands do
     end
   end
 
-  describe '#cfg2asm' do
-    if Seafoam::SpecHelpers.dependencies_installed?
-      it 'prints format and version' do
-        @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg.gz', __dir__), '--no-comments')
-        lines = @out.string.lines.map(&:rstrip)
-        expect(lines[1]).to include ":\tnop	dword ptr [rax + rax]"
-        expect(lines[-1]).to include ":\thlt"
-      end
-    else
-      it 'raises an exception if Capstone is not installed' do
-        expect do
-          @commands.cfg2asm(File.expand_path('../../examples/java/exampleWhile.cfg.gz', __dir__), '--no-comments')
-        end.to raise_error(RuntimeError, /Could not load Capstone - is it installed?/)
-      end
-    end
-  end
-
   describe '#debug' do
     it 'does not work with a graph' do
       expect { @commands.send :debug, "#{@fib_java}:0" }.to raise_error(ArgumentError)
