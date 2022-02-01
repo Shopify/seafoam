@@ -10,11 +10,9 @@ Gem::Specification.new do |spec|
 
   spec.files = `git ls-files bin lib`.split("\n")
   spec.bindir = 'bin'
-  spec.executables = %w[seafoam bgv2json bgv2isabelle cfg2asm]
+  spec.executables = %w[seafoam bgv2json bgv2isabelle]
 
   spec.required_ruby_version = '>= 2.5.9'
-
-  spec.add_dependency 'crabstone', '~> 4.0'
 
   spec.add_development_dependency 'benchmark-ips', '~> 2.7'
   spec.add_development_dependency 'rake', '~> 13.0.6'

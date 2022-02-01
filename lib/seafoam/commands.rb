@@ -147,50 +147,6 @@ module Seafoam
       end
     end
 
-    def cfg2asm(*args)
-      case args.first
-      when nil, 'help', '-h', '--help', '-help'
-        args = args.drop(1)
-        raise ArgumentError, "unexpected arguments #{args.join(' ')}" unless args.empty?
-
-        @out.puts 'cfg2asm file.bgv...'
-        @out.puts '            --no-comments'
-        @out.puts '        --help'
-        @out.puts '        --version'
-      when 'version', '-v', '-version', '--version'
-        args = args.drop(1)
-        version(*args)
-      else
-        comments = true
-        files = []
-
-        until args.empty?
-          arg = args.shift
-          if arg.start_with?('-')
-            case arg
-            when '--no-comments'
-              comments = false
-            else
-              raise ArgumentError, "unknown option #{arg}"
-            end
-          else
-            files.push arg
-          end
-        end
-
-        files.each_with_index do |file, n|
-          parser = Seafoam::CFG::CFGParser.new(@out, file)
-          parser.skip_over_cfg 'After code installation'
-          nmethod = parser.read_nmethod
-
-          disassembler = Seafoam::CFG::Disassembler.new(@out)
-          @out.puts if n.positive?
-          @out.puts "[#{file}]"
-          disassembler.disassemble(nmethod, comments)
-        end
-      end
-    end
-
     private
 
     # seafoam file.bgv info
