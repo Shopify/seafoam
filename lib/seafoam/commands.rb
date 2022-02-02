@@ -369,6 +369,10 @@ module Seafoam
 
         graph.nodes.each_value do |node|
           node_class = node.props.dig(:node_class, :node_class)
+
+          simple_node_class = node_class[/([^.]+)$/, 1]
+          description.node_counts[simple_node_class] += 1
+
           case node_class
           when 'org.graalvm.compiler.nodes.IfNode'
             description.branches = true
