@@ -32,6 +32,7 @@ GroupDocumentGraph {
 BeginGroup {
   sint8 token = BEGIN_GROUP
   PoolObject name
+  PoolObject short_name
   PoolObject method
   sint32 bci
   Props props
@@ -43,13 +44,15 @@ CloseGroup {
 
 Document {
   sint8 token = BEGIN_DOCUMENT
-  Pops props
+  Props props
 }
 
 Graph {
   sint8 token = BEGIN_GRAPH
+  sint32 id
   String format
-  Args args
+  sint32 args_count
+  PropObject[args_count] args
   GraphBody body
 }
 
@@ -65,13 +68,22 @@ Node {
   sint32 id
   PoolObject node_class
   bool has_predecessor
-  Pops props
+  Props props
   Edge[node_class.inputs.size] edges_in
   Edge[node_class.outputs.size] edges_out
 }
 
 Edge {
-  sint32[inputs_count] nodes
+  DirectEdge | IndirectEdge
+}
+
+DirectEdge {
+  sint32 node
+}
+
+IndirectEdge {
+  sint16 node_count
+  sint32[node_count] nodes
 }
 
 Blocks {
@@ -95,43 +107,53 @@ Prop {
 PropObject {
   union {
     struct {
-      sint8 PROPERTY_POOL
+      sint8 type = PROPERTY_POOL
       PoolObject object
     }
     struct {
-      sint8 PROPERTY_INT
+      sint8 type = PROPERTY_INT
       sint32 value
     }
     struct {
-      sint8 PROPERTY_LONG
+      sint8 type = PROPERTY_LONG
       sint64 value
     }
     struct {
-      sint8 PROPERTY_DOUBLE
+      sint8 type = PROPERTY_DOUBLE
       float64 value
     }
     struct {
-      sint8 PROPERTY_FLOAT
+      sint8 type = PROPERTY_FLOAT
       float32 value
     }
     struct {
-      sint8 PROPERTY_TRUE
+      sint8 type = PROPERTY_TRUE
     }
     struct {
-      sint8 PROPERTY_FALSE
+      sint8 type = PROPERTY_FALSE
     }
     struct {
-      sint8 PROPERTY_ARRAY
+      sint8 type = PROPERTY_ARRAY
       union {
         struct {
-          sint8 PROPERTY_POOL
+          sint8 array_type = PROPERTY_DOUBLE
+          sint32 times
+          float64[times] values
+        }
+        struct {
+          sint8 array_type = PROPERTY_INT
+          sint32 times
+          sint32[times] values
+        }
+        struct {
+          sint8 array_type = PROPERTY_POOL
           sint32 times
           PoolObject[times] values
         }
       }
     }
     struct {
-      sint8 PROPERTY_SUBGRAPH
+      sint8 type = PROPERTY_SUBGRAPH
       GraphBody graph
     }
   }
@@ -160,7 +182,7 @@ PoolObject {
             struct {
               sint8 type = ENUM_KLASS
               sint32 values_count
-              PoolObject values[values_count]
+              PoolObject[values_count] values
             }
             struct {
               sint8 type = KLASS
@@ -181,27 +203,28 @@ PoolObject {
           PoolObject node_class
           String name_template
           sint16 input_count
-          InputEdgeInfo inputs[input_count]
+          InputEdgeInfo[input_count] inputs
           sint16 output_count
-          OutputEdgeInfo outputs[output_count]
+          OutputEdgeInfo[output_count] outputs
         }
         struct {
           sint8 type = POOL_FIELD
-          PoolObject field_class
+          PoolObject declaring_class
           PoolObject name
           PoolObject type_name
           sint32 modifiers
         }
         struct {
-          sint8 type = POOL_NODE_SIGNATURE
+          sint8 type = POOL_SIGNATURE
           sint16 args_count
-          PoolObject args[args_count]
+          PoolObject[args_count] args
+          PoolObject return
         }
         struct {
           sint8 type = POOL_NODE_SOURCE_POSITION
           PoolObject method
           sint32 bci
-          SourcePosition source_positions[...until SourcePosition.uri = null]
+          SourcePosition[...until SourcePosition.uri = null] source_positions
           PoolObject caller
         }
         struct {
