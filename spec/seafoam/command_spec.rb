@@ -291,33 +291,44 @@ describe Seafoam::Commands do
       end
     end
 
+    it 'supports --out out.dot' do
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.dot'
+      expect(`file out.dot`).to start_with 'out.dot: ASCII text'
+    end
+
+    it 'supports --out out.mmd' do
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.mmd'
+      expect(File.read('out.mmd')).to start_with 'flowchart TD'
+    end
+
+    it 'supports --out out.md' do
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.md'
+      expect(File.read('out.md')).to start_with '```mermaid'
+    end
+
+    it 'supports --md' do
+      @commands.send :render, "#{@fib_java}:0", '--md'
+      expect(@out.string).to start_with '```mermaid'
+    end
+
+    it 'supports spotlighting nodes' do
+      @commands.send :render, "#{@fib_java}:0", '--spotlight', '13', '--out', 'out.dot'
+    end
+
     if Seafoam::SpecHelpers.dependencies_installed?
-      it 'supports -o out.pdf' do
+      it 'supports --out out.pdf' do
         @commands.send :render, "#{@fib_java}:0", '--out', 'out.pdf'
         expect(`file out.pdf`).to start_with 'out.pdf: PDF document'
       end
 
-      it 'supports -o out.svg' do
+      it 'supports --out out.svg' do
         @commands.send :render, "#{@fib_java}:0", '--out', 'out.svg'
         expect(`file out.svg`).to start_with 'out.svg: SVG Scalable Vector Graphics image'
       end
 
-      it 'supports -o out.png' do
+      it 'supports --out out.png' do
         @commands.send :render, "#{@fib_java}:0", '--out', 'out.png'
         expect(`file out.png`).to start_with 'out.png: PNG image data'
-      end
-
-      it 'supports -o out.dot' do
-        @commands.send :render, "#{@fib_java}:0", '--out', 'out.dot'
-        expect(`file out.dot`).to start_with 'out.dot: ASCII text'
-      end
-
-      it 'supports spotlighting nodes' do
-        @commands.send :render, "#{@fib_java}:0", '--spotlight', '13'
-      end
-
-      it 'does not work on a node' do
-        expect { @commands.send :render, "#{@fib_java}:0:13" }.to raise_error(ArgumentError)
       end
     else
       it 'raises an exception if Graphviz is not installed' do
@@ -325,6 +336,10 @@ describe Seafoam::Commands do
           @commands.send :render, "#{@fib_java}:0", '--out', 'out.pdf'
         end.to raise_error(RuntimeError, /Could not run Graphviz - is it installed?/)
       end
+    end
+
+    it 'does not work on a node' do
+      expect { @commands.send :render, "#{@fib_java}:0:13" }.to raise_error(ArgumentError)
     end
   end
 
