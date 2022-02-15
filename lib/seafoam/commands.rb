@@ -414,6 +414,28 @@ module Seafoam
           out_file = args.shift
           explicit_out_file = true
           raise ArgumentError, 'no file for --out' unless out_file
+
+          out_ext = File.extname(out_file).downcase
+          case out_ext
+          when '.pdf'
+            out_format = :pdf
+          when '.svg'
+            out_format = :svg
+          when '.png'
+            out_format = :png
+          when '.dot'
+            out_format = :dot
+          when '.mmd'
+            out_format = :mmd
+          when '.md'
+            out_format = :md
+          else
+            raise ArgumentError, "unknown render format #{out_ext}"
+          end
+        when '--md'
+          out_file = @out
+          out_format = :md
+          explicit_out_file = true
         when '--spotlight'
           spotlight_arg = args.shift
           raise ArgumentError, 'no list for --spotlight' unless spotlight_arg
@@ -445,20 +467,7 @@ module Seafoam
         end
       end
       out_file ||= 'graph.pdf'
-      out_ext = File.extname(out_file).downcase
-      case out_ext
-      when '.pdf'
-        out_format = :pdf
-      when '.svg'
-        out_format = :svg
-      when '.png'
-        out_format = :png
-      when '.dot'
-        out_format = :dot
-      else
-        raise ArgumentError, "unknown render format #{out_ext}"
-      end
-
+      out_format ||= :pdf
       with_graph(file, graph_index) do |parser|
         parser.skip_graph_header
         graph = parser.read_graph
@@ -473,10 +482,29 @@ module Seafoam
           end
           spotlight.shade
         end
-        if out_format == :dot
-          File.open(out_file, 'w') do |stream|
-            writer = GraphvizWriter.new(stream)
-            writer.write_graph graph, false, draw_blocks
+        case out_format
+        when :dot, :mmd, :md
+          action = lambda do |stream|
+            case out_format
+            when :dot
+              writer = GraphvizWriter.new(stream)
+              writer.write_graph graph, false, draw_blocks
+            when :mmd
+              writer = MermaidWriter.new(stream)
+              writer.write_graph graph
+            when :md
+              writer = MarkdownWriter.new(stream)
+              writer.write_graph graph
+            else
+              raise
+            end
+          end
+          if out_file.is_a?(String)
+            File.open(out_file, 'w') do |stream|
+              action.call stream
+            end
+          else
+            action.call out_file
           end
         else
           begin

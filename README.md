@@ -403,7 +403,8 @@ the IGV feature of gradually revealing nodes.
 
 `render` supports these options:
 
-* `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`
+* `--out filename.pdf` or `.pdf`, `.svg`, `.png`, `.dot`, `.mmd`, `.md`
+* `--md`
 * `--option key value` for pass options.
 
 #### Convert a file

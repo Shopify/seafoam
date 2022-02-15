@@ -296,6 +296,21 @@ describe Seafoam::Commands do
       expect(`file out.dot`).to start_with 'out.dot: ASCII text'
     end
 
+    it 'supports --out out.mmd' do
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.mmd'
+      expect(File.read('out.mmd')).to start_with 'flowchart TD'
+    end
+
+    it 'supports --out out.md' do
+      @commands.send :render, "#{@fib_java}:0", '--out', 'out.md'
+      expect(File.read('out.md')).to start_with '```mermaid'
+    end
+
+    it 'supports --md' do
+      @commands.send :render, "#{@fib_java}:0", '--md'
+      expect(@out.string).to start_with '```mermaid'
+    end
+
     it 'supports spotlighting nodes' do
       @commands.send :render, "#{@fib_java}:0", '--spotlight', '13', '--out', 'out.dot'
     end
