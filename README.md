@@ -1,9 +1,7 @@
 # Seafoam
 
-*Seafoam* is a tool for working with compiler graphs. It's designed primarily
-for working with the graph files dumped by the GraalVM compiler, such as in
-TruffleRuby, but it could be used with other compilers and graph dump file
-formats.
+*Seafoam* is a tool for working with compiler graphs dumped by the GraalVM
+compiler, including the Graal JIT, Native Image, and Truffle.
 
 The *Ideal Graph Visualizer*, or *IGV*, is the tool usually used to work with
 GraalVM compiler graphs. Seafoam aims to solve several problems with IGV. Unlike
@@ -15,7 +13,8 @@ IGV, Seafoam:
 * is able to some extent seek BGV files to load specific graphs without loading the rest of the file
 * has a command-line interface
 * can be used as a library
-* has easy PDF, SVG, PNG and JSON output
+* has easy PDF, SVG, PNG, Mermaid, and Markdown graph output
+* has data JSON output
 * is designed for accessibility
 * looks prettier, in our opinion
 
