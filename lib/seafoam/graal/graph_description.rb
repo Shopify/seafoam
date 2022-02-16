@@ -4,13 +4,12 @@ module Seafoam
     class GraphDescription
       ATTRIBUTES = %i[branches calls deopts linear loops]
 
-      ATTRIBUTES.each { |attr| attr_accessor(attr) }
+      ATTRIBUTES.each { |attr| attr_accessor(attr) unless attr == :linear }
 
       def initialize
         @branches = false
         @calls = false
         @deopts = false
-        @linear = false
         @loops = false
       end
 
