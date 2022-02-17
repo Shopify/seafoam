@@ -66,6 +66,10 @@ module Seafoam
         attrs[:fillcolor] = back_color
         attrs[:fontcolor] = fore_color
 
+        # If the node is shaded, convert the attributes to the shaded
+        # version.
+        attrs = shade(attrs) if node.props[:spotlight] == 'shaded'
+
         if node.props[:inlined]
           # If the node is to be inlined then draw it smaller and a different
           # shape.
@@ -77,10 +81,6 @@ module Seafoam
           inline_attrs[node.id] = attrs
         else
           attrs[:shape] = 'diamond' if node.props[:kind] == 'calc'
-
-          # If the node is shaded, convert the attributes to the shaded
-          # version.
-          attrs = shade(attrs) if node.props[:spotlight] == 'shaded'
 
           # Declare the node.
           @stream.puts "  node#{node.id} #{write_attrs(attrs)};"
