@@ -142,28 +142,32 @@ module Seafoam
       # Does this edge come from an inlined node?
 
       if edge.from.props[:inlined]
-        # An inlined edge is drawn as a new version of the from-node and an
-        # edge from that new version directly to the to-node. With only one
-        # user it's a short edge and the from-node is show directly above the
-        # to-node.
+        # Don't draw inlined nodes to hidden nodes.
+        unless edge.to.props[:hidden]
 
-        if edge.to.props[:spotlight] == 'shaded'
-          # Draw inlined edges to shaded nodes as invisible.
-          node_attrs = { label: '', style: 'invis' }
-        else
-          # Get attributes from when we went through nodes earlier.
-          node_attrs = inline_attrs[edge.from.id]
+          # An inlined edge is drawn as a new version of the from-node and an
+          # edge from that new version directly to the to-node. With only one
+          # user it's a short edge and the from-node is show directly above the
+          # to-node.
+
+          if edge.to.props[:spotlight] == 'shaded'
+            # Draw inlined edges to shaded nodes as invisible.
+            node_attrs = { label: '', style: 'invis' }
+          else
+            # Get attributes from when we went through nodes earlier.
+            node_attrs = inline_attrs[edge.from.id]
+          end
+
+          # Inlined nodes skip the arrow for simplicity.
+          attrs[:arrowhead] = 'none'
+          attrs[:fontsize] = '8'
+
+          # Declare a new node just for this user.
+          @stream.puts "  inline#{edge.from.id}x#{edge.to.id} #{write_attrs(node_attrs)};"
+
+          # Declare the edge.
+          @stream.puts "  inline#{edge.from.id}x#{edge.to.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
         end
-
-        # Inlined nodes skip the arrow for simplicity.
-        attrs[:arrowhead] = 'none'
-        attrs[:fontsize] = '8'
-
-        # Declare a new node just for this user.
-        @stream.puts "  inline#{edge.from.id}x#{edge.to.id} #{write_attrs(node_attrs)};"
-
-        # Declare the edge.
-        @stream.puts "  inline#{edge.from.id}x#{edge.to.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
       else
         # Declare the edge.
         @stream.puts "  node#{edge.from.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
