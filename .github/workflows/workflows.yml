@@ -1,5 +1,5 @@
 name: Workflows
-on: [push]
+on: [push, pull_request]
 jobs:
   rubocop:
     runs-on: ubuntu-latest
