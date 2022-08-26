@@ -27,7 +27,7 @@ module Seafoam
           next if node.props[:label]
 
           # The Java class of the node.
-          node_class = node.props.dig(:node_class, :node_class)
+          node_class = node.node_class
 
           # IGV renders labels using a template, with parts that are replaced
           # with other properties. We will modify these templates in some
@@ -218,10 +218,10 @@ module Seafoam
       # Annotate edges with their label and kind.
       def apply_edges(graph)
         graph.edges.each do |edge|
-          if edge.to.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
+          if edge.to.node_class == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
             merge_node = edge.to.edges.find { |e| e.props[:name] == 'merge' }.from
             control_into_merge = %w[ends loopBegin]
-            merge_node_control_edges_in = merge_node.edges.select { |e| control_into_merge.include?(e.props[:name]) && e.to.props.dig(:node_class, :node_class) != 'org.graalvm.compiler.nodes.LoopExitNode' }
+            merge_node_control_edges_in = merge_node.edges.select { |e| control_into_merge.include?(e.props[:name]) && e.to.node_class != 'org.graalvm.compiler.nodes.LoopExitNode' }
             matching_control_edge = merge_node_control_edges_in[edge.props[:index]]
             control_in_node = matching_control_edge.nodes.find { |n| n != merge_node }
             edge.props[:label] = "from #{control_in_node.id}"
@@ -262,7 +262,7 @@ module Seafoam
           # loopBegin edges point from LoopEndNode (continue) and LoopExitNode
           # (break) to the LoopBeginNode. Both are drawn reversed.
           when 'loopBegin'
-            case edge.to.props.dig(:node_class, :node_class)
+            case edge.to.node_class
             when 'org.graalvm.compiler.nodes.LoopEndNode'
               # If it's from the LoopEnd then it's the control edge to follow.
               edge.props[:kind] = 'loop'
@@ -311,7 +311,7 @@ module Seafoam
       # useful to look at, and severely clutter the graph.
       def hide_frame_state(graph)
         graph.nodes.each_value do |node|
-          if FRAME_STATE_NODES.include?(node.props.dig(:node_class, :node_class))
+          if FRAME_STATE_NODES.include?(node.node_class)
             node.props[:hidden] = true
           end
         end
@@ -324,7 +324,7 @@ module Seafoam
         loop do
           umodified = true
           graph.edges.each do |edge|
-            next unless Graal::Pi::PI_NODES.include?(edge.from.props.dig(:node_class, :node_class))
+            next unless Graal::Pi::PI_NODES.include?(edge.from.node_class)
 
             object = Graal::Pi.follow_pi_object(edge.from)
             graph.create_edge object, edge.to, edge.props.merge({ synthetic: true })
@@ -350,7 +350,7 @@ module Seafoam
       # nodes that are 'simple', like parameters and constants.
       def reduce_edges(graph)
         graph.nodes.each_value do |node|
-          if SIMPLE_INPUTS.include?(node.props.dig(:node_class, :node_class))
+          if SIMPLE_INPUTS.include?(node.node_class)
             node.props[:inlined] = true
           end
         end

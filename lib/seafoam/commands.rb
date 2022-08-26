@@ -368,7 +368,7 @@ module Seafoam
         description = Seafoam::Graal::GraphDescription.new
 
         graph.nodes.each_value do |node|
-          node_class = node.props.dig(:node_class, :node_class)
+          node_class = node.node_class
 
           simple_node_class = node_class[/([^.]+)$/, 1]
           description.node_counts[simple_node_class] += 1
@@ -384,7 +384,7 @@ module Seafoam
         end
 
         description.deopts = graph.nodes[0].outputs.map(&:to)
-                                  .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
+                                  .all? { |t| t.node_class == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
 
         formatter = formatter_module::DescribeFormatter.new(graph, description)
         @out.puts formatter.format

@@ -58,6 +58,10 @@ module Seafoam
       @props = props
     end
 
+    def node_class
+      @props.dig(:node_class, :node_class)
+    end
+
     # All edges - input and output.
     def edges
       inputs + outputs
