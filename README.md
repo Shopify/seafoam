@@ -369,14 +369,27 @@ Such a comparison could be the basis of a regression test.
 To simplify automation use cases, you can also capture the output as JSON:
 
 ```
-% seafoam --json examples/fib-java.bgv.gz:1 describe | jq --sort-keys
+% seafoam --json examples/fib-java.bgv.gz:1 describe | jq
 {
   "branches": true,
   "calls": true,
   "deopts": false,
   "linear": false,
   "loops": false,
-  "node_count": 21
+  "node_count": 21,
+  "node_counts": {
+    "AddNode": 3,
+    "ConstantNode": 3,
+    "FrameState": 3,
+    "BeginNode": 2,
+    "InvokeNode": 2,
+    "MethodCallTargetNode": 2,
+    "ReturnNode": 2,
+    "IfNode": 1,
+    "IntegerLessThanNode": 1,
+    "ParameterNode": 1,
+    "StartNode": 1
+  }
 }
 ```
 

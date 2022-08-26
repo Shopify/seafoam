@@ -5,8 +5,9 @@ module Seafoam
       class DescribeFormatter < Seafoam::Formatters::Base::DescribeFormatter
         def format
           notes = Seafoam::Graal::GraphDescription::ATTRIBUTES.select { |attr| description.send(attr) }
+          node_counts = description.sorted_node_counts.map { |node_class, count| "#{node_class}: #{count}" }.join("\n")
 
-          ["#{graph.nodes.size} nodes", *notes].join(', ')
+          ["#{graph.nodes.size} nodes", *notes].join(', ') + "\n#{node_counts}"
         end
       end
 

@@ -357,8 +357,20 @@ describe Seafoam::Commands do
 
       it 'prints a description of a particular graph index' do
         @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Text
-        lines = @out.string.lines.map(&:rstrip)
-        expect(lines.first).to eq('20 nodes, branches, calls')
+        expect(@out.string).to eq(<<~EOS)
+        20 nodes, branches, calls
+        AddNode: 3
+        ConstantNode: 3
+        BeginNode: 2
+        FrameState: 2
+        HotSpotDirectCallTargetNode: 2
+        InvokeNode: 2
+        ReturnNode: 2
+        IfNode: 1
+        IntegerLessThanNode: 1
+        ParameterNode: 1
+        StartNode: 1
+        EOS
       end
     end
 
@@ -370,15 +382,28 @@ describe Seafoam::Commands do
       it 'prints a description of a particular graph index' do
         @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Json
         decoded = JSON.parse(@out.string)
-
-        expect(decoded).to eq({
-                                'node_count' => 20,
-                                'branches' => true,
-                                'calls' => true,
-                                'loops' => false,
-                                'deopts' => false,
-                                'linear' => false
-                              })
+        expected = {
+          'branches' => true,
+          'calls' => true,
+          'loops' => false,
+          'deopts' => false,
+          'linear' => false,
+          'node_count' => 20,
+          'node_counts' => {
+            'AddNode' => 3,
+            'ConstantNode' => 3,
+            'BeginNode' => 2,
+            'FrameState' => 2,
+            'HotSpotDirectCallTargetNode' => 2,
+            'InvokeNode' => 2,
+            'ReturnNode' => 2,
+            'IfNode' => 1,
+            'IntegerLessThanNode' => 1,
+            'ParameterNode' => 1,
+            'StartNode' => 1
+          },
+        }
+        expect(decoded).to eq(expected)
       end
     end
   end
