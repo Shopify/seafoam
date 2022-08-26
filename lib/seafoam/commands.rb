@@ -368,7 +368,7 @@ module Seafoam
         description = Seafoam::Graal::GraphDescription.new
 
         graph.nodes.each_value do |node|
-          node_class = node.props.dig(:node_class, :node_class)
+          node_class = node.node_class
 
           simple_node_class = node_class[/([^.]+)$/, 1]
           description.node_counts[simple_node_class] += 1
@@ -384,7 +384,7 @@ module Seafoam
         end
 
         description.deopts = graph.nodes[0].outputs.map(&:to)
-                                  .all? { |t| t.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
+                                  .all? { |t| t.node_class == 'org.graalvm.compiler.nodes.DeoptimizeNode' }
 
         formatter = formatter_module::DescribeFormatter.new(graph, description)
         @out.puts formatter.format
@@ -403,6 +403,7 @@ module Seafoam
         simplify_truffle_args: true,
         hide_frame_state: true,
         hide_pi: true,
+        hide_begin_end: true,
         hide_floating: false,
         reduce_edges: true
       }
@@ -451,6 +452,8 @@ module Seafoam
           pass_options[:hide_frame_state] = false
         when '--show-pi'
           pass_options[:hide_pi] = false
+        when '--show-begin-end'
+          pass_options[:hide_begin_end] = false
         when '--hide-floating'
           pass_options[:hide_floating] = true
         when '--no-reduce-edges'
@@ -622,6 +625,7 @@ module Seafoam
       @out.puts '               --full-truffle-args'
       @out.puts '               --show-frame-state'
       @out.puts '               --show-pi'
+      @out.puts '               --show-begin-end'
       @out.puts '               --hide-floating'
       @out.puts '               --no-reduce-edges'
       @out.puts '               --draw-blocks'

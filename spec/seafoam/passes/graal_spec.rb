@@ -57,7 +57,7 @@ describe Seafoam::Passes::GraalPass do
 
       it 'sets the hidden property on all frame state nodes' do
         frame_state_nodes = @graph.nodes.values.select do |n|
-          Seafoam::Passes::GraalPass::FRAME_STATE_NODES.include?(n.props.dig(:node_class, :node_class))
+          Seafoam::Passes::GraalPass::FRAME_STATE_NODES.include?(n.node_class)
         end
         expect(frame_state_nodes.all? { |n| n.props[:hidden] }).to be_truthy
       end
@@ -72,7 +72,7 @@ describe Seafoam::Passes::GraalPass do
 
       it 'sets the hidden property on all frame state nodes' do
         frame_state_nodes = @graph.nodes.values.select do |n|
-          Seafoam::Graal::Pi::PI_NODES.include?(n.props.dig(:node_class, :node_class))
+          Seafoam::Graal::Pi::PI_NODES.include?(n.node_class)
         end
         expect(frame_state_nodes.all? { |n| n.props[:hidden] }).to be_truthy
       end
@@ -102,7 +102,7 @@ describe Seafoam::Passes::GraalPass do
 
       it 'inlines all constant nodes' do
         constant_nodes = @graph.nodes.values.select do |n|
-          Seafoam::Passes::GraalPass::SIMPLE_INPUTS.include?(n.props.dig(:node_class, :node_class))
+          Seafoam::Passes::GraalPass::SIMPLE_INPUTS.include?(n.node_class)
         end
         expect(constant_nodes.all? { |n| n.props[:inlined] }).to be_truthy
       end

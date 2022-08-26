@@ -14,6 +14,7 @@ module Seafoam
         apply_edges graph
         hide_frame_state graph if @options[:hide_frame_state]
         hide_pi graph if @options[:hide_pi]
+        hide_begin_end graph if @options[:hide_begin_end]
         hide_floating graph if @options[:hide_floating]
         reduce_edges graph if @options[:reduce_edges]
         hide_unused_nodes graph
@@ -27,7 +28,7 @@ module Seafoam
           next if node.props[:label]
 
           # The Java class of the node.
-          node_class = node.props.dig(:node_class, :node_class)
+          node_class = node.node_class
 
           # IGV renders labels using a template, with parts that are replaced
           # with other properties. We will modify these templates in some
@@ -150,48 +151,47 @@ module Seafoam
       NODE_KIND_MAP = {
         'org.graalvm.compiler.nodes.BeginNode' => 'control',
         'org.graalvm.compiler.nodes.ConstantNode' => 'input',
-        'org.graalvm.compiler.nodes.DeoptimizeNode' => 'effect',
+        'org.graalvm.compiler.nodes.DeoptimizeNode' => 'control',
         'org.graalvm.compiler.nodes.EndNode' => 'control',
         'org.graalvm.compiler.nodes.extended.IntegerSwitchNode' => 'control',
-        'org.graalvm.compiler.nodes.extended.UnsafeMemoryLoadNode' => 'effect',
-        'org.graalvm.compiler.nodes.extended.UnsafeMemoryStoreNode' => 'effect',
+        'org.graalvm.compiler.nodes.extended.UnsafeMemoryLoadNode' => 'memory',
+        'org.graalvm.compiler.nodes.extended.UnsafeMemoryStoreNode' => 'memory',
         'org.graalvm.compiler.nodes.FixedGuardNode' => 'guard',
         'org.graalvm.compiler.nodes.FrameState' => 'info',
         'org.graalvm.compiler.nodes.GuardNode' => 'guard',
         'org.graalvm.compiler.nodes.IfNode' => 'control',
-        'org.graalvm.compiler.nodes.InvokeNode' => 'effect',
-        'org.graalvm.compiler.nodes.InvokeWithExceptionNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.ArrayLengthNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.LoadFieldNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.LoadIndexedNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.MonitorEnterNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.MonitorExitNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.NewArrayNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.NewInstanceNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.RawMonitorEnterNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'effect',
-        'org.graalvm.compiler.nodes.java.StoreIndexedNode' => 'effect',
+        'org.graalvm.compiler.nodes.InvokeNode' => 'call',
+        'org.graalvm.compiler.nodes.InvokeWithExceptionNode' => 'call',
+        'org.graalvm.compiler.nodes.java.ArrayLengthNode' => 'memory',
+        'org.graalvm.compiler.nodes.java.LoadFieldNode' => 'memory',
+        'org.graalvm.compiler.nodes.java.LoadIndexedNode' => 'memory',
+        'org.graalvm.compiler.nodes.java.MonitorEnterNode' => 'sync',
+        'org.graalvm.compiler.nodes.java.MonitorExitNode' => 'sync',
+        'org.graalvm.compiler.nodes.java.NewArrayNode' => 'alloc',
+        'org.graalvm.compiler.nodes.java.NewInstanceNode' => 'alloc',
+        'org.graalvm.compiler.nodes.java.RawMonitorEnterNode' => 'sync',
+        'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'memory',
+        'org.graalvm.compiler.nodes.java.StoreIndexedNode' => 'memory',
         'org.graalvm.compiler.nodes.KillingBeginNode' => 'control',
         'org.graalvm.compiler.nodes.LoopBeginNode' => 'control',
         'org.graalvm.compiler.nodes.LoopEndNode' => 'control',
         'org.graalvm.compiler.nodes.LoopExitNode' => 'control',
-        'org.graalvm.compiler.nodes.memory.ReadNode' => 'effect',
-        'org.graalvm.compiler.nodes.memory.WriteNode' => 'effect',
+        'org.graalvm.compiler.nodes.memory.ReadNode' => 'memory',
+        'org.graalvm.compiler.nodes.memory.WriteNode' => 'memory',
         'org.graalvm.compiler.nodes.MergeNode' => 'control',
         'org.graalvm.compiler.nodes.ParameterNode' => 'input',
-        'org.graalvm.compiler.nodes.PrefetchAllocateNode' => 'effect',
+        'org.graalvm.compiler.nodes.PrefetchAllocateNode' => 'alloc',
         'org.graalvm.compiler.nodes.ReturnNode' => 'control',
         'org.graalvm.compiler.nodes.StartNode' => 'control',
-        'org.graalvm.compiler.nodes.UnwindNode' => 'effect',
+        'org.graalvm.compiler.nodes.UnwindNode' => 'control',
         'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode' => 'virtual',
-        'org.graalvm.compiler.nodes.virtual.CommitAllocationNode' => 'effect',
+        'org.graalvm.compiler.nodes.virtual.CommitAllocationNode' => 'alloc',
         'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual',
         'org.graalvm.compiler.nodes.VirtualObjectState' => 'info',
-        'org.graalvm.compiler.replacements.nodes.ArrayEqualsNode' => 'effect',
-        'org.graalvm.compiler.replacements.nodes.ReadRegisterNode' => 'effect',
-        'org.graalvm.compiler.replacements.nodes.WriteRegisterNode' => 'effect'
-
-        # org.graalvm.compiler.word.WordCastNode is not an effect even though it is fixed.
+        'org.graalvm.compiler.replacements.nodes.ArrayEqualsNode' => 'memory',
+        'org.graalvm.compiler.replacements.nodes.ReadRegisterNode' => 'memory',
+        'org.graalvm.compiler.replacements.nodes.WriteRegisterNode' => 'memory',
+        'org.graalvm.compiler.word.WordCastNode' => 'memory',
       }
 
       # Render a Graal 'name template'.
@@ -218,10 +218,10 @@ module Seafoam
       # Annotate edges with their label and kind.
       def apply_edges(graph)
         graph.edges.each do |edge|
-          if edge.to.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
+          if edge.to.node_class == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
             merge_node = edge.to.edges.find { |e| e.props[:name] == 'merge' }.from
             control_into_merge = %w[ends loopBegin]
-            merge_node_control_edges_in = merge_node.edges.select { |e| control_into_merge.include?(e.props[:name]) && e.to.props.dig(:node_class, :node_class) != 'org.graalvm.compiler.nodes.LoopExitNode' }
+            merge_node_control_edges_in = merge_node.edges.select { |e| control_into_merge.include?(e.props[:name]) && e.to.node_class != 'org.graalvm.compiler.nodes.LoopExitNode' }
             matching_control_edge = merge_node_control_edges_in[edge.props[:index]]
             control_in_node = matching_control_edge.nodes.find { |n| n != merge_node }
             edge.props[:label] = "from #{control_in_node.id}"
@@ -262,7 +262,7 @@ module Seafoam
           # loopBegin edges point from LoopEndNode (continue) and LoopExitNode
           # (break) to the LoopBeginNode. Both are drawn reversed.
           when 'loopBegin'
-            case edge.to.props.dig(:node_class, :node_class)
+            case edge.to.node_class
             when 'org.graalvm.compiler.nodes.LoopEndNode'
               # If it's from the LoopEnd then it's the control edge to follow.
               edge.props[:kind] = 'loop'
@@ -311,7 +311,7 @@ module Seafoam
       # useful to look at, and severely clutter the graph.
       def hide_frame_state(graph)
         graph.nodes.each_value do |node|
-          if FRAME_STATE_NODES.include?(node.props.dig(:node_class, :node_class))
+          if FRAME_STATE_NODES.include?(node.node_class)
             node.props[:hidden] = true
           end
         end
@@ -324,7 +324,7 @@ module Seafoam
         loop do
           umodified = true
           graph.edges.each do |edge|
-            next unless Graal::Pi::PI_NODES.include?(edge.from.props.dig(:node_class, :node_class))
+            next unless Graal::Pi::PI_NODES.include?(edge.from.node_class)
 
             object = Graal::Pi.follow_pi_object(edge.from)
             graph.create_edge object, edge.to, edge.props.merge({ synthetic: true })
@@ -332,6 +332,26 @@ module Seafoam
             umodified = false
           end
           break if umodified
+        end
+      end
+
+      def hide_begin_end(graph)
+        graph.nodes.each_value do |node|
+          node_class = node.node_class
+          if BEGIN_END_NODES.include?(node_class)
+            # In mid tier, a BeginNode can have multiple input edges, leave those in the graph
+            if node.inputs.size == 1 and node.outputs.size == 1
+              input_edge = node.inputs[0]
+              output_edge = node.outputs[0]
+              # The edge above the BeginNode is the interesting one, the edges
+              # after the Begin or before/after the EndNode are pure control flow
+              # and have no extra information
+              preserved_props = input_edge.props
+              graph.create_edge input_edge.from, output_edge.to, preserved_props
+              graph.remove_edge input_edge
+              graph.remove_edge output_edge
+            end
+          end
         end
       end
 
@@ -350,7 +370,7 @@ module Seafoam
       # nodes that are 'simple', like parameters and constants.
       def reduce_edges(graph)
         graph.nodes.each_value do |node|
-          if SIMPLE_INPUTS.include?(node.props.dig(:node_class, :node_class))
+          if SIMPLE_INPUTS.include?(node.node_class)
             node.props[:inlined] = true
           end
         end
@@ -398,6 +418,11 @@ module Seafoam
       FRAME_STATE_NODES = %w[
         org.graalvm.compiler.nodes.FrameState
         org.graalvm.compiler.virtual.nodes.MaterializedObjectState
+      ]
+
+      BEGIN_END_NODES = %w[
+        org.graalvm.compiler.nodes.BeginNode
+        org.graalvm.compiler.nodes.EndNode
       ]
     end
   end

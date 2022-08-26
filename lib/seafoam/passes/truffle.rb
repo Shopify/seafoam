@@ -18,13 +18,13 @@ module Seafoam
       # like a Graal parameter node.
       def simplify_truffle_args(graph)
         graph.nodes.dup.each_value do |node|
-          next unless node.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.java.LoadIndexedNode'
+          next unless node.node_class == 'org.graalvm.compiler.nodes.java.LoadIndexedNode'
 
           index_node = node.inputs.find { |edge| edge.props[:name] == 'index' }.from
           array_node = Graal::Pi.follow_pi_object(node.inputs.find { |edge| edge.props[:name] == 'array' }.from)
 
-          next unless index_node.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ConstantNode'
-          next unless array_node.props.dig(:node_class, :node_class) == 'org.graalvm.compiler.nodes.ParameterNode'
+          next unless index_node.node_class == 'org.graalvm.compiler.nodes.ConstantNode'
+          next unless array_node.node_class == 'org.graalvm.compiler.nodes.ParameterNode'
 
           node.props[:truffle_arg_load] = true
 

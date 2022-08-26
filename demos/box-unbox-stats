@@ -27,7 +27,7 @@ ARGV.each do |dir|
       contains_box_unbox = false
 
       graph.nodes.each_value do |node|
-        next unless node.props.dig(:node_class, :node_class).start_with?('org.graalvm.compiler.nodes.extended.BoxNode')
+        next unless node.node_class.start_with?('org.graalvm.compiler.nodes.extended.BoxNode')
 
         box_node = node
         box_nodes_count += 1
@@ -35,7 +35,7 @@ ARGV.each do |dir|
         raise unless value_edge
 
         value_node = value_edge.from
-        next unless value_node.props.dig(:node_class, :node_class).start_with?('org.graalvm.compiler.nodes.extended.UnboxNode')
+        next unless value_node.node_class.start_with?('org.graalvm.compiler.nodes.extended.UnboxNode')
 
         unbox_node = value_node
         box_nodes_from_unbox_count += 1

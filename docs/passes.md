@@ -23,7 +23,7 @@ want to add them:
 * `:out_annotation` on nodes
 * `:hidden` on nodes and edges, to not show them (*remove frame state* for example in IGV terminology)
 * `:inlined` on nodes only, to indicate the node should be shown immediately above each node using it (*reduce edges* in IGV terminology)
-* `:kind` on nodes only, which can be `info`, `input`, `control`, `effect`, `virtual`, `calc`, `guard`, or `other`
+* `:kind` on nodes only, which can be `info`, `input`, `control`, `memory`, `call`, `sync`, `alloc`, `virtual`, `calc`, `guard`, or `other`
 * `:kind` on edges only, which can be `info`, `control`, `loop`, or `data`
 * `:reverse` on edges only
 * `:spotlight` for nodes as part of spotlighting (`lit` are shown, `shaded` are shown but greyed out, and edges from `shaded` to `:hidden` nodes are also shown greyed out)
