@@ -83,7 +83,7 @@ module Seafoam
 
     # Inspect.
     def inspect
-      "<Node #{id}>"
+      "<Node #{id} #{node_class}>"
     end
   end
 

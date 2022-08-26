@@ -14,6 +14,7 @@ module Seafoam
         apply_edges graph
         hide_frame_state graph if @options[:hide_frame_state]
         hide_pi graph if @options[:hide_pi]
+        hide_begin_end graph if @options[:hide_begin_end]
         hide_floating graph if @options[:hide_floating]
         reduce_edges graph if @options[:reduce_edges]
         hide_unused_nodes graph
@@ -335,6 +336,26 @@ module Seafoam
         end
       end
 
+      def hide_begin_end(graph)
+        graph.nodes.each_value do |node|
+          node_class = node.node_class
+          if BEGIN_END_NODES.include?(node_class)
+            # In mid tier, a BeginNode can have multiple input edges, leave those in the graph
+            if node.inputs.size == 1 and node.outputs.size == 1
+              input_edge = node.inputs[0]
+              output_edge = node.outputs[0]
+              # The edge above the BeginNode is the interesting one, the edges
+              # after the Begin or before/after the EndNode are pure control flow
+              # and have no extra information
+              preserved_props = input_edge.props
+              graph.create_edge input_edge.from, output_edge.to, preserved_props
+              graph.remove_edge input_edge
+              graph.remove_edge output_edge
+            end
+          end
+        end
+      end
+
       # Hide floating nodes. This highlights just the control flow backbone.
       def hide_floating(graph)
         graph.nodes.each_value do |node|
@@ -398,6 +419,11 @@ module Seafoam
       FRAME_STATE_NODES = %w[
         org.graalvm.compiler.nodes.FrameState
         org.graalvm.compiler.virtual.nodes.MaterializedObjectState
+      ]
+
+      BEGIN_END_NODES = %w[
+        org.graalvm.compiler.nodes.BeginNode
+        org.graalvm.compiler.nodes.EndNode
       ]
     end
   end
