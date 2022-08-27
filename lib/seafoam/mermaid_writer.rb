@@ -1,40 +1,48 @@
 module Seafoam
-  # A writer from graphs to the Mermaid format.
-  class MermaidWriter
-    def initialize(stream)
-      @stream = stream
+  # A writer from graphs to the Mermaid format. Re-uses the Graphviz writer,
+  # just adapting for the syntax. Attributes are cherry-picked, and more
+  # things are left to defaults.
+  class MermaidWriter < GraphvizWriter
+    def initialize(*args)
+      super(*args)
+      @link_style_counter = 0
     end
 
-    # Write a graph.
-    def write_graph(graph)
+    protected
+
+    def start_graph(_attrs)
+      # Ignore bgcolor, as I can't figure out how to do it in Mermaid
       @stream.puts 'flowchart TD'
-      write_nodes graph
-      write_edges graph
     end
 
-    private
+    def end_graph
+      # Nothing to do
+    end
 
-    # Write node declarations.
-    def write_nodes(graph)
-      graph.nodes.each_value do |node|
-        write_node node
+    def start_subgraph(id)
+      @stream.puts "  subgraph B#{id}"
+    end
+
+    def end_subgraph
+      @stream.puts '  end'
+    end
+
+    def output_node(indent, id, attrs)
+      case attrs[:shape]
+      when 'rectangle'
+        shape = ['(', ')']
+      when 'oval'
+        shape = ['([', '])']
+      when 'diamond'
+        shape = ['{{', '}}']
       end
+      @stream.puts "#{indent}#{id}#{shape[0]}#{attrs[:label].inspect}#{shape[1]}"
+      @stream.puts "#{indent}style #{id} fill:#{attrs[:fillcolor]},stroke:#{attrs[:color]},color:#{attrs[:fontcolor]};"
     end
 
-    def write_node(node)
-      @stream.puts "  node#{node.id}[#{node.props[:label].inspect}]"
-    end
-
-    # Write edge declarations.
-
-    def write_edges(graph)
-      graph.edges.each do |edge|
-        write_edge edge
-      end
-    end
-
-    def write_edge(edge)
-      @stream.puts "  node#{edge.from.id} --> node#{edge.to.id}"
+    def output_edge(from, to, attrs)
+      @stream.puts "  #{from} --> #{to}"
+      @stream.puts "  linkStyle #{(@link_style_counter += 1) - 1} stroke:#{attrs[:color]},stroke-width:#{attrs[:penwidth]}px;"
     end
   end
 end
