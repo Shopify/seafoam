@@ -15,7 +15,8 @@ module Seafoam
   BIG_STONE = '#343d46'
   ICE_STONE = '#b3bbc3'
   ORANGE = '#ffa500'
-
   LIGHT_BLUE = '#ccccff'
   LIGHT_PURPLE = '#c39bd3'
+  LIGHT_YELLOW = '#ffffde'
+  DARK_YELLOW = '#aaaa33'
 end

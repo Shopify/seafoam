@@ -35,12 +35,14 @@ module Seafoam
 
       if draw_blocks
         graph.blocks.each do |block|
+          next if block.nodes.all? { |n| n.props[:hidden] || n.props[:inlined] }
+
           start_subgraph block.id
 
           block.nodes.each do |node|
             next if node.props[:hidden] || node.props[:inlined]
 
-            write_node inline_attrs, node
+            write_node '    ', inline_attrs, node
             drawn_in_blocks.push node
           end
 
@@ -49,7 +51,7 @@ module Seafoam
       end
 
       (graph.nodes.values - drawn_in_blocks).each do |node|
-        write_node inline_attrs, node
+        write_node '  ', inline_attrs, node
       end
     end
 
@@ -57,14 +59,16 @@ module Seafoam
       @stream.puts "  subgraph cluster_block#{id} {"
       @stream.puts '    fontname = "Arial";'
       @stream.puts "    label = \"B#{id}\";"
-      @stream.puts '    style=dotted;'
+      @stream.puts '    style = filled;'
+      @stream.puts "    color = #{DARK_YELLOW.inspect};"
+      @stream.puts "    fillcolor = #{LIGHT_YELLOW.inspect};"
     end
 
     def end_subgraph
       @stream.puts '  }'
     end
 
-    def write_node(inline_attrs, node)
+    def write_node(indent, inline_attrs, node)
       # We're going to build up a hash of Graphviz drawing attributes.
       attrs = {}
 
@@ -77,7 +81,7 @@ module Seafoam
         if node.adjacent.any? { |a| !a.props[:hidden] && a.props[:spotlight] == 'shaded' }
           attrs[:style] = 'invis'
           attrs[:label] = ''
-          output_node "node#{node.id}", attrs
+          output_node indent, "node#{node.id}", attrs
         end
       else
         # This is a visible node.
@@ -118,13 +122,13 @@ module Seafoam
           attrs[:shape] = 'diamond' if node.props[:kind] == 'calc'
 
           # Declare the node.
-          output_node "node#{node.id}", attrs
+          output_node indent, "node#{node.id}", attrs
         end
       end
     end
 
-    def output_node(id, attrs)
-      @stream.puts "  #{id} #{write_attrs(attrs)};"
+    def output_node(indent, id, attrs)
+      @stream.puts "#{indent}#{id} #{write_attrs(attrs)};"
     end
 
     # Write edge declarations.
@@ -202,7 +206,7 @@ module Seafoam
           attrs[:fontsize] = '8'
 
           # Declare a new node just for this user.
-          output_node "inline#{edge.from.id}x#{edge.to.id}", node_attrs
+          output_node '  ', "inline#{edge.from.id}x#{edge.to.id}", node_attrs
 
           # Declare the edge.
           output_edge "inline#{edge.from.id}x#{edge.to.id}", "node#{edge.to.id}", attrs
@@ -229,15 +233,7 @@ module Seafoam
 
     # Write a hash of key-value attributes into the DOT format.
     def write_attrs(attrs)
-      '[' + attrs.reject { |_k, v| v.nil? }.map { |k, v| "#{k}=#{quote(v)}" }.join(',') + ']'
-    end
-
-    # Quote and escape a string.
-    def quote(string)
-      string = string.to_s
-      string = string.gsub('\\', '\\\\')
-      string = string.gsub('"', '\\"')
-      "\"#{string}\""
+      '[' + attrs.reject { |_k, v| v.nil? }.map { |k, v| "#{k}=#{v.inspect}" }.join(',') + ']'
     end
 
     # Color theme.

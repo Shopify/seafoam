@@ -498,7 +498,7 @@ module Seafoam
               writer.write_graph graph, false, draw_blocks
             when :mmd
               writer = MermaidWriter.new(stream)
-              writer.write_graph graph
+              writer.write_graph graph, false, draw_blocks
             when :md
               writer = MarkdownWriter.new(stream)
               writer.write_graph graph

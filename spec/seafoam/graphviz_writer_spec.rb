@@ -43,21 +43,4 @@ describe Seafoam::GraphvizWriter do
       end
     end
   end
-
-  describe '#quote' do
-    it 'adds quotes' do
-      writer = Seafoam::GraphvizWriter.new(nil)
-      expect(writer.send(:quote, 'foo')).to eq '"foo"'
-    end
-
-    it 'escapes an existing quote' do
-      writer = Seafoam::GraphvizWriter.new(nil)
-      expect(writer.send(:quote, 'foo"bar')).to eq '"foo\"bar"'
-    end
-
-    it 'escapes an existing escape' do
-      writer = Seafoam::GraphvizWriter.new(nil)
-      expect(writer.send(:quote, 'foo\bar')).to eq '"foo\\bar"'
-    end
-  end
 end
