@@ -12,10 +12,18 @@ module Seafoam
       attrs = {}
       attrs[:dpi] = 200 if hidpi
       attrs[:bgcolor] = 'white'
-      @stream.puts 'digraph G {'
-      @stream.puts "  graph #{write_attrs(attrs)};"
+      start_graph attrs
       write_nodes inline_attrs, graph, draw_blocks
       write_edges inline_attrs, graph
+      end_graph
+    end
+
+    def start_graph(attrs)
+      @stream.puts 'digraph G {'
+      @stream.puts "  graph #{write_attrs(attrs)};"
+    end
+
+    def end_graph
       @stream.puts '}'
     end
 
@@ -27,10 +35,7 @@ module Seafoam
 
       if draw_blocks
         graph.blocks.each do |block|
-          @stream.puts "  subgraph cluster_block#{block.id} {"
-          @stream.puts '    fontname = "Arial";'
-          @stream.puts "    label = \"B#{block.id}\";"
-          @stream.puts '    style=dotted;'
+          start_subgraph block.id
 
           block.nodes.each do |node|
             next if node.props[:hidden] || node.props[:inlined]
@@ -39,13 +44,24 @@ module Seafoam
             drawn_in_blocks.push node
           end
 
-          @stream.puts '  }'
+          end_subgraph
         end
       end
 
       (graph.nodes.values - drawn_in_blocks).each do |node|
         write_node inline_attrs, node
       end
+    end
+
+    def start_subgraph(id)
+      @stream.puts "  subgraph cluster_block#{id} {"
+      @stream.puts '    fontname = "Arial";'
+      @stream.puts "    label = \"B#{id}\";"
+      @stream.puts '    style=dotted;'
+    end
+
+    def end_subgraph
+      @stream.puts '  }'
     end
 
     def write_node(inline_attrs, node)
@@ -61,7 +77,7 @@ module Seafoam
         if node.adjacent.any? { |a| !a.props[:hidden] && a.props[:spotlight] == 'shaded' }
           attrs[:style] = 'invis'
           attrs[:label] = ''
-          @stream.puts "  node#{node.id} #{write_attrs(attrs)};"
+          output_node "node#{node.id}", attrs
         end
       else
         # This is a visible node.
@@ -102,9 +118,13 @@ module Seafoam
           attrs[:shape] = 'diamond' if node.props[:kind] == 'calc'
 
           # Declare the node.
-          @stream.puts "  node#{node.id} #{write_attrs(attrs)};"
+          output_node "node#{node.id}", attrs
         end
       end
+    end
+
+    def output_node(id, attrs)
+      @stream.puts "  #{id} #{write_attrs(attrs)};"
     end
 
     # Write edge declarations.
@@ -182,15 +202,19 @@ module Seafoam
           attrs[:fontsize] = '8'
 
           # Declare a new node just for this user.
-          @stream.puts "  inline#{edge.from.id}x#{edge.to.id} #{write_attrs(node_attrs)};"
+          output_node "inline#{edge.from.id}x#{edge.to.id}", node_attrs
 
           # Declare the edge.
-          @stream.puts "  inline#{edge.from.id}x#{edge.to.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
+          output_edge "inline#{edge.from.id}x#{edge.to.id}", "node#{edge.to.id}", attrs
         end
       else
         # Declare the edge.
-        @stream.puts "  node#{edge.from.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
+        output_edge "node#{edge.from.id}", "node#{edge.to.id}", attrs
       end
+    end
+
+    def output_edge(from, to, attrs)
+      @stream.puts "  #{from} -> #{to} #{write_attrs(attrs)};"
     end
 
     # Return attributes for a node or edge modified to 'shade' them in terms
