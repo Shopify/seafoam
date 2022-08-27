@@ -191,7 +191,7 @@ module Seafoam
         'org.graalvm.compiler.replacements.nodes.ArrayEqualsNode' => 'memory',
         'org.graalvm.compiler.replacements.nodes.ReadRegisterNode' => 'memory',
         'org.graalvm.compiler.replacements.nodes.WriteRegisterNode' => 'memory',
-        'org.graalvm.compiler.word.WordCastNode' => 'memory',
+        'org.graalvm.compiler.word.WordCastNode' => 'memory'
       }
 
       # Render a Graal 'name template'.
@@ -338,20 +338,20 @@ module Seafoam
       def hide_begin_end(graph)
         graph.nodes.each_value do |node|
           node_class = node.node_class
-          if BEGIN_END_NODES.include?(node_class)
-            # In mid tier, a BeginNode can have multiple input edges, leave those in the graph
-            if node.inputs.size == 1 and node.outputs.size == 1
-              input_edge = node.inputs[0]
-              output_edge = node.outputs[0]
-              # The edge above the BeginNode is the interesting one, the edges
-              # after the Begin or before/after the EndNode are pure control flow
-              # and have no extra information
-              preserved_props = input_edge.props
-              graph.create_edge input_edge.from, output_edge.to, preserved_props
-              graph.remove_edge input_edge
-              graph.remove_edge output_edge
-            end
-          end
+          next unless BEGIN_END_NODES.include?(node_class)
+
+          # In mid tier, a BeginNode can have multiple input edges, leave those in the graph
+          next unless (node.inputs.size == 1) && (node.outputs.size == 1)
+
+          input_edge = node.inputs[0]
+          output_edge = node.outputs[0]
+          # The edge above the BeginNode is the interesting one, the edges
+          # after the Begin or before/after the EndNode are pure control flow
+          # and have no extra information
+          preserved_props = input_edge.props
+          graph.create_edge input_edge.from, output_edge.to, preserved_props
+          graph.remove_edge input_edge
+          graph.remove_edge output_edge
         end
       end
 

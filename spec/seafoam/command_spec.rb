@@ -357,20 +357,20 @@ describe Seafoam::Commands do
 
       it 'prints a description of a particular graph index' do
         @commands.send :describe, "#{@fib_java}:4", Seafoam::Formatters::Text
-        expect(@out.string).to eq(<<~EOS)
-        20 nodes, branches, calls
-        AddNode: 3
-        ConstantNode: 3
-        BeginNode: 2
-        FrameState: 2
-        HotSpotDirectCallTargetNode: 2
-        InvokeNode: 2
-        ReturnNode: 2
-        IfNode: 1
-        IntegerLessThanNode: 1
-        ParameterNode: 1
-        StartNode: 1
-        EOS
+        expect(@out.string).to eq(<<~EXPECTED)
+          20 nodes, branches, calls
+          AddNode: 3
+          ConstantNode: 3
+          BeginNode: 2
+          FrameState: 2
+          HotSpotDirectCallTargetNode: 2
+          InvokeNode: 2
+          ReturnNode: 2
+          IfNode: 1
+          IntegerLessThanNode: 1
+          ParameterNode: 1
+          StartNode: 1
+        EXPECTED
       end
     end
 
@@ -401,7 +401,7 @@ describe Seafoam::Commands do
             'IntegerLessThanNode' => 1,
             'ParameterNode' => 1,
             'StartNode' => 1
-          },
+          }
         }
         expect(decoded).to eq(expected)
       end
