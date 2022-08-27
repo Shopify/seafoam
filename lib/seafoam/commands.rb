@@ -405,7 +405,8 @@ module Seafoam
         hide_pi: true,
         hide_begin_end: true,
         hide_floating: false,
-        reduce_edges: true
+        reduce_edges: true,
+        simplify_alloc: true
       }
       spotlight_nodes = nil
       args = args.dup
@@ -448,6 +449,8 @@ module Seafoam
           spotlight_nodes = spotlight_arg.split(',').map { |n| Integer(n) }
         when '--full-truffle-args'
           pass_options[:simplify_truffle_args] = false
+        when '--no-simplify-alloc'
+          pass_options[:simplify_alloc] = false
         when '--show-frame-state'
           pass_options[:hide_frame_state] = false
         when '--show-pi'

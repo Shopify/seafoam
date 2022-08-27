@@ -7,7 +7,9 @@ module Seafoam
     ].map { |f| File.expand_path("../../examples/graalvm-ce-java11-21.2.0/#{f}", __dir__) }
 
     def self.example_graph(file, graph_index)
-      file = File.expand_path("../../examples/graalvm-ce-java11-21.2.0/#{file}.bgv.gz", __dir__)
+      unless File.exist?(file)
+        file = File.expand_path("../../examples/graalvm-ce-java11-21.2.0/#{file}.bgv.gz", __dir__)
+      end
       parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.skip_document_props
