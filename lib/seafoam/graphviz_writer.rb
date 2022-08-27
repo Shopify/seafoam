@@ -14,17 +14,36 @@ module Seafoam
       attrs[:bgcolor] = 'white'
       @stream.puts 'digraph G {'
       @stream.puts "  graph #{write_attrs(attrs)};"
-      write_nodes inline_attrs, graph
+      write_nodes inline_attrs, graph, draw_blocks
       write_edges inline_attrs, graph
-      write_blocks graph if draw_blocks
       @stream.puts '}'
     end
 
     private
 
     # Write node declarations.
-    def write_nodes(inline_attrs, graph)
-      graph.nodes.each_value do |node|
+    def write_nodes(inline_attrs, graph, draw_blocks)
+      drawn_in_blocks = []
+
+      if draw_blocks
+        graph.blocks.each do |block|
+          @stream.puts "  subgraph cluster_block#{block.id} {"
+          @stream.puts '    fontname = "Arial";'
+          @stream.puts "    label = \"B#{block.id}\";"
+          @stream.puts '    style=dotted;'
+
+          block.nodes.each do |node|
+            next if node.props[:hidden] || node.props[:inlined]
+
+            write_node inline_attrs, node
+            drawn_in_blocks.push node
+          end
+
+          @stream.puts '  }'
+        end
+      end
+
+      (graph.nodes.values - drawn_in_blocks).each do |node|
         write_node inline_attrs, node
       end
     end
@@ -171,24 +190,6 @@ module Seafoam
       else
         # Declare the edge.
         @stream.puts "  node#{edge.from.id} -> node#{edge.to.id} #{write_attrs(attrs)};"
-      end
-    end
-
-    # Write basic block outlines.
-    def write_blocks(graph)
-      graph.blocks.each do |block|
-        @stream.puts "  subgraph cluster_block#{block.id} {"
-        @stream.puts '    fontname = "Arial";'
-        @stream.puts "    label = \"B#{block.id}\";"
-        @stream.puts '    style=dotted;'
-
-        block.nodes.each do |node|
-          next if node.props[:hidden] || node.props[:inlined]
-
-          @stream.puts "    node#{node.id};"
-        end
-
-        @stream.puts '  }'
       end
     end
 
