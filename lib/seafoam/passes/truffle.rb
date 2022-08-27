@@ -10,6 +10,7 @@ module Seafoam
 
       def apply(graph)
         simplify_truffle_args graph if @options[:simplify_truffle_args]
+        simplify_alloc graph if @options[:simplify_alloc]
       end
 
       private
@@ -46,6 +47,22 @@ module Seafoam
           graph.create_edge control_in.from, control_out.to, { name: 'next' }
           graph.remove_edge control_in
           graph.remove_edge control_out
+        end
+      end
+
+      # Hide nodes that are uninteresting inputs to an allocation node. These
+      # are constants that are null or 0.
+      def simplify_alloc(graph)
+        graph.nodes.each_value do |node|
+          next unless node.node_class == 'org.graalvm.compiler.nodes.virtual.CommitAllocationNode'
+
+          node.inputs.each do |input|
+            next unless input.from.node_class == 'org.graalvm.compiler.nodes.ConstantNode'
+
+            if ['Object[null]', '0'].include?(input.from.props['rawvalue'])
+              input.from.props[:hidden] = true
+            end
+          end
         end
       end
 
