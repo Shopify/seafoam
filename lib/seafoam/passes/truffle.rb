@@ -1,3 +1,5 @@
+require 'tsort'
+
 module Seafoam
   module Passes
     # The Truffle pass applies if it looks like it was compiled by Truffle.
@@ -53,16 +55,86 @@ module Seafoam
       # Hide nodes that are uninteresting inputs to an allocation node. These
       # are constants that are null or 0.
       def simplify_alloc(graph)
-        graph.nodes.each_value do |node|
-          next unless node.node_class == 'org.graalvm.compiler.nodes.virtual.CommitAllocationNode'
+        commit_allocation_nodes = graph.nodes.each_value.select do |node|
+          node.node_class == 'org.graalvm.compiler.nodes.virtual.CommitAllocationNode'
+        end
 
-          node.inputs.each do |input|
-            next unless input.from.node_class == 'org.graalvm.compiler.nodes.ConstantNode'
+        commit_allocation_nodes.each do |commit_allocation_node|
+          control_flow_pred = commit_allocation_node.inputs.first
+          control_flow_next = commit_allocation_node.outputs.first
 
-            if ['Object[null]', '0'].include?(input.from.props['rawvalue'])
-              input.from.props[:hidden] = true
+          objects = []
+          virtual_to_object = {}
+
+          # First step to fill virtual_to_object and avoid ordering issues
+          commit_allocation_node.props.each_pair do |key, value|
+            if /^object\((\d+)\)$/ =~ key
+              virtual_id = $1.to_i
+              value =~ /^(\w+(?:\[\])?)\[([0-9,]+)\]$/ or raise value
+              class_name, values = $1, $2
+              values = values.split(',').map(&:to_i)
+              virtual_node = graph.nodes[virtual_id]
+              if virtual_node.node_class == 'org.graalvm.compiler.nodes.virtual.VirtualArrayNode'
+                label = "New #{class_name[0...-1]}#{virtual_node.props['length']}]"
+                fields = values.size.times.to_a
+              else
+                label = "New #{class_name}"
+                fields = virtual_node.props['fields'].map { |field| field[:name] }
+              end
+              raise unless fields.size == values.size
+
+              new_node = graph.create_node(graph.new_id, { synthetic: true, label: label, kind: 'alloc' })
+
+              object = [new_node, virtual_node, fields, values]
+              objects << object
+              virtual_to_object[virtual_id] = object
             end
           end
+
+          # Topological sort according to dependencies
+          objects = TSort.strongly_connected_components(objects.method(:each),
+            -> ((new_node, virtual_node, fields, values), &b) do
+              values.each do |value_id|
+                usage = virtual_to_object[value_id]
+                b.call(usage) if usage
+              end
+            end).reduce(:concat)
+
+          prev = control_flow_pred.from
+          objects.each do |new_node, virtual_node, fields, values|
+            graph.create_edge(prev, new_node, control_flow_pred.props)
+
+            allocated_object_node = virtual_node.outputs.find do |output|
+              output.to.node_class == 'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode'
+            end
+            if allocated_object_node
+              allocated_object_node = allocated_object_node.to
+
+              allocated_object_node.outputs.each do |edge|
+                graph.create_edge(new_node, edge.to, edge.props)
+              end
+
+              allocated_object_node.props[:hidden] = true
+            end
+
+            fields.zip(values) do |field, value_id|
+              value_node = virtual_to_object[value_id]&.first || graph.nodes[value_id]
+              if @options[:hide_null_fields] and
+                  value_node.node_class == 'org.graalvm.compiler.nodes.ConstantNode' and
+                  ['Object[null]', '0'].include?(value_node.props['rawvalue'])
+                value_node.props[:hidden] = true
+              else
+                graph.create_edge(value_node, new_node, { name: field })
+              end
+            end
+
+            virtual_node.props[:hidden] = true
+
+            prev = new_node
+          end
+          graph.create_edge(prev, control_flow_next.to, control_flow_next.props)
+
+          commit_allocation_node.props[:hidden] = true
         end
       end
 
