@@ -68,12 +68,13 @@ module Seafoam
 
           # First step to fill virtual_to_object and avoid ordering issues
           commit_allocation_node.props.each_pair do |key, value|
-            next unless /^object\((\d+)\)$/ =~ key
+            m = /^object\((\d+)\)$/.match(key)
+            next unless m
 
-            virtual_id = Regexp.last_match(1).to_i
-            value =~ /^(\w+(?:\[\])?)\[([0-9,]+)\]$/ or raise value
-            class_name = Regexp.last_match(1)
-            values = Regexp.last_match(2)
+            virtual_id = m[1].to_i
+
+            m = /^(\w+(?:\[\])?)\[([0-9,]+)\]$/.match(value) or raise value
+            class_name, values = m.captures
             values = values.split(',').map(&:to_i)
             virtual_node = graph.nodes[virtual_id]
             if virtual_node.node_class == 'org.graalvm.compiler.nodes.virtual.VirtualArrayNode'
