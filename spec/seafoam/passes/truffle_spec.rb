@@ -20,7 +20,7 @@ describe Seafoam::Passes::TrufflePass do
   describe 'when run' do
     before :all do
       @graph = Seafoam::SpecHelpers.example_graph(File.expand_path('../../../examples/ruby/example_object_allocation.bgv', __dir__), 4)
-      pass = Seafoam::Passes::TrufflePass.new(simplify_alloc: true)
+      pass = Seafoam::Passes::TrufflePass.new(simplify_alloc: true, hide_null_fields: true)
       pass.apply @graph
     end
 

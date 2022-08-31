@@ -406,7 +406,8 @@ module Seafoam
         hide_begin_end: true,
         hide_floating: false,
         reduce_edges: true,
-        simplify_alloc: true
+        simplify_alloc: true,
+        hide_null_fields: true
       }
       spotlight_nodes = nil
       args = args.dup
@@ -451,6 +452,8 @@ module Seafoam
           pass_options[:simplify_truffle_args] = false
         when '--no-simplify-alloc'
           pass_options[:simplify_alloc] = false
+        when '--show-null-fields'
+          pass_options[:hide_null_fields] = false
         when '--show-frame-state'
           pass_options[:hide_frame_state] = false
         when '--show-pi'
@@ -629,6 +632,8 @@ module Seafoam
       @out.puts '                    graph.md (Markdown)'
       @out.puts '               --full-truffle-args'
       @out.puts '               --show-frame-state'
+      @out.puts '               --no-simplify-alloc'
+      @out.puts '               --show-null-fields'
       @out.puts '               --show-pi'
       @out.puts '               --show-begin-end'
       @out.puts '               --hide-floating'
