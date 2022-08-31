@@ -92,7 +92,9 @@ module Seafoam
             virtual_to_object[virtual_id] = object
           end
 
-          # Topological sort according to dependencies
+          # Topological sort of the new nodes in the control flow according to data dependencies
+          # There can be cycles (e.g., instances referring one another),
+          # so we use TSort.strongly_connected_components instead of TSort.tsort.
           objects = TSort.strongly_connected_components(
             objects.method(:each),
             lambda do |(_new_node, _virtual_node, _fields, values), &b|
