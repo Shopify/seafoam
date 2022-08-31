@@ -68,37 +68,38 @@ module Seafoam
 
           # First step to fill virtual_to_object and avoid ordering issues
           commit_allocation_node.props.each_pair do |key, value|
-            if /^object\((\d+)\)$/ =~ key
-              virtual_id = $1.to_i
-              value =~ /^(\w+(?:\[\])?)\[([0-9,]+)\]$/ or raise value
-              class_name, values = $1, $2
-              values = values.split(',').map(&:to_i)
-              virtual_node = graph.nodes[virtual_id]
-              if virtual_node.node_class == 'org.graalvm.compiler.nodes.virtual.VirtualArrayNode'
-                label = "New #{class_name[0...-1]}#{virtual_node.props['length']}]"
-                fields = values.size.times.to_a
-              else
-                label = "New #{class_name}"
-                fields = virtual_node.props['fields'].map { |field| field[:name] }
-              end
-              raise unless fields.size == values.size
+            next unless /^object\((\d+)\)$/ =~ key
 
-              new_node = graph.create_node(graph.new_id, { synthetic: true, label: label, kind: 'alloc' })
-
-              object = [new_node, virtual_node, fields, values]
-              objects << object
-              virtual_to_object[virtual_id] = object
+            virtual_id = Regexp.last_match(1).to_i
+            value =~ /^(\w+(?:\[\])?)\[([0-9,]+)\]$/ or raise value
+            class_name = Regexp.last_match(1)
+            values = Regexp.last_match(2)
+            values = values.split(',').map(&:to_i)
+            virtual_node = graph.nodes[virtual_id]
+            if virtual_node.node_class == 'org.graalvm.compiler.nodes.virtual.VirtualArrayNode'
+              label = "New #{class_name[0...-1]}#{virtual_node.props['length']}]"
+              fields = values.size.times.to_a
+            else
+              label = "New #{class_name}"
+              fields = virtual_node.props['fields'].map { |field| field[:name] }
             end
+            raise unless fields.size == values.size
+
+            new_node = graph.create_node(graph.new_id, { synthetic: true, label: label, kind: 'alloc' })
+
+            object = [new_node, virtual_node, fields, values]
+            objects << object
+            virtual_to_object[virtual_id] = object
           end
 
           # Topological sort according to dependencies
           objects = TSort.strongly_connected_components(objects.method(:each),
-            -> ((new_node, virtual_node, fields, values), &b) do
-              values.each do |value_id|
-                usage = virtual_to_object[value_id]
-                b.call(usage) if usage
-              end
-            end).reduce(:concat)
+                                                        lambda do |(_new_node, _virtual_node, _fields, values), &b|
+                                                          values.each do |value_id|
+                                                            usage = virtual_to_object[value_id]
+                                                            b.call(usage) if usage
+                                                          end
+                                                        end).reduce(:concat)
 
           prev = control_flow_pred.from
           objects.each do |new_node, virtual_node, fields, values|
@@ -119,9 +120,9 @@ module Seafoam
 
             fields.zip(values) do |field, value_id|
               value_node = virtual_to_object[value_id]&.first || graph.nodes[value_id]
-              if @options[:hide_null_fields] and
-                  value_node.node_class == 'org.graalvm.compiler.nodes.ConstantNode' and
-                  ['Object[null]', '0'].include?(value_node.props['rawvalue'])
+              if @options[:hide_null_fields] &&
+                 (value_node.node_class == 'org.graalvm.compiler.nodes.ConstantNode') &&
+                 ['Object[null]', '0'].include?(value_node.props['rawvalue'])
                 value_node.props[:hidden] = true
               else
                 graph.create_edge(value_node, new_node, { name: field })
