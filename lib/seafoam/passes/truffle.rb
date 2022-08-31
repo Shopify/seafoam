@@ -93,13 +93,15 @@ module Seafoam
           end
 
           # Topological sort according to dependencies
-          objects = TSort.strongly_connected_components(objects.method(:each),
-                                                        lambda do |(_new_node, _virtual_node, _fields, values), &b|
-                                                          values.each do |value_id|
-                                                            usage = virtual_to_object[value_id]
-                                                            b.call(usage) if usage
-                                                          end
-                                                        end).reduce(:concat)
+          objects = TSort.strongly_connected_components(
+            objects.method(:each),
+            lambda do |(_new_node, _virtual_node, _fields, values), &b|
+              values.each do |value_id|
+                usage = virtual_to_object[value_id]
+                b.call(usage) if usage
+              end
+            end
+          ).reduce(:concat)
 
           prev = control_flow_pred.from
           objects.each do |new_node, virtual_node, fields, values|
