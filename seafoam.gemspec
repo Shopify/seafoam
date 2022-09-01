@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "bin"
   spec.executables = ["seafoam", "bgv2json", "bgv2isabelle"]
 
-  spec.required_ruby_version = ">= 2.5.9"
+  spec.required_ruby_version = ">= 2.7.0"
 
   spec.add_development_dependency("rake", "~> 13.0.6")
   spec.add_development_dependency("rspec", "~> 3.8")
