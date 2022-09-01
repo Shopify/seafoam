@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   # Passes are routines to read the graph and apply properties which tools,
   # such as the render command, can use to show more understandable output.
@@ -9,11 +11,11 @@ module Seafoam
 
         # Record for information that the pass was applied this graph.
         passes_applied = graph.props[:passes_applied] ||= []
-        passes_applied.push pass
+        passes_applied.push(pass)
 
         # Run the pass.
         instance = pass.new(options)
-        instance.apply graph
+        instance.apply(graph)
       end
     end
 
@@ -22,12 +24,12 @@ module Seafoam
       # We have a defined order for passes to run - these passes at the start.
       pre_passes = [
         TrufflePass,
-        GraalPass
+        GraalPass,
       ]
 
       # The fallback pass runs last.
       post_passes = [
-        FallbackPass
+        FallbackPass,
       ]
 
       # Any extra passes in the middle.
@@ -55,7 +57,7 @@ module Seafoam
     end
 
     def self.inherited(pass)
-      SUBCLASSES.push pass
+      SUBCLASSES.push(pass)
     end
   end
 end

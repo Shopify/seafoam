@@ -1,37 +1,6 @@
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
 AllCops:
-  TargetRubyVersion: 2.5
   Exclude:
     - examples/**/*.rb
-
-Style/FrozenStringLiteralComment:
-  Enabled: false
-
-Style/MutableConstant:
-  Enabled: false
-
-Metrics:
-  Enabled: false
-
-Lint/EmptyWhen:
-  Enabled: false
-
-Style/ConditionalAssignment:
-  Enabled: false
-
-Style/GuardClause:
-  Enabled: false
-
-Style/IfUnlessModifier:
-  Enabled: false
-
-Lint/InterpolationCheck:
-  Enabled: false
-
-Security/Eval:
-  Enabled: false
-
-Naming/FileName:
-  Enabled: false
-
-Metrics/LineLength:
-  Max: 300

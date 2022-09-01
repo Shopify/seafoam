@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   # Write graphs in the Isabelle file format.
   class IsabelleWriter
@@ -28,19 +30,19 @@ module Seafoam
 
       graph.nodes.each_value do |node|
         node_class = node.props[:node_class][:node_class]
-        case node_class
-        when 'org.graalvm.compiler.nodes.ConstantNode'
-          desc = "(ConstantNode #{node.props['rawvalue']})"
-        when 'org.graalvm.compiler.nodes.ParameterNode'
-          desc = "(ParameterNode #{node.props['index']})"
+        desc = case node_class
+        when "org.graalvm.compiler.nodes.ConstantNode"
+          "(ConstantNode #{node.props["rawvalue"]})"
+        when "org.graalvm.compiler.nodes.ParameterNode"
+          "(ParameterNode #{node.props["index"]})"
         else
-          desc = node_class.split('.').last
+          node_class.split(".").last
         end
         inputs = node.inputs.map(&:from).map(&:id)
         outputs = node.outputs.map(&:to).map(&:id)
         @out.puts " (add_node #{node.id} #{desc} #{inputs.inspect} #{outputs.inspect}"
       end
-      @out.puts ' empty_graph' + (')' * graph.nodes.size)
+      @out.puts " empty_graph" + (")" * graph.nodes.size)
     end
   end
 end

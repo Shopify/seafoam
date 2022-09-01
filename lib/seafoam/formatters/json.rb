@@ -1,4 +1,6 @@
-require 'json'
+# frozen_string_literal: true
+
+require "json"
 
 module Seafoam
   module Formatters
@@ -23,7 +25,7 @@ module Seafoam
         def render_node_entry(node)
           {
             input: node.inputs.map { |input| build_edge(input) },
-            output: node.outputs.map { |output| build_edge(output) }
+            output: node.outputs.map { |output| build_edge(output) },
           }.to_json
         end
 
@@ -45,7 +47,7 @@ module Seafoam
         def format
           {
             major_version: major_version,
-            minor_version: minor_version
+            minor_version: minor_version,
           }.to_json
         end
       end
@@ -57,7 +59,7 @@ module Seafoam
             {
               graph_index: entry.index,
               graph_file: entry.file,
-              graph_name_components: entry.graph_name_components
+              graph_name_components: entry.graph_name_components,
             }
           end.to_json
         end
@@ -74,7 +76,7 @@ module Seafoam
           name = method[:method_name]
           {
             class: declaring_class,
-            method: name
+            method: name,
           }
         end
       end

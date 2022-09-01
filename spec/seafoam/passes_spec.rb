@@ -1,10 +1,12 @@
-require 'seafoam'
+# frozen_string_literal: true
 
-require 'rspec'
+require "seafoam"
+
+require "rspec"
 
 describe Seafoam::Passes do
-  describe '#apply' do
-    it 'asks passes if they apply' do
+  describe "#apply" do
+    it "asks passes if they apply" do
       check_applied = false
 
       Class.new(Seafoam::Pass) do
@@ -15,10 +17,10 @@ describe Seafoam::Passes do
       end
 
       Seafoam::Passes.apply(Seafoam::Graph.new)
-      expect(check_applied).to be true
+      expect(check_applied).to(be(true))
     end
 
-    it 'runs passes that apply' do
+    it "runs passes that apply" do
       check_applied = false
 
       Class.new(Seafoam::Pass) do
@@ -32,30 +34,30 @@ describe Seafoam::Passes do
       end
 
       Seafoam::Passes.apply(Seafoam::Graph.new)
-      expect(check_applied).to be true
+      expect(check_applied).to(be(true))
     end
   end
 
-  describe '#passes' do
-    it 'returns the standard passes' do
+  describe "#passes" do
+    it "returns the standard passes" do
       passes = Seafoam::Passes.passes
-      expect(passes).to include Seafoam::Passes::FallbackPass
-      expect(passes).to include Seafoam::Passes::GraalPass
+      expect(passes).to(include(Seafoam::Passes::FallbackPass))
+      expect(passes).to(include(Seafoam::Passes::GraalPass))
     end
 
-    it 'returns custom passes' do
+    it "returns custom passes" do
       custom_pass = Class.new(Seafoam::Pass) do
         def self.applies?(_graph)
           false
         end
       end
       passes = Seafoam::Passes.passes
-      expect(passes).to include custom_pass
+      expect(passes).to(include(custom_pass))
     end
 
-    it 'returns the FallbackPass pass last' do
+    it "returns the FallbackPass pass last" do
       passes = Seafoam::Passes.passes
-      expect(passes.last).to eq Seafoam::Passes::FallbackPass
+      expect(passes.last).to(eq(Seafoam::Passes::FallbackPass))
     end
   end
 end

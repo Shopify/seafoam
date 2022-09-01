@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   module Binary
     # An adapter to read binary values from an IO stream.
@@ -7,7 +9,7 @@ module Seafoam
       end
 
       def read_utf8(length)
-        read_bytes(length).force_encoding Encoding::UTF_8
+        read_bytes(length).force_encoding(Encoding::UTF_8)
       end
 
       def read_bytes(length)
@@ -15,31 +17,31 @@ module Seafoam
       end
 
       def read_float64
-        @io.read(8).unpack1('G')
+        @io.read(8).unpack1("G")
       end
 
       def read_float32
-        @io.read(4).unpack1('g')
+        @io.read(4).unpack1("g")
       end
 
       def read_sint64
-        @io.read(8).unpack1('q>')
+        @io.read(8).unpack1("q>")
       end
 
       def read_sint32
-        @io.read(4).unpack1('l>')
+        @io.read(4).unpack1("l>")
       end
 
       def read_sint16
-        @io.read(2).unpack1('s>')
+        @io.read(2).unpack1("s>")
       end
 
       def read_uint16
-        @io.read(2).unpack1('S>')
+        @io.read(2).unpack1("S>")
       end
 
       def read_sint8
-        @io.read(1).unpack1('c')
+        @io.read(1).unpack1("c")
       end
 
       def read_uint8
@@ -47,37 +49,37 @@ module Seafoam
       end
 
       def peek_sint8
-        byte = @io.read(1).unpack1('c')
-        @io.ungetbyte byte
+        byte = @io.read(1).unpack1("c")
+        @io.ungetbyte(byte)
         byte
       end
 
       def skip_float64(count = 1)
-        skip count * 8
+        skip(count * 8)
       end
 
       def skip_float32(count = 1)
-        skip count * 4
+        skip(count * 4)
       end
 
       def skip_int64(count = 1)
-        skip count * 8
+        skip(count * 8)
       end
 
       def skip_int32(count = 1)
-        skip count * 4
+        skip(count * 4)
       end
 
       def skip_int16(count = 1)
-        skip count * 2
+        skip(count * 2)
       end
 
       def skip_int8(count = 1)
-        skip count
+        skip(count)
       end
 
       def skip(count)
-        @io.seek count, IO::SEEK_CUR
+        @io.seek(count, IO::SEEK_CUR)
       end
 
       def eof?

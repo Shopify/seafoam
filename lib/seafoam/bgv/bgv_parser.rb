@@ -1,5 +1,7 @@
-require 'stringio'
-require 'zlib'
+# frozen_string_literal: true
+
+require "stringio"
+require "zlib"
 
 module Seafoam
   module BGV
@@ -21,7 +23,7 @@ module Seafoam
 
       # Read the file header and return the version.
       def read_file_header(version_check: true)
-        raise EncodingError, 'does not appear to be a BGV file - missing header' unless @reader.read_bytes(4) == MAGIC
+        raise EncodingError, "does not appear to be a BGV file - missing header" unless @reader.read_bytes(4) == MAGIC
 
         @major = @reader.read_sint8
         @minor = @reader.read_sint8
@@ -90,7 +92,7 @@ module Seafoam
           group: @group_stack.dup,
           format: format,
           args: args,
-          props: props
+          props: props,
         }
       end
 
@@ -115,15 +117,17 @@ module Seafoam
           node = edge[:node]
           props = edge[:edge]
           inputs = edge[:inputs]
-          others = edge[:ids].reject(&:nil?).map { |id| graph.nodes[id] || raise(EncodingError, "BGV edge with unknown node #{id}") }
+          others = edge[:ids].reject(&:nil?).map do |id|
+            graph.nodes[id] || raise(EncodingError, "BGV edge with unknown node #{id}")
+          end
           others.each_with_index do |other, index|
             # We need to give each edge their own property as they're annotated separately.
             props = props.dup
             props[:index] = index
             if inputs
-              graph.create_edge other, node, props
+              graph.create_edge(other, node, props)
             else
-              graph.create_edge node, other, props
+              graph.create_edge(node, other, props)
             end
           end
         end
@@ -134,7 +138,7 @@ module Seafoam
           block_nodes = @reader.read_sint32.times.map { @reader.read_sint32 }
           # Followers aren't used but could be.
           @reader.read_sint32.times.map { @reader.read_sint32 }
-          graph.create_block block_id, block_nodes
+          graph.create_block(block_id, block_nodes)
         end
         graph
       end
@@ -147,8 +151,8 @@ module Seafoam
           node_class = read_pool_object
           skip_bool
           skip_props
-          skip_edges node_class, true
-          skip_edges node_class, false
+          skip_edges(node_class, true)
+          skip_edges(node_class, false)
         end
         skip_blocks
       end
@@ -200,9 +204,9 @@ module Seafoam
           short_name: short_name,
           method: method,
           bci: bci,
-          props: props
+          props: props,
         }
-        @group_stack.push group
+        @group_stack.push(group)
       end
 
       # Read the closing of a group.
@@ -228,16 +232,16 @@ module Seafoam
       # Skip over edges.
       def skip_edges(node_class, inputs)
         edges = if inputs
-                  node_class[:inputs]
-                else
-                  node_class[:outputs]
-                end
+          node_class[:inputs]
+        else
+          node_class[:outputs]
+        end
         edges.each do |edge|
           count = if edge[:direct]
-                    1
-                  else
-                    @reader.read_sint16
-                  end
+            1
+          else
+            @reader.read_sint16
+          end
           count.times do
             @reader.skip_int32
           end
@@ -247,16 +251,16 @@ module Seafoam
       # Read edges, producing an array of edge hashes.
       def read_edges(node, node_class, inputs)
         edges = if inputs
-                  node_class[:inputs]
-                else
-                  node_class[:outputs]
-                end
+          node_class[:inputs]
+        else
+          node_class[:outputs]
+        end
         edges.map do |edge|
           count = if edge[:direct]
-                    1
-                  else
-                    @reader.read_sint16
-                  end
+            1
+          else
+            @reader.read_sint16
+          end
           ids = count.times.map do
             id = @reader.read_sint32
             raise if id < -1
@@ -268,7 +272,7 @@ module Seafoam
             node: node,
             edge: edge,
             ids: ids,
-            inputs: inputs
+            inputs: inputs,
           }
         end
       end
@@ -277,8 +281,8 @@ module Seafoam
       def skip_blocks
         @reader.read_sint32.times do
           @reader.skip_int32
-          @reader.skip_int32 @reader.read_sint32
-          @reader.skip_int32 @reader.read_sint32
+          @reader.skip_int32(@reader.read_sint32)
+          @reader.skip_int32(@reader.read_sint32)
         end
       end
 
@@ -323,9 +327,9 @@ module Seafoam
               skip_pool_object
             end
           when PROPERTY_INT
-            @reader.skip_int32 @reader.read_sint32
+            @reader.skip_int32(@reader.read_sint32)
           when PROPERTY_DOUBLE
-            @reader.skip_float64 @reader.read_sint32
+            @reader.skip_float64(@reader.read_sint32)
           else
             raise EncodingError, "unknown BGV property array type 0x#{type.to_s(16)}"
           end
@@ -425,7 +429,8 @@ module Seafoam
         when POOL_ENUM
           enum_class = read_pool_object
           enum_ordinal = @reader.read_sint32
-          raise EncodingError, "unknown BGV eum ordinal #{enum_ordinal} in #{enum_class}" if enum_ordinal.negative? || enum_ordinal >= enum_class.size
+          raise EncodingError,
+            "unknown BGV eum ordinal #{enum_ordinal} in #{enum_class}" if enum_ordinal.negative? || enum_ordinal >= enum_class.size
 
           object = enum_class[enum_ordinal]
         when POOL_CLASS
@@ -448,12 +453,12 @@ module Seafoam
           signature = read_pool_object
           modifiers = @reader.read_sint32
           bytes_length = @reader.read_sint32
-          @reader.skip bytes_length if bytes_length != -1
+          @reader.skip(bytes_length) if bytes_length != -1
           object = {
             declaring_class: declaring_class,
             method_name: method_name,
             signature: signature,
-            modifiers: modifiers
+            modifiers: modifiers,
           }
         when POOL_NODE_CLASS
           node_class = read_pool_object
@@ -464,7 +469,7 @@ module Seafoam
             node_class: node_class,
             name_template: name_template,
             inputs: inputs,
-            outputs: outputs
+            outputs: outputs,
           }
         when POOL_FIELD
           field_class = read_pool_object
@@ -475,7 +480,7 @@ module Seafoam
             field_class: field_class,
             name: name,
             type_name: type_name,
-            modifiers: modifiers
+            modifiers: modifiers,
           }
         when POOL_SIGNATURE
           args = @reader.read_sint16.times.map do
@@ -484,7 +489,7 @@ module Seafoam
           ret = read_pool_object
           object = {
             args: args,
-            ret: ret
+            ret: ret,
           }
         when POOL_NODE_SOURCE_POSITION
           method = read_pool_object
@@ -498,26 +503,26 @@ module Seafoam
             loc_line = @reader.read_sint32
             loc_start = @reader.read_sint32
             loc_end = @reader.read_sint32
-            locs.push [location, loc_line, loc_start, loc_end]
+            locs.push([location, loc_line, loc_start, loc_end])
           end
           caller = read_pool_object
           object = {
             method: method,
             bci: bci,
             locs: locs,
-            caller: caller
+            caller: caller,
           }
         when POOL_NODE
           node_id = @reader.read_sint32
           node_class = read_pool_object
           object = {
             node_id: node_id,
-            node_class: node_class
+            node_class: node_class,
           }
         else
           raise EncodingError, "unknown BGV pool type 0x#{type.to_s(16)}"
         end
-        set_pool_entry id, object
+        set_pool_entry(id, object)
       end
 
       # Hook method that can be overidden for debugging.
@@ -534,7 +539,7 @@ module Seafoam
           {
             direct: !indirect,
             name: name,
-            type: type
+            type: type,
           }
         end
       end
@@ -542,7 +547,7 @@ module Seafoam
       # Skip over a UTF-8 string.
       def skip_string
         length = @reader.read_sint32
-        @reader.skip length if length != -1
+        @reader.skip(length) if length != -1
       end
 
       # Read a UTF-8 string.
@@ -552,7 +557,7 @@ module Seafoam
           nil
         else
           string = @reader.read_utf8(length)
-          raise EncodingError, 'null byte in BGV string' if string.include?("\0")
+          raise EncodingError, "null byte in BGV string" if string.include?("\0")
 
           string
         end
@@ -578,11 +583,11 @@ module Seafoam
 
       # File format constants.
 
-      MAGIC = 'BIGV'
+      MAGIC = "BIGV"
 
       SUPPORTED_VERSIONS = [
         [6, 1],
-        [7, 0]
+        [7, 0],
       ]
 
       BEGIN_GROUP = 0x00

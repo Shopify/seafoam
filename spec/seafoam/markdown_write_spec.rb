@@ -1,15 +1,17 @@
-require 'stringio'
+# frozen_string_literal: true
 
-require 'seafoam'
+require "stringio"
 
-require 'rspec'
+require "seafoam"
 
-require_relative 'spec_helpers'
+require "rspec"
+
+require_relative "spec_helpers"
 
 describe Seafoam::MarkdownWriter do
-  describe '#write_graph' do
+  describe "#write_graph" do
     before :all do
-      file = File.expand_path('../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz', __dir__)
+      file = File.expand_path("../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz", __dir__)
       parser = Seafoam::BGV::BGVParser.new(file)
       parser.read_file_header
       parser.read_graph_preheader
@@ -22,12 +24,12 @@ describe Seafoam::MarkdownWriter do
       @writer = Seafoam::MarkdownWriter.new(@stream)
     end
 
-    it 'writes the header' do
-      @writer.write_graph @fib_java_graph
-      expect(@stream.string).to start_with '```mermaid'
+    it "writes the header" do
+      @writer.write_graph(@fib_java_graph)
+      expect(@stream.string).to(start_with("```mermaid"))
     end
 
-    it 'writes all graphs' do
+    it "writes all graphs" do
       Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
         parser = Seafoam::BGV::BGVParser.new(file)
         parser.read_file_header
@@ -38,7 +40,7 @@ describe Seafoam::MarkdownWriter do
           break unless index
 
           parser.read_graph_header
-          @writer.write_graph parser.read_graph
+          @writer.write_graph(parser.read_graph)
         end
       end
     end

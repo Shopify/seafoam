@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   module Graal
     # Routines for understanding source positions in Graal.
@@ -8,7 +10,7 @@ module Seafoam
         caller = source_position
         while caller
           method = caller[:method]
-          results.push block.call(method)
+          results.push(block.call(method))
           caller = caller[:caller]
         end
 

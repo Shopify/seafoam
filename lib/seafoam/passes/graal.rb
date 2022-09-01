@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   module Passes
     # The Graal pass applies if it looks like it was compiled by Graal or
@@ -10,14 +12,14 @@ module Seafoam
       end
 
       def apply(graph)
-        apply_nodes graph
-        apply_edges graph
-        hide_frame_state graph if @options[:hide_frame_state]
-        hide_pi graph if @options[:hide_pi]
-        hide_begin_end graph if @options[:hide_begin_end]
-        hide_floating graph if @options[:hide_floating]
-        reduce_edges graph if @options[:reduce_edges]
-        hide_unused_nodes graph
+        apply_nodes(graph)
+        apply_edges(graph)
+        hide_frame_state(graph) if @options[:hide_frame_state]
+        hide_pi(graph) if @options[:hide_pi]
+        hide_begin_end(graph) if @options[:hide_begin_end]
+        hide_floating(graph) if @options[:hide_floating]
+        reduce_edges(graph) if @options[:reduce_edges]
+        hide_unused_nodes(graph)
       end
 
       private
@@ -38,90 +40,87 @@ module Seafoam
           # For constant nodes, the rawvalue is a truncated version of the
           # actual value, which is fully qualified. Instead, produce a simple
           # version of the value and don't truncate it.
-          if node_class == 'org.graalvm.compiler.nodes.ConstantNode'
-            if node.props['value'] =~ /Object\[Instance<(\w+\.)+(\w*)>\]/
-              node.props['rawvalue'] = "instance:#{Regexp.last_match(2)}"
+          if node_class == "org.graalvm.compiler.nodes.ConstantNode"
+            if node.props["value"] =~ /Object\[Instance<(\w+\.)+(\w*)>\]/
+              node.props["rawvalue"] = "instance:#{Regexp.last_match(2)}"
             end
-            name_template = 'C({p#rawvalue})'
+            name_template = "C({p#rawvalue})"
           end
 
           # The template for FixedGuardNode could be simpler.
-          if %w[
-            org.graalvm.compiler.nodes.FixedGuardNode
-            org.graalvm.compiler.nodes.GuardNode
-          ].include?(node_class)
-            name_template = if node.props['negated']
-                              'Guard not, else {p#reason/s}'
-                            else
-                              'Guard, else {p#reason/s}'
-                            end
+          if ["org.graalvm.compiler.nodes.FixedGuardNode", "org.graalvm.compiler.nodes.GuardNode"].include?(node_class)
+            name_template = if node.props["negated"]
+              "Guard not, else {p#reason/s}"
+            else
+              "Guard, else {p#reason/s}"
+            end
           end
 
           # The template for InvokeNode could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.InvokeNode'
-            name_template = 'Call {p#targetMethod/s}'
+          if node_class == "org.graalvm.compiler.nodes.InvokeNode"
+            name_template = "Call {p#targetMethod/s}"
           end
 
           # The template for InvokeWithExceptionNode could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.InvokeWithExceptionNode'
-            name_template = 'Call {p#targetMethod/s} !'
+          if node_class == "org.graalvm.compiler.nodes.InvokeWithExceptionNode"
+            name_template = "Call {p#targetMethod/s} !"
           end
 
           # The template for CommitAllocationNode could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.virtual.CommitAllocationNode'
-            name_template = 'Alloc'
+          if node_class == "org.graalvm.compiler.nodes.virtual.CommitAllocationNode"
+            name_template = "Alloc"
           end
 
           # The template for org.graalvm.compiler.nodes.virtual.VirtualArrayNode includes an ID that we don't normally need.
-          if node_class == 'org.graalvm.compiler.nodes.virtual.VirtualArrayNode'
-            name_template = 'VirtualArray {p#componentType/s}[{p#length}]'
+          if node_class == "org.graalvm.compiler.nodes.virtual.VirtualArrayNode"
+            name_template = "VirtualArray {p#componentType/s}[{p#length}]"
           end
 
           # The template for LoadField could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.java.LoadFieldNode'
-            name_template = 'LoadField {x#field}'
+          if node_class == "org.graalvm.compiler.nodes.java.LoadFieldNode"
+            name_template = "LoadField {x#field}"
           end
 
           # The template for StoreField could be simpler.
-          if node_class == 'org.graalvm.compiler.nodes.java.StoreFieldNode'
-            name_template = 'StoreField {x#field}'
+          if node_class == "org.graalvm.compiler.nodes.java.StoreFieldNode"
+            name_template = "StoreField {x#field}"
           end
 
           # We want to see keys for IntegerSwitchNode.
-          if node_class == 'org.graalvm.compiler.nodes.extended.IntegerSwitchNode'
-            name_template = 'IntegerSwitch {p#keys}'
+          if node_class == "org.graalvm.compiler.nodes.extended.IntegerSwitchNode"
+            name_template = "IntegerSwitch {p#keys}"
           end
 
           # Use a symbol for PiNode.
-          if node_class == 'org.graalvm.compiler.nodes.PiNode'
-            name_template = 'π'
+          if node_class == "org.graalvm.compiler.nodes.PiNode"
+            name_template = "π"
           end
 
           # Use a symbol for PiArrayNode.
-          if node_class == 'org.graalvm.compiler.nodes.PiArrayNode'
-            name_template = '[π]'
+          if node_class == "org.graalvm.compiler.nodes.PiArrayNode"
+            name_template = "[π]"
           end
 
           # Use a symbol for PhiNode.
-          if node_class == 'org.graalvm.compiler.nodes.ValuePhiNode'
-            name_template = 'ϕ'
+          if node_class == "org.graalvm.compiler.nodes.ValuePhiNode"
+            name_template = "ϕ"
           end
 
           # Better template for frame states.
-          if node_class == 'org.graalvm.compiler.nodes.FrameState'
-            name_template = 'FrameState {x#state}'
+          if node_class == "org.graalvm.compiler.nodes.FrameState"
+            name_template = "FrameState {x#state}"
           end
 
           # Show the stamp in an InstanceOfNode.
-          if node_class == 'org.graalvm.compiler.nodes.java.InstanceOfNode'
-            name_template = 'InstanceOf {x#simpleStamp}'
+          if node_class == "org.graalvm.compiler.nodes.java.InstanceOfNode"
+            name_template = "InstanceOf {x#simpleStamp}"
           end
 
           if name_template.empty?
             # If there is no template, then the label is the short name of the
             # Java class, without '...Node' because that's redundant.
-            short_name = node_class.split('.').last
-            short_name = short_name.slice(0, short_name.size - 'Node'.size) if short_name.end_with?('Node')
+            short_name = node_class.split(".").last
+            short_name = short_name.slice(0, short_name.size - "Node".size) if short_name.end_with?("Node")
             label = short_name
           else
             # Render the template.
@@ -129,7 +128,7 @@ module Seafoam
           end
 
           # Annotate interesting stamps.
-          if node.props['stamp'] =~ /(\[\d+ \- \d+\])/
+          if node.props["stamp"] =~ /(\[\d+ \- \d+\])/
             node.props[:out_annotation] = Regexp.last_match(1)
           end
 
@@ -137,11 +136,11 @@ module Seafoam
           node.props[:label] = label
 
           # Set the :kind property.
-          if node_class.start_with?('org.graalvm.compiler.nodes.calc.') ||
-             node_class.start_with?('org.graalvm.compiler.replacements.nodes.arithmetic.')
-            kind = 'calc'
+          kind = if node_class.start_with?("org.graalvm.compiler.nodes.calc.") ||
+              node_class.start_with?("org.graalvm.compiler.replacements.nodes.arithmetic.")
+            "calc"
           else
-            kind = NODE_KIND_MAP[node_class] || 'other'
+            NODE_KIND_MAP[node_class] || "other"
           end
           node.props[:kind] = kind
         end
@@ -149,49 +148,49 @@ module Seafoam
 
       # Map of node classes to their kind.
       NODE_KIND_MAP = {
-        'org.graalvm.compiler.nodes.BeginNode' => 'control',
-        'org.graalvm.compiler.nodes.ConstantNode' => 'input',
-        'org.graalvm.compiler.nodes.DeoptimizeNode' => 'control',
-        'org.graalvm.compiler.nodes.EndNode' => 'control',
-        'org.graalvm.compiler.nodes.extended.IntegerSwitchNode' => 'control',
-        'org.graalvm.compiler.nodes.extended.UnsafeMemoryLoadNode' => 'memory',
-        'org.graalvm.compiler.nodes.extended.UnsafeMemoryStoreNode' => 'memory',
-        'org.graalvm.compiler.nodes.FixedGuardNode' => 'guard',
-        'org.graalvm.compiler.nodes.FrameState' => 'info',
-        'org.graalvm.compiler.nodes.GuardNode' => 'guard',
-        'org.graalvm.compiler.nodes.IfNode' => 'control',
-        'org.graalvm.compiler.nodes.InvokeNode' => 'call',
-        'org.graalvm.compiler.nodes.InvokeWithExceptionNode' => 'call',
-        'org.graalvm.compiler.nodes.java.ArrayLengthNode' => 'memory',
-        'org.graalvm.compiler.nodes.java.LoadFieldNode' => 'memory',
-        'org.graalvm.compiler.nodes.java.LoadIndexedNode' => 'memory',
-        'org.graalvm.compiler.nodes.java.MonitorEnterNode' => 'sync',
-        'org.graalvm.compiler.nodes.java.MonitorExitNode' => 'sync',
-        'org.graalvm.compiler.nodes.java.NewArrayNode' => 'alloc',
-        'org.graalvm.compiler.nodes.java.NewInstanceNode' => 'alloc',
-        'org.graalvm.compiler.nodes.java.RawMonitorEnterNode' => 'sync',
-        'org.graalvm.compiler.nodes.java.StoreFieldNode' => 'memory',
-        'org.graalvm.compiler.nodes.java.StoreIndexedNode' => 'memory',
-        'org.graalvm.compiler.nodes.KillingBeginNode' => 'control',
-        'org.graalvm.compiler.nodes.LoopBeginNode' => 'control',
-        'org.graalvm.compiler.nodes.LoopEndNode' => 'control',
-        'org.graalvm.compiler.nodes.LoopExitNode' => 'control',
-        'org.graalvm.compiler.nodes.memory.ReadNode' => 'memory',
-        'org.graalvm.compiler.nodes.memory.WriteNode' => 'memory',
-        'org.graalvm.compiler.nodes.MergeNode' => 'control',
-        'org.graalvm.compiler.nodes.ParameterNode' => 'input',
-        'org.graalvm.compiler.nodes.PrefetchAllocateNode' => 'alloc',
-        'org.graalvm.compiler.nodes.ReturnNode' => 'control',
-        'org.graalvm.compiler.nodes.StartNode' => 'control',
-        'org.graalvm.compiler.nodes.UnwindNode' => 'control',
-        'org.graalvm.compiler.nodes.virtual.AllocatedObjectNode' => 'virtual',
-        'org.graalvm.compiler.nodes.virtual.CommitAllocationNode' => 'alloc',
-        'org.graalvm.compiler.nodes.virtual.VirtualArrayNode' => 'virtual',
-        'org.graalvm.compiler.nodes.VirtualObjectState' => 'info',
-        'org.graalvm.compiler.replacements.nodes.ArrayEqualsNode' => 'memory',
-        'org.graalvm.compiler.replacements.nodes.ReadRegisterNode' => 'memory',
-        'org.graalvm.compiler.replacements.nodes.WriteRegisterNode' => 'memory',
-        'org.graalvm.compiler.word.WordCastNode' => 'memory'
+        "org.graalvm.compiler.nodes.BeginNode" => "control",
+        "org.graalvm.compiler.nodes.ConstantNode" => "input",
+        "org.graalvm.compiler.nodes.DeoptimizeNode" => "control",
+        "org.graalvm.compiler.nodes.EndNode" => "control",
+        "org.graalvm.compiler.nodes.extended.IntegerSwitchNode" => "control",
+        "org.graalvm.compiler.nodes.extended.UnsafeMemoryLoadNode" => "memory",
+        "org.graalvm.compiler.nodes.extended.UnsafeMemoryStoreNode" => "memory",
+        "org.graalvm.compiler.nodes.FixedGuardNode" => "guard",
+        "org.graalvm.compiler.nodes.FrameState" => "info",
+        "org.graalvm.compiler.nodes.GuardNode" => "guard",
+        "org.graalvm.compiler.nodes.IfNode" => "control",
+        "org.graalvm.compiler.nodes.InvokeNode" => "call",
+        "org.graalvm.compiler.nodes.InvokeWithExceptionNode" => "call",
+        "org.graalvm.compiler.nodes.java.ArrayLengthNode" => "memory",
+        "org.graalvm.compiler.nodes.java.LoadFieldNode" => "memory",
+        "org.graalvm.compiler.nodes.java.LoadIndexedNode" => "memory",
+        "org.graalvm.compiler.nodes.java.MonitorEnterNode" => "sync",
+        "org.graalvm.compiler.nodes.java.MonitorExitNode" => "sync",
+        "org.graalvm.compiler.nodes.java.NewArrayNode" => "alloc",
+        "org.graalvm.compiler.nodes.java.NewInstanceNode" => "alloc",
+        "org.graalvm.compiler.nodes.java.RawMonitorEnterNode" => "sync",
+        "org.graalvm.compiler.nodes.java.StoreFieldNode" => "memory",
+        "org.graalvm.compiler.nodes.java.StoreIndexedNode" => "memory",
+        "org.graalvm.compiler.nodes.KillingBeginNode" => "control",
+        "org.graalvm.compiler.nodes.LoopBeginNode" => "control",
+        "org.graalvm.compiler.nodes.LoopEndNode" => "control",
+        "org.graalvm.compiler.nodes.LoopExitNode" => "control",
+        "org.graalvm.compiler.nodes.memory.ReadNode" => "memory",
+        "org.graalvm.compiler.nodes.memory.WriteNode" => "memory",
+        "org.graalvm.compiler.nodes.MergeNode" => "control",
+        "org.graalvm.compiler.nodes.ParameterNode" => "input",
+        "org.graalvm.compiler.nodes.PrefetchAllocateNode" => "alloc",
+        "org.graalvm.compiler.nodes.ReturnNode" => "control",
+        "org.graalvm.compiler.nodes.StartNode" => "control",
+        "org.graalvm.compiler.nodes.UnwindNode" => "control",
+        "org.graalvm.compiler.nodes.virtual.AllocatedObjectNode" => "virtual",
+        "org.graalvm.compiler.nodes.virtual.CommitAllocationNode" => "alloc",
+        "org.graalvm.compiler.nodes.virtual.VirtualArrayNode" => "virtual",
+        "org.graalvm.compiler.nodes.VirtualObjectState" => "info",
+        "org.graalvm.compiler.replacements.nodes.ArrayEqualsNode" => "memory",
+        "org.graalvm.compiler.replacements.nodes.ReadRegisterNode" => "memory",
+        "org.graalvm.compiler.replacements.nodes.WriteRegisterNode" => "memory",
+        "org.graalvm.compiler.word.WordCastNode" => "memory",
       }
 
       # Render a Graal 'name template'.
@@ -201,11 +200,21 @@ module Seafoam
         # probably need to do these replacements in one pass...
         string = template
         string = string.gsub(%r{\{p#(\w+)(/s)?\}}) { |_| node.props[Regexp.last_match(1)] }
-        string = string.gsub(%r{\{i#(\w+)(/s)?\}}) { |_| node.inputs.select { |e| e.props[:name] == Regexp.last_match(1) }.map { |e| e.from.id }.join(', ') }
-        string = string.gsub(/\{x#field\}/) { |_| "#{node.props.dig('field', :field_class).split('.').last}.#{node.props.dig('field', :name)}" }
-        string = string.gsub(/\{x#state\}/) { |_| "#{node.props.dig('code', :declaring_class)}##{node.props.dig('code', :method_name)} #{node.props['sourceFile']}:#{node.props['sourceLine']}" }
+        string = string.gsub(%r{\{i#(\w+)(/s)?\}}) do |_|
+          node.inputs.select do |e|
+            e.props[:name] == Regexp.last_match(1)
+          end.map { |e| e.from.id }.join(", ")
+        end
+        string = string.gsub(/\{x#field\}/) do |_|
+          "#{node.props.dig("field", :field_class).split(".").last}.#{node.props.dig("field", :name)}"
+        end
+        string = string.gsub(/\{x#state\}/) do |_|
+          "#{node.props.dig("code",
+            :declaring_class)}##{node.props.dig("code",
+              :method_name)} #{node.props["sourceFile"]}:#{node.props["sourceLine"]}"
+        end
         string = string.gsub(/\{x#simpleStamp\}/) do |_|
-          stamp = node.props.dig('checkedStamp')
+          stamp = node.props.dig("checkedStamp")
           if stamp =~ /a!?# L(.*);/
             Regexp.last_match(1)
           else
@@ -218,14 +227,16 @@ module Seafoam
       # Annotate edges with their label and kind.
       def apply_edges(graph)
         graph.edges.each do |edge|
-          if edge.to.node_class == 'org.graalvm.compiler.nodes.ValuePhiNode' && edge.props[:name] == 'values'
-            merge_node = edge.to.edges.find { |e| e.props[:name] == 'merge' }.from
-            control_into_merge = %w[ends loopBegin]
-            merge_node_control_edges_in = merge_node.edges.select { |e| control_into_merge.include?(e.props[:name]) && e.to.node_class != 'org.graalvm.compiler.nodes.LoopExitNode' }
+          if edge.to.node_class == "org.graalvm.compiler.nodes.ValuePhiNode" && edge.props[:name] == "values"
+            merge_node = edge.to.edges.find { |e| e.props[:name] == "merge" }.from
+            control_into_merge = ["ends", "loopBegin"]
+            merge_node_control_edges_in = merge_node.edges.select do |e|
+              control_into_merge.include?(e.props[:name]) && e.to.node_class != "org.graalvm.compiler.nodes.LoopExitNode"
+            end
             matching_control_edge = merge_node_control_edges_in[edge.props[:index]]
             control_in_node = matching_control_edge.nodes.find { |n| n != merge_node }
             edge.props[:label] = "from #{control_in_node.id}"
-            edge.props[:kind] = 'data'
+            edge.props[:kind] = "data"
             next
           end
 
@@ -233,74 +244,74 @@ module Seafoam
           case edge.props[:name]
 
           # Control edges.
-          when 'ends', 'next', 'trueSuccessor', 'falseSuccessor', 'exceptionEdge'
-            edge.props[:kind] = 'control'
+          when "ends", "next", "trueSuccessor", "falseSuccessor", "exceptionEdge"
+            edge.props[:kind] = "control"
             case edge.props[:name]
-            when 'trueSuccessor'
+            when "trueSuccessor"
               # Simplify trueSuccessor to T
-              edge.props[:label] = 'T'
-            when 'falseSuccessor'
+              edge.props[:label] = "T"
+            when "falseSuccessor"
               # Simplify falseSuccessor to F
-              edge.props[:label] = 'F'
-            when 'exceptionEdge'
+              edge.props[:label] = "F"
+            when "exceptionEdge"
               # Simplify exceptionEdge to unwind
-              edge.props[:label] = 'unwind'
+              edge.props[:label] = "unwind"
             end
 
           # Info edges, which are drawn reversed as they point from the user
           # to the info.
-          when 'frameState', 'callTarget', 'stateAfter'
+          when "frameState", "callTarget", "stateAfter"
             edge.props[:label] = nil
-            edge.props[:kind] = 'info'
+            edge.props[:kind] = "info"
             edge.props[:reverse] = true
 
           # Condition for branches, which we label as ?.
-          when 'condition'
-            edge.props[:kind] = 'data'
-            edge.props[:label] = '?'
+          when "condition"
+            edge.props[:kind] = "data"
+            edge.props[:label] = "?"
 
           # loopBegin edges point from LoopEndNode (continue) and LoopExitNode
           # (break) to the LoopBeginNode. Both are drawn reversed.
-          when 'loopBegin'
+          when "loopBegin"
             case edge.to.node_class
-            when 'org.graalvm.compiler.nodes.LoopEndNode'
+            when "org.graalvm.compiler.nodes.LoopEndNode"
               # If it's from the LoopEnd then it's the control edge to follow.
-              edge.props[:kind] = 'loop'
+              edge.props[:kind] = "loop"
               edge.props[:reverse] = true
-            when 'org.graalvm.compiler.nodes.LoopExitNode'
+            when "org.graalvm.compiler.nodes.LoopExitNode"
               # If it's from the LoopExit then it's just for information - it's
               # not control flow to follow.
-              edge.props[:kind] = 'info'
+              edge.props[:kind] = "info"
               edge.props[:reverse] = true
             else
-              raise EncodingError, 'loopBegin edge not to LoopEnd or LoopExit'
+              raise EncodingError, "loopBegin edge not to LoopEnd or LoopExit"
             end
 
           # Merges are info.
-          when 'merge'
-            edge.props[:kind] = 'info'
+          when "merge"
+            edge.props[:kind] = "info"
             edge.props[:reverse] = true
 
           # Successors are control from a switch.
-          when 'successors'
+          when "successors"
             # We want to label the edges with the corresponding index of the key.
-            if edge.props[:index] == edge.from.props['keys'].size
-              label = 'default'
+            label = if edge.props[:index] == edge.from.props["keys"].size
+              "default"
             else
-              label = "k[#{edge.props[:index]}]"
+              "k[#{edge.props[:index]}]"
             end
             edge.props[:label] = label
-            edge.props[:kind] = 'control'
+            edge.props[:kind] = "control"
 
           # Successors are control from a switch.
-          when 'arguments'
+          when "arguments"
             # We want to label the edges with their corresponding argument index.
             edge.props[:label] = "arg[#{edge.props[:index]}]"
-            edge.props[:kind] = 'data'
+            edge.props[:kind] = "data"
 
           # Everything else is data.
           else
-            edge.props[:kind] = 'data'
+            edge.props[:kind] = "data"
             edge.props[:label] = edge.props[:name]
 
           end
@@ -327,8 +338,8 @@ module Seafoam
             next unless Graal::Pi::PI_NODES.include?(edge.from.node_class)
 
             object = Graal::Pi.follow_pi_object(edge.from)
-            graph.create_edge object, edge.to, edge.props.merge({ synthetic: true })
-            graph.remove_edge edge
+            graph.create_edge(object, edge.to, edge.props.merge({ synthetic: true }))
+            graph.remove_edge(edge)
             umodified = false
           end
           break if umodified
@@ -349,16 +360,16 @@ module Seafoam
           # after the Begin or before/after the EndNode are pure control flow
           # and have no extra information
           preserved_props = input_edge.props
-          graph.create_edge input_edge.from, output_edge.to, preserved_props
-          graph.remove_edge input_edge
-          graph.remove_edge output_edge
+          graph.create_edge(input_edge.from, output_edge.to, preserved_props)
+          graph.remove_edge(input_edge)
+          graph.remove_edge(output_edge)
         end
       end
 
       # Hide floating nodes. This highlights just the control flow backbone.
       def hide_floating(graph)
         graph.nodes.each_value do |node|
-          if node.edges.none? { |e| e.props[:kind] == 'control' }
+          if node.edges.none? { |e| e.props[:kind] == "control" }
             node.props[:hidden] = true
           end
         end
@@ -386,11 +397,11 @@ module Seafoam
           graph.nodes.each_value do |node|
             # Call trees are like Graal graphs but don't have these edges -
             # don't hide them.
-            next if node.props['truffleCallees']
+            next if node.props["truffleCallees"]
 
             next unless node.outputs.all? { |edge| edge.to.props[:hidden] || edge.props[:hidden] } &&
-                        node.inputs.none? { |edge| edge.props[:kind] == 'control' } &&
-                        node.inputs.none? { |edge| edge.props[:name] == 'anchor' }
+              node.inputs.none? { |edge| edge.props[:kind] == "control" } &&
+              node.inputs.none? { |edge| edge.props[:name] == "anchor" }
 
             unless node.props[:hidden]
               node.props[:hidden] = true
@@ -402,28 +413,16 @@ module Seafoam
       end
 
       # If we see these in the graph properties it's probably a Graal graph.
-      TRIGGERS = %w[
-        HostedGraphBuilderPhase
-        GraalCompiler
-        TruffleCompiler
-      ]
+      TRIGGERS = ["HostedGraphBuilderPhase", "GraalCompiler", "TruffleCompiler"]
 
       # Simple input node classes that may be inlined.
-      SIMPLE_INPUTS = %w[
-        org.graalvm.compiler.nodes.ConstantNode
-        org.graalvm.compiler.nodes.ParameterNode
-      ]
+      SIMPLE_INPUTS = ["org.graalvm.compiler.nodes.ConstantNode", "org.graalvm.compiler.nodes.ParameterNode"]
 
       # Nodes just to maintain frame state.
-      FRAME_STATE_NODES = %w[
-        org.graalvm.compiler.nodes.FrameState
-        org.graalvm.compiler.virtual.nodes.MaterializedObjectState
-      ]
+      FRAME_STATE_NODES = ["org.graalvm.compiler.nodes.FrameState",
+                           "org.graalvm.compiler.virtual.nodes.MaterializedObjectState",]
 
-      BEGIN_END_NODES = %w[
-        org.graalvm.compiler.nodes.BeginNode
-        org.graalvm.compiler.nodes.EndNode
-      ]
+      BEGIN_END_NODES = ["org.graalvm.compiler.nodes.BeginNode", "org.graalvm.compiler.nodes.EndNode"]
     end
   end
 end

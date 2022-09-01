@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   module Passes
     # The fallback pass always applies, and adds some basic properties.
@@ -11,15 +13,15 @@ module Seafoam
 
       def apply(graph)
         graph.nodes.each_value do |node|
-          if node.props[:label].nil? && node.props['label']
-            node.props[:label] = node.props['label']
+          if node.props[:label].nil? && node.props["label"]
+            node.props[:label] = node.props["label"]
           end
 
-          node.props[:kind] ||= 'other'
+          node.props[:kind] ||= "other"
         end
 
         graph.edges.each do |edge|
-          edge.props[:kind] ||= 'other'
+          edge.props[:kind] ||= "other"
         end
       end
     end

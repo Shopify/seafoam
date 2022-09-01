@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
-require 'seafoam'
+require "seafoam"
 
 # This is the 'seafoam' command line entry point.
 
@@ -15,6 +16,6 @@ rescue StandardError => e
     raise e
   else
     # Otherwise, just print the message.
-    warn "seafoam: #{e.message}"
+    warn("seafoam: #{e.message}")
   end
 end
