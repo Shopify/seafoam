@@ -65,7 +65,10 @@ describe Seafoam::Commands do
           { "graph_index" => 0, "graph_file" => @fib_java,
             "graph_name_components" => ["17:Fib.fib(int)", "After parsing"], },
           { "graph_index" => 1, "graph_file" => @fib_java,
-            "graph_name_components" => ["17:Fib.fib(int)", "Before phase org.graalvm.compiler.phases.common.LoweringPhase"], },
+            "graph_name_components" => [
+              "17:Fib.fib(int)",
+              "Before phase org.graalvm.compiler.phases.common.LoweringPhase",
+            ], },
           { "graph_index" => 2, "graph_file" => @fib_java,
             "graph_name_components" => ["17:Fib.fib(int)", "After high tier"], },
           { "graph_index" => 3, "graph_file" => @fib_java,
@@ -80,6 +83,8 @@ describe Seafoam::Commands do
       expect { @commands.send(:list, "#{@fib_java}:0") }.to(raise_error(ArgumentError))
     end
   end
+
+  # rubocop:disable Layout/LineLength
 
   describe "#search" do
     it "finds terms in files" do
@@ -115,6 +120,8 @@ describe Seafoam::Commands do
       expect { @commands.send(:search, "#{@fib_java}:0:0") }.to(raise_error(ArgumentError))
     end
   end
+
+  # rubocop:enable Layout/LineLength
 
   describe "#edges" do
     describe "txt format" do
@@ -462,27 +469,29 @@ describe Seafoam::Commands do
     end
 
     it "parses a realistic knarly BGV file name" do
-      file, graph, node, edge = @commands.send(:parse_name,
-        "../graal_dumps/2019.11.03.19.35.03.828/TruffleHotSpotCompilation-13320[while_loop_at__Users_chrisseaton_src_github.com_Shopify_truffleruby-shopify_src_main_ruby_truffleruby_core_kernel.rb:360<OSR>].bgv:14:12-81")
-      expect(file).to(eq("../graal_dumps/2019.11.03.19.35.03.828/TruffleHotSpotCompilation-13320[while_loop_at__Users_chrisseaton_src_github.com_Shopify_truffleruby-shopify_src_main_ruby_truffleruby_core_kernel.rb:360<OSR>].bgv"))
+      # rubocop:disable Layout/LineLength
+      file_name = "../graal_dumps/2019.11.03.19.35.03.828/TruffleHotSpotCompilation-13320[while_loop_at__Users_chrisseaton_src_github.com_Shopify_truffleruby-shopify_src_main_ruby_truffleruby_core_kernel.rb:360<OSR>].bgv"
+      # rubocop:enable Layout/LineLength
+      file, graph, node, edge = @commands.send(:parse_name, "#{file_name}:14:12-81")
+      expect(file).to(eq(file_name))
       expect(graph).to(eq(14))
       expect(node).to(eq(12))
       expect(edge).to(eq(81))
     end
 
     it "parses a BGV file name with periods and colons" do
-      file, graph, node, edge = @commands.send(:parse_name,
-        "TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv:4")
-      expect(file).to(eq("TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv"))
+      file_name = "TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv"
+      file, graph, node, edge = @commands.send(:parse_name, "#{file_name}:4")
+      expect(file).to(eq(file_name))
       expect(graph).to(eq(4))
       expect(node).to(be_nil)
       expect(edge).to(be_nil)
     end
 
     it "parses a BGV.gz file name with periods and colons" do
-      file, graph, node, edge = @commands.send(:parse_name,
-        "TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv.gz:4")
-      expect(file).to(eq("TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv.gz"))
+      file_name = "TruffleHotSpotCompilation-13029[Truffle::ThreadOperations.detect_recursion_<split-3a5973bc>].bgv.gz"
+      file, graph, node, edge = @commands.send(:parse_name, "#{file_name}:4")
+      expect(file).to(eq(file_name))
       expect(graph).to(eq(4))
       expect(node).to(be_nil)
       expect(edge).to(be_nil)

@@ -44,7 +44,9 @@ module Seafoam
 
     def output_edge(from, to, attrs)
       @stream.puts "  #{from} --> #{to}"
-      @stream.puts "  linkStyle #{(@link_style_counter += 1) - 1} stroke:#{attrs[:color]},stroke-width:#{attrs[:penwidth]}px;"
+      link_counter = (@link_style_counter += 1) - 1
+      penwidth = attrs[:penwidth]
+      @stream.puts "  linkStyle #{link_counter} stroke:#{attrs[:color]},stroke-width:#{penwidth}px;"
     end
   end
 end

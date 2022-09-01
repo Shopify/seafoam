@@ -392,7 +392,8 @@ module Seafoam
         when POOL_NULL
         when POOL_NEW
           read_pool_entry
-        when POOL_STRING, POOL_ENUM, POOL_CLASS, POOL_METHOD, POOL_NODE_CLASS, POOL_FIELD, POOL_SIGNATURE, POOL_NODE_SOURCE_POSITION, POOL_NODE
+        when POOL_STRING, POOL_ENUM, POOL_CLASS, POOL_METHOD, POOL_NODE_CLASS,
+            POOL_FIELD, POOL_SIGNATURE, POOL_NODE_SOURCE_POSITION, POOL_NODE
           @reader.skip_int16
         else
           raise EncodingError, "unknown token 0x#{token.to_s(16)} in BGV pool object"
@@ -407,7 +408,8 @@ module Seafoam
           nil
         when POOL_NEW
           read_pool_entry
-        when POOL_STRING, POOL_ENUM, POOL_CLASS, POOL_METHOD, POOL_NODE_CLASS, POOL_FIELD, POOL_SIGNATURE, POOL_NODE_SOURCE_POSITION, POOL_NODE
+        when POOL_STRING, POOL_ENUM, POOL_CLASS, POOL_METHOD, POOL_NODE_CLASS,
+            POOL_FIELD, POOL_SIGNATURE, POOL_NODE_SOURCE_POSITION, POOL_NODE
           id = @reader.read_uint16
           object = @pool[id]
           raise EncodingError, "unknown BGV pool object #{token}" unless object
@@ -429,8 +431,9 @@ module Seafoam
         when POOL_ENUM
           enum_class = read_pool_object
           enum_ordinal = @reader.read_sint32
-          raise EncodingError,
-            "unknown BGV eum ordinal #{enum_ordinal} in #{enum_class}" if enum_ordinal.negative? || enum_ordinal >= enum_class.size
+          if enum_ordinal.negative? || enum_ordinal >= enum_class.size
+            raise EncodingError, "unknown BGV eum ordinal #{enum_ordinal} in #{enum_class}"
+          end
 
           object = enum_class[enum_ordinal]
         when POOL_CLASS

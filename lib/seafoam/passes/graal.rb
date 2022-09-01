@@ -73,7 +73,8 @@ module Seafoam
             name_template = "Alloc"
           end
 
-          # The template for org.graalvm.compiler.nodes.virtual.VirtualArrayNode includes an ID that we don't normally need.
+          # The template for org.graalvm.compiler.nodes.virtual.VirtualArrayNode
+          # includes an ID that we don't normally need.
           if node_class == "org.graalvm.compiler.nodes.virtual.VirtualArrayNode"
             name_template = "VirtualArray {p#componentType/s}[{p#length}]"
           end
@@ -233,7 +234,8 @@ module Seafoam
             merge_node = edge.to.edges.find { |e| e.props[:name] == "merge" }.from
             control_into_merge = ["ends", "loopBegin"]
             merge_node_control_edges_in = merge_node.edges.select do |e|
-              control_into_merge.include?(e.props[:name]) && e.to.node_class != "org.graalvm.compiler.nodes.LoopExitNode"
+              exit_node = "org.graalvm.compiler.nodes.LoopExitNode"
+              control_into_merge.include?(e.props[:name]) && e.to.node_class != exit_node
             end
             matching_control_edge = merge_node_control_edges_in[edge.props[:index]]
             control_in_node = matching_control_edge.nodes.find { |n| n != merge_node }
