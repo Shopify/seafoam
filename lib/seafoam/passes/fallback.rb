@@ -7,8 +7,10 @@ module Seafoam
     # can emit a graph with 'label' properties and we can do something useful
     # with it.
     class FallbackPass < Pass
-      def self.applies?(_graph)
-        true
+      class << self
+        def applies?(_graph)
+          true
+        end
       end
 
       def apply(graph)

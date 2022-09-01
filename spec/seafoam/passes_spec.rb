@@ -47,8 +47,10 @@ describe Seafoam::Passes do
 
     it "returns custom passes" do
       custom_pass = Class.new(Seafoam::Pass) do
-        def self.applies?(_graph)
-          false
+        class << self
+          def applies?(_graph)
+            false
+          end
         end
       end
       passes = Seafoam::Passes.passes

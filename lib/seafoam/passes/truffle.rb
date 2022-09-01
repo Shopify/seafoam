@@ -6,9 +6,11 @@ module Seafoam
   module Passes
     # The Truffle pass applies if it looks like it was compiled by Truffle.
     class TrufflePass < Pass
-      def self.applies?(graph)
-        graph.props.values.any? do |v|
-          TRIGGERS.any? { |t| v.to_s.include?(t) }
+      class << self
+        def applies?(graph)
+          graph.props.values.any? do |v|
+            TRIGGERS.any? { |t| v.to_s.include?(t) }
+          end
         end
       end
 
