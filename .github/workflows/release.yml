@@ -1,0 +1,24 @@
+name: Release
+on:
+  workflow_dispatch:
+    branches: [ main ]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+    - name: Install dependencies
+      run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz; else sudo apt-get install graphviz; fi
+    - name: Test
+      run: bundle exec rake
+    - name: Build
+      run: gem build seafoam.gemspec
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-build
+        path: 'seafoam-*.gem'
