@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   # A writer from graphs to the Graphviz DOT format, including all the
   # formatting.
@@ -11,20 +13,20 @@ module Seafoam
       inline_attrs = {}
       attrs = {}
       attrs[:dpi] = 200 if hidpi
-      attrs[:bgcolor] = 'white'
-      start_graph attrs
-      write_nodes inline_attrs, graph, draw_blocks
-      write_edges inline_attrs, graph
+      attrs[:bgcolor] = "white"
+      start_graph(attrs)
+      write_nodes(inline_attrs, graph, draw_blocks)
+      write_edges(inline_attrs, graph)
       end_graph
     end
 
     def start_graph(attrs)
-      @stream.puts 'digraph G {'
+      @stream.puts "digraph G {"
       @stream.puts "  graph #{write_attrs(attrs)};"
     end
 
     def end_graph
-      @stream.puts '}'
+      @stream.puts "}"
     end
 
     private
@@ -37,13 +39,13 @@ module Seafoam
         graph.blocks.each do |block|
           next if block.nodes.all? { |n| n.props[:hidden] || n.props[:inlined] }
 
-          start_subgraph block.id
+          start_subgraph(block.id)
 
           block.nodes.each do |node|
             next if node.props[:hidden] || node.props[:inlined]
 
-            write_node '    ', inline_attrs, node
-            drawn_in_blocks.push node
+            write_node("    ", inline_attrs, node)
+            drawn_in_blocks.push(node)
           end
 
           end_subgraph
@@ -51,7 +53,7 @@ module Seafoam
       end
 
       (graph.nodes.values - drawn_in_blocks).each do |node|
-        write_node '  ', inline_attrs, node
+        write_node("  ", inline_attrs, node)
       end
     end
 
@@ -59,13 +61,13 @@ module Seafoam
       @stream.puts "  subgraph cluster_block#{id} {"
       @stream.puts '    fontname = "Arial";'
       @stream.puts "    label = \"B#{id}\";"
-      @stream.puts '    style = filled;'
+      @stream.puts "    style = filled;"
       @stream.puts "    color = #{DARK_YELLOW.inspect};"
       @stream.puts "    fillcolor = #{LIGHT_YELLOW.inspect};"
     end
 
     def end_subgraph
-      @stream.puts '  }'
+      @stream.puts "  }"
     end
 
     def write_node(indent, inline_attrs, node)
@@ -78,27 +80,27 @@ module Seafoam
         # If the node has any adjacent nodes that are not hidden, and are
         # shaded, then we need to declare the node but make it invisible so
         # the edge appears, pointing off into space, but the node does not.
-        if node.adjacent.any? { |a| !a.props[:hidden] && a.props[:spotlight] == 'shaded' }
-          attrs[:style] = 'invis'
-          attrs[:label] = ''
-          output_node indent, "node#{node.id}", attrs
+        if node.adjacent.any? { |a| !a.props[:hidden] && a.props[:spotlight] == "shaded" }
+          attrs[:style] = "invis"
+          attrs[:label] = ""
+          output_node(indent, "node#{node.id}", attrs)
         end
       else
         # This is a visible node.
 
         # Give it a label.
-        if node.props[:label]
-          attrs[:label] = "#{node.id} #{node.props[:label]}"
+        attrs[:label] = if node.props[:label]
+          "#{node.id} #{node.props[:label]}"
         else
           # If we really still don't have a label, just use the ID.
-          attrs[:label] = node.id.to_s
+          node.id.to_s
         end
 
         # Basic attributes for a node.
-        attrs[:shape] = 'rectangle'
-        attrs[:fontname] = 'Arial'
-        attrs[:style] = 'filled'
-        attrs[:color] = 'black'
+        attrs[:shape] = "rectangle"
+        attrs[:fontname] = "Arial"
+        attrs[:style] = "filled"
+        attrs[:color] = "black"
 
         # Color depends on the kind of node.
         back_color, fore_color = NODE_COLORS[node.props[:kind]]
@@ -107,22 +109,22 @@ module Seafoam
 
         # If the node is shaded, convert the attributes to the shaded
         # version.
-        attrs = shade(attrs) if node.props[:spotlight] == 'shaded'
+        attrs = shade(attrs) if node.props[:spotlight] == "shaded"
 
         if node.props[:inlined]
           # If the node is to be inlined then draw it smaller and a different
           # shape.
-          attrs[:shape] = 'oval'
-          attrs[:fontsize] = '8'
+          attrs[:shape] = "oval"
+          attrs[:fontsize] = "8"
 
           # Just record these attributes for where it's used by other nodes
           # so it can be drawn above them - don't actually declare a node.
           inline_attrs[node.id] = attrs
         else
-          attrs[:shape] = 'diamond' if node.props[:kind] == 'calc'
+          attrs[:shape] = "diamond" if node.props[:kind] == "calc"
 
           # Declare the node.
-          output_node indent, "node#{node.id}", attrs
+          output_node(indent, "node#{node.id}", attrs)
         end
       end
     end
@@ -137,16 +139,16 @@ module Seafoam
       graph.edges.each do |edge|
         # Skip the edge if it's from a node that is hidden and it doesn't point
         # to a shaded node.
-        next if edge.from.props[:hidden] && edge.to.props[:spotlight] != 'shaded'
+        next if edge.from.props[:hidden] && edge.to.props[:spotlight] != "shaded"
 
         # Skip the edge if it's to a node that is hidden and it doesn't come
         # from a shaded node.
-        next if edge.to.props[:hidden] && edge.from.props[:spotlight] != 'shaded'
+        next if edge.to.props[:hidden] && edge.from.props[:spotlight] != "shaded"
 
         # Skip the edge if it's hidden itself
         next if edge.props[:hidden]
 
-        write_edge inline_attrs, edge
+        write_edge(inline_attrs, edge)
       end
     end
 
@@ -161,26 +163,26 @@ module Seafoam
       attrs[:label] = label
 
       # Basic edge attributes.
-      attrs[:fontname] = 'arial'
+      attrs[:fontname] = "arial"
       color = EDGE_COLORS[edge.props[:kind]]
       attrs[:color] = EDGE_COLORS[edge.props[:kind]]
       attrs[:fontcolor] = color
 
       # Properties depending on the kind of edge.
       case edge.props[:kind]
-      when 'control'
+      when "control"
         attrs[:penwidth] = 2
-      when 'loop'
+      when "loop"
         attrs[:penwidth] = 4
-      when 'info'
-        attrs[:style] = 'dashed'
+      when "info"
+        attrs[:style] = "dashed"
       end
 
       # Reversed edges.
-      attrs[:dir] = 'back' if edge.props[:reverse]
+      attrs[:dir] = "back" if edge.props[:reverse]
 
       # Convert attributes to shaded if any edges involved are shaded.
-      attrs = shade(attrs) if edge.nodes.any? { |n| n.props[:spotlight] == 'shaded' }
+      attrs = shade(attrs) if edge.nodes.any? { |n| n.props[:spotlight] == "shaded" }
 
       # Does this edge come from an inlined node?
 
@@ -193,27 +195,27 @@ module Seafoam
           # user it's a short edge and the from-node is show directly above the
           # to-node.
 
-          if edge.to.props[:spotlight] == 'shaded'
+          node_attrs = if edge.to.props[:spotlight] == "shaded"
             # Draw inlined edges to shaded nodes as invisible.
-            node_attrs = { label: '', style: 'invis' }
+            { label: "", style: "invis" }
           else
             # Get attributes from when we went through nodes earlier.
-            node_attrs = inline_attrs[edge.from.id]
+            inline_attrs[edge.from.id]
           end
 
           # Inlined nodes skip the arrow for simplicity.
-          attrs[:arrowhead] = 'none'
-          attrs[:fontsize] = '8'
+          attrs[:arrowhead] = "none"
+          attrs[:fontsize] = "8"
 
           # Declare a new node just for this user.
-          output_node '  ', "inline#{edge.from.id}x#{edge.to.id}", node_attrs
+          output_node("  ", "inline#{edge.from.id}x#{edge.to.id}", node_attrs)
 
           # Declare the edge.
-          output_edge "inline#{edge.from.id}x#{edge.to.id}", "node#{edge.to.id}", attrs
+          output_edge("inline#{edge.from.id}x#{edge.to.id}", "node#{edge.to.id}", attrs)
         end
       else
         # Declare the edge.
-        output_edge "node#{edge.from.id}", "node#{edge.to.id}", attrs
+        output_edge("node#{edge.from.id}", "node#{edge.to.id}", attrs)
       end
     end
 
@@ -233,31 +235,31 @@ module Seafoam
 
     # Write a hash of key-value attributes into the DOT format.
     def write_attrs(attrs)
-      '[' + attrs.reject { |_k, v| v.nil? }.map { |k, v| "#{k}=#{v.inspect}" }.join(',') + ']'
+      "[" + attrs.reject { |_k, v| v.nil? }.map { |k, v| "#{k}=#{v.inspect}" }.join(",") + "]"
     end
 
     # Color theme.
 
     EDGE_COLORS = {
-      'info' => BIG_STONE,
-      'control' => AMARANTH,
-      'loop' => AMARANTH,
-      'data' => KEPPEL,
-      'other' => BLACK
+      "info" => BIG_STONE,
+      "control" => AMARANTH,
+      "loop" => AMARANTH,
+      "data" => KEPPEL,
+      "other" => BLACK,
     }
 
     NODE_COLORS = {
-      'info' => [DUST, BLACK],
-      'input' => [WHITE_ICE, BLACK],
-      'control' => [CARISSMA, BLACK],
-      'memory' => [LIGHT_PURPLE, BLACK],
-      'call' => [AMARANTH, WHITE],
-      'sync' => [AMARANTH, WHITE],
-      'alloc' => [AMARANTH, WHITE],
-      'virtual' => [BIG_STONE, WHITE],
-      'guard' => [ORANGE, BLACK],
-      'calc' => [KEPPEL, BLACK],
-      'other' => [DUST, BLACK]
+      "info" => [DUST, BLACK],
+      "input" => [WHITE_ICE, BLACK],
+      "control" => [CARISSMA, BLACK],
+      "memory" => [LIGHT_PURPLE, BLACK],
+      "call" => [AMARANTH, WHITE],
+      "sync" => [AMARANTH, WHITE],
+      "alloc" => [AMARANTH, WHITE],
+      "virtual" => [BIG_STONE, WHITE],
+      "guard" => [ORANGE, BLACK],
+      "calc" => [KEPPEL, BLACK],
+      "other" => [DUST, BLACK],
     }
   end
 end

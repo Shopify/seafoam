@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   module Formatters
     module Text
@@ -7,7 +9,7 @@ module Seafoam
           notes = Seafoam::Graal::GraphDescription::ATTRIBUTES.select { |attr| description.send(attr) }
           node_counts = description.sorted_node_counts.map { |node_class, count| "#{node_class}: #{count}" }.join("\n")
 
-          ["#{graph.nodes.size} nodes", *notes].join(', ') + "\n#{node_counts}"
+          ["#{graph.nodes.size} nodes", *notes].join(", ") + "\n#{node_counts}"
         end
       end
 
@@ -20,12 +22,12 @@ module Seafoam
         end
 
         def render_node_entry(node)
-          ret = ['Input:']
+          ret = ["Input:"]
           ret += node.inputs.map do |input|
             "  #{node.id_and_label} <-(#{input.props[:label]}) #{input.from.id_and_label}"
           end
 
-          ret << 'Output:'
+          ret << "Output:"
           ret += node.outputs.map do |output|
             "  #{node.id_and_label} ->(#{output.props[:label]}) #{output.to.id_and_label}"
           end
@@ -49,7 +51,7 @@ module Seafoam
       class ListFormatter < Seafoam::Formatters::Base::ListFormatter
         def format
           entries.map do |entry|
-            "#{entry.file}:#{entry.index}  #{entry.graph_name_components.join('/')}"
+            "#{entry.file}:#{entry.index}  #{entry.graph_name_components.join("/")}"
           end.join("\n")
         end
       end

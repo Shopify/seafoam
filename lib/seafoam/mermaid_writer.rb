@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   # A writer from graphs to the Mermaid format. Re-uses the Graphviz writer,
   # just adapting for the syntax. Attributes are cherry-picked, and more
@@ -12,7 +14,7 @@ module Seafoam
 
     def start_graph(_attrs)
       # Ignore bgcolor, as I can't figure out how to do it in Mermaid
-      @stream.puts 'flowchart TD'
+      @stream.puts "flowchart TD"
     end
 
     def end_graph
@@ -24,17 +26,17 @@ module Seafoam
     end
 
     def end_subgraph
-      @stream.puts '  end'
+      @stream.puts "  end"
     end
 
     def output_node(indent, id, attrs)
       case attrs[:shape]
-      when 'rectangle'
-        shape = ['(', ')']
-      when 'oval'
-        shape = ['([', '])']
-      when 'diamond'
-        shape = ['{{', '}}']
+      when "rectangle"
+        shape = ["(", ")"]
+      when "oval"
+        shape = ["([", "])"]
+      when "diamond"
+        shape = ["{{", "}}"]
       end
       @stream.puts "#{indent}#{id}#{shape[0]}#{attrs[:label].inspect}#{shape[1]}"
       @stream.puts "#{indent}style #{id} fill:#{attrs[:fillcolor]},stroke:#{attrs[:color]},color:#{attrs[:fontcolor]};"
@@ -42,7 +44,9 @@ module Seafoam
 
     def output_edge(from, to, attrs)
       @stream.puts "  #{from} --> #{to}"
-      @stream.puts "  linkStyle #{(@link_style_counter += 1) - 1} stroke:#{attrs[:color]},stroke-width:#{attrs[:penwidth]}px;"
+      link_counter = (@link_style_counter += 1) - 1
+      penwidth = attrs[:penwidth]
+      @stream.puts "  linkStyle #{link_counter} stroke:#{attrs[:color]},stroke-width:#{penwidth}px;"
     end
   end
 end

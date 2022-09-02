@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Seafoam
   # A graph, with properties, nodes, and edges. We don't encapsulate the graph
   # too much - be careful.
@@ -25,24 +27,24 @@ module Seafoam
     def create_edge(from, to, props = nil)
       props ||= {}
       edge = Edge.new(from, to, props)
-      @edges.push edge
-      from.outputs.push edge
-      to.inputs.push edge
+      @edges.push(edge)
+      from.outputs.push(edge)
+      to.inputs.push(edge)
       edge
     end
 
     # Add a new basic block with given id and node id list.
     def create_block(id, node_ids)
-      nodes = node_ids.select { |n| @nodes.key? n }.map { |n| @nodes[n] }
+      nodes = node_ids.select { |n| @nodes.key?(n) }.map { |n| @nodes[n] }
       block = Block.new(id, nodes)
-      @blocks.push block
+      @blocks.push(block)
       block
     end
 
     def remove_edge(edge)
-      edge.from.outputs.delete edge
-      edge.to.inputs.delete edge
-      edges.delete edge
+      edge.from.outputs.delete(edge)
+      edge.to.inputs.delete(edge)
+      edges.delete(edge)
     end
   end
 
