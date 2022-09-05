@@ -470,6 +470,13 @@ module Seafoam
           pass_options[:hide_floating] = true
         when "--no-reduce-edges"
           pass_options[:reduce_edges] = false
+        when "--no-simplify"
+          pass_options[:simplify_truffle_args] = false
+          pass_options[:simplify_alloc] = false
+          pass_options[:hide_null_fields] = false
+          pass_options[:hide_pi] = false
+          pass_options[:hide_begin_end] = false
+          pass_options[:reduce_edges] = false
         when "--draw-blocks"
           draw_blocks = true
         when "--option"
@@ -644,6 +651,7 @@ module Seafoam
       @out.puts "               --show-begin-end"
       @out.puts "               --hide-floating"
       @out.puts "               --no-reduce-edges"
+      @out.puts "               --no-simplify"
       @out.puts "               --draw-blocks"
       @out.puts "               --option key value"
       @out.puts "        --help"

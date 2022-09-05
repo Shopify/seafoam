@@ -465,6 +465,7 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 * `--show-begin-end` shows *begin* and *end* nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
 * `--no-reduce-edges` turns off the pass to reduce the number of edges by inlining simple nodes above their users
+* `--no-simplify` turns off passes that simplify the graph, except frame states are still hidden
 * `--draw-blocks` to draw basic block information if available
 
 ## Debugging
