@@ -458,11 +458,13 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 ## Options for GraalVM graphs
 
 * `--full-truffle-args` shows full Truffle argument nodes, which are simplified by default
-* `--no-simplify-alloc` turns off the option to hide null and zero fields in object allocations in Truffle
 * `--show-frame-state` shows frame state nodes, which are hidden by default
-* `--show-pi` shows 'pi' nodes, which are hidden by default
+* `--no-simplify-alloc` turns off the pass to create synthetic allocation nodes
+* `--show-null-fields` shows null fields to allocations, which are hidden by default
+* `--show-pi` shows *pi* nodes, which are hidden by default
+* `--show-begin-end` shows *begin* and *end* nodes, which are hidden by default
 * `--hide-floating` hides nodes that aren't fixed by control flow
-* `--no-reduce-edges` turns off the option to reduce the number of edges by inlining simple nodes above their users
+* `--no-reduce-edges` turns off the pass to reduce the number of edges by inlining simple nodes above their users
 * `--draw-blocks` to draw basic block information if available
 
 ## Debugging
