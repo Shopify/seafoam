@@ -394,8 +394,6 @@ describe Seafoam::Commands do
           20 nodes, branches, calls
           AddNode: 3
           ConstantNode: 3
-          BeginNode: 2
-          FrameState: 2
           HotSpotDirectCallTargetNode: 2
           InvokeNode: 2
           ReturnNode: 2
@@ -425,8 +423,6 @@ describe Seafoam::Commands do
           "node_counts" => {
             "AddNode" => 3,
             "ConstantNode" => 3,
-            "BeginNode" => 2,
-            "FrameState" => 2,
             "HotSpotDirectCallTargetNode" => 2,
             "InvokeNode" => 2,
             "ReturnNode" => 2,
