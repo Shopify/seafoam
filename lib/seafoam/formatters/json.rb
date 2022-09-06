@@ -9,7 +9,7 @@ module Seafoam
       class DescribeFormatter < Seafoam::Formatters::Base::DescribeFormatter
         def format
           ret = Seafoam::Graal::GraphDescription::ATTRIBUTES.map { |attr| [attr, description.send(attr)] }.to_h
-          ret[:node_count] = graph.nodes.size
+          ret[:node_count] = graph.nodes.values.count { |n| !n.props[:hidden] }
           ret[:node_counts] = description.sorted_node_counts
 
           ret.to_json

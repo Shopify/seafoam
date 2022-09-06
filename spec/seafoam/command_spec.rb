@@ -391,7 +391,7 @@ describe Seafoam::Commands do
       it "prints a description of a particular graph index" do
         @commands.send(:describe, "#{@fib_java}:4", Seafoam::Formatters::Text)
         expect(@out.string).to(eq(<<~EXPECTED))
-          20 nodes, branches, calls
+          16 nodes, branches, calls
           AddNode: 3
           ConstantNode: 3
           HotSpotDirectCallTargetNode: 2
@@ -419,7 +419,7 @@ describe Seafoam::Commands do
           "loops" => false,
           "deopts" => false,
           "linear" => false,
-          "node_count" => 20,
+          "node_count" => 16,
           "node_counts" => {
             "AddNode" => 3,
             "ConstantNode" => 3,

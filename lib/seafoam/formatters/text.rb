@@ -7,9 +7,10 @@ module Seafoam
       class DescribeFormatter < Seafoam::Formatters::Base::DescribeFormatter
         def format
           notes = Seafoam::Graal::GraphDescription::ATTRIBUTES.select { |attr| description.send(attr) }
+          unhidden_count = graph.nodes.values.count { |n| !n.props[:hidden] }
           node_counts = description.sorted_node_counts.map { |node_class, count| "#{node_class}: #{count}" }.join("\n")
 
-          ["#{graph.nodes.size} nodes", *notes].join(", ") + "\n#{node_counts}"
+          ["#{unhidden_count} nodes", *notes].join(", ") + "\n#{node_counts}"
         end
       end
 
