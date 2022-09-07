@@ -25,10 +25,6 @@ jobs:
     - run: if [[ $(uname) == "Darwin" ]]; then brew install graphviz; else sudo apt-get install graphviz; fi
     - run: bundle exec rake specs
   specs-no-dependencies:
-    strategy:
-      matrix:
-        os: []
-        ruby: []
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
