@@ -1,7 +1,2 @@
-Gemfile.lock
-*.pdf
-*.dot
-*.png
-*.svg
-*.class
+/Gemfile.lock
 /.idea

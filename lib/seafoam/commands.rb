@@ -350,10 +350,20 @@ module Seafoam
     def describe(name, formatter_module, *args)
       file, graph_index, *rest = parse_name(name)
 
+      pass_options = DEFAULT_PASS_OPTIONS.dup
+      until args.empty?
+        arg = args.shift
+        case arg
+        when "--no-simplify"
+          pass_options.merge!(NO_SIMPLIFY_PASS_OPTIONS)
+        else
+          raise ArgumentError, "unexpected option #{arg}"
+        end
+      end
+
       if graph_index.nil? || !rest.all?(&:nil?)
         raise ArgumentError, "describe only works with a graph"
       end
-      raise ArgumentError, "describe does not take arguments" unless args.empty?
 
       parser = BGV::BGVParser.new(file)
       parser.read_file_header
@@ -371,26 +381,33 @@ module Seafoam
         end
 
         graph = parser.read_graph
+        Passes.apply(graph, pass_options)
+
         description = Seafoam::Graal::GraphDescription.new
 
         graph.nodes.each_value do |node|
+          next if node.props[:hidden]
+
           node_class = node.node_class
+          if node_class
+            simple_node_class = node_class[/([^.]+)$/, 1]
+            description.node_counts[simple_node_class] += 1
 
-          simple_node_class = node_class[/([^.]+)$/, 1]
-          description.node_counts[simple_node_class] += 1
-
-          case node_class
-          when "org.graalvm.compiler.nodes.IfNode"
-            description.branches = true
-          when "org.graalvm.compiler.nodes.LoopBeginNode"
-            description.loops = true
-          when "org.graalvm.compiler.nodes.InvokeNode", "org.graalvm.compiler.nodes.InvokeWithExceptionNode"
-            description.calls = true
+            case node_class
+            when "org.graalvm.compiler.nodes.IfNode"
+              description.branches = true
+            when "org.graalvm.compiler.nodes.LoopBeginNode"
+              description.loops = true
+            when "org.graalvm.compiler.nodes.InvokeNode", "org.graalvm.compiler.nodes.InvokeWithExceptionNode"
+              description.calls = true
+            end
+          elsif node.props[:synthetic_class]
+            description.node_counts["*" + node.props[:synthetic_class]] += 1
           end
-        end
 
-        description.deopts = graph.nodes[0].outputs.map(&:to)
-          .all? { |t| t.node_class == "org.graalvm.compiler.nodes.DeoptimizeNode" }
+          description.deopts = graph.nodes[0].outputs.map(&:to)
+            .all? { |t| t.node_class == "org.graalvm.compiler.nodes.DeoptimizeNode" }
+        end
 
         formatter = formatter_module::DescribeFormatter.new(graph, description)
         @out.puts formatter.format
@@ -405,16 +422,7 @@ module Seafoam
       raise ArgumentError, "render needs at least a graph" unless graph_index
       raise ArgumentError, "render only works with a graph" unless rest == [nil, nil]
 
-      pass_options = {
-        simplify_truffle_args: true,
-        hide_frame_state: true,
-        hide_pi: true,
-        hide_begin_end: true,
-        hide_floating: false,
-        reduce_edges: true,
-        simplify_alloc: true,
-        hide_null_fields: true,
-      }
+      pass_options = DEFAULT_PASS_OPTIONS.dup
       spotlight_nodes = nil
       args = args.dup
       out_file = nil
@@ -470,6 +478,8 @@ module Seafoam
           pass_options[:hide_floating] = true
         when "--no-reduce-edges"
           pass_options[:reduce_edges] = false
+        when "--no-simplify"
+          pass_options.merge!(NO_SIMPLIFY_PASS_OPTIONS)
         when "--draw-blocks"
           draw_blocks = true
         when "--option"
@@ -644,6 +654,7 @@ module Seafoam
       @out.puts "               --show-begin-end"
       @out.puts "               --hide-floating"
       @out.puts "               --no-reduce-edges"
+      @out.puts "               --no-simplify"
       @out.puts "               --draw-blocks"
       @out.puts "               --option key value"
       @out.puts "        --help"
@@ -693,5 +704,25 @@ module Seafoam
       end
       # Don't worry if it fails.
     end
+
+    DEFAULT_PASS_OPTIONS = {
+      simplify_truffle_args: true,
+      hide_frame_state: true,
+      hide_pi: true,
+      hide_begin_end: true,
+      hide_floating: false,
+      reduce_edges: true,
+      simplify_alloc: true,
+      hide_null_fields: true,
+    }
+
+    NO_SIMPLIFY_PASS_OPTIONS = {
+      simplify_truffle_args: false,
+      simplify_alloc: false,
+      hide_null_fields: false,
+      hide_pi: false,
+      hide_begin_end: false,
+      reduce_edges: false,
+    }
   end
 end

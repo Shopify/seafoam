@@ -38,7 +38,7 @@ module Seafoam
           index = index_node.props["rawvalue"]
 
           arg_node = graph.create_node(graph.new_id,
-            { synthetic: true, inlined: true, label: "T(#{index})", kind: "input" })
+            { synthetic: true, synthetic_class: "TruffleArgument", inlined: true, label: "T(#{index})", kind: "input" })
 
           node.outputs.each do |output|
             next if output.props[:name] == "next"
@@ -91,7 +91,8 @@ module Seafoam
             end
             raise unless fields.size == values.size
 
-            new_node = graph.create_node(graph.new_id, { synthetic: true, label: label, kind: "alloc" })
+            new_node = graph.create_node(graph.new_id,
+              { synthetic: true, synthetic_class: "TruffleNew", label: label, kind: "alloc" })
 
             object = [new_node, virtual_node, fields, values]
             objects << object

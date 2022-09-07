@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "stringio"
-require "tempfile"
+require "tmpdir"
 
 require "seafoam"
 
@@ -302,23 +302,31 @@ describe Seafoam::Commands do
 
     it "can render all BGV files to dot" do
       Seafoam::SpecHelpers::SAMPLE_BGV.each do |file|
-        @commands.send(:render, "#{file}:2", "--out", "out.dot")
+        Dir.mktmpdir do |dir|
+          @commands.send(:render, "#{file}:2", "--out", "#{dir}/out.dot")
+        end
       end
     end
 
     it "supports --out out.dot" do
-      @commands.send(:render, "#{@fib_java}:0", "--out", "out.dot")
-      expect(%x(file out.dot)).to(start_with("out.dot: ASCII text"))
+      Dir.mktmpdir do |dir|
+        @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.dot")
+        expect(%x(file #{dir}/out.dot)).to(start_with("#{dir}/out.dot: ASCII text"))
+      end
     end
 
     it "supports --out out.mmd" do
-      @commands.send(:render, "#{@fib_java}:0", "--out", "out.mmd")
-      expect(File.read("out.mmd")).to(start_with("flowchart TD"))
+      Dir.mktmpdir do |dir|
+        @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.mmd")
+        expect(File.read("#{dir}/out.mmd")).to(start_with("flowchart TD"))
+      end
     end
 
     it "supports --out out.md" do
-      @commands.send(:render, "#{@fib_java}:0", "--out", "out.md")
-      expect(File.read("out.md")).to(start_with("```mermaid"))
+      Dir.mktmpdir do |dir|
+        @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.md")
+        expect(File.read("#{dir}/out.md")).to(start_with("```mermaid"))
+      end
     end
 
     it "supports --md" do
@@ -327,28 +335,38 @@ describe Seafoam::Commands do
     end
 
     it "supports spotlighting nodes" do
-      @commands.send(:render, "#{@fib_java}:0", "--spotlight", "13", "--out", "out.dot")
+      Dir.mktmpdir do |dir|
+        @commands.send(:render, "#{@fib_java}:0", "--spotlight", "13", "--out", "#{dir}/out.dot")
+      end
     end
 
     if Seafoam::SpecHelpers.dependencies_installed?
       it "supports --out out.pdf" do
-        @commands.send(:render, "#{@fib_java}:0", "--out", "out.pdf")
-        expect(%x(file out.pdf)).to(start_with("out.pdf: PDF document"))
+        Dir.mktmpdir do |dir|
+          @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.pdf")
+          expect(%x(file #{dir}/out.pdf)).to(start_with("#{dir}/out.pdf: PDF document"))
+        end
       end
 
       it "supports --out out.svg" do
-        @commands.send(:render, "#{@fib_java}:0", "--out", "out.svg")
-        expect(%x(file out.svg)).to(start_with("out.svg: SVG Scalable Vector Graphics image"))
+        Dir.mktmpdir do |dir|
+          @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.svg")
+          expect(%x(file #{dir}/out.svg)).to(start_with("#{dir}/out.svg: SVG Scalable Vector Graphics image"))
+        end
       end
 
       it "supports --out out.png" do
-        @commands.send(:render, "#{@fib_java}:0", "--out", "out.png")
-        expect(%x(file out.png)).to(start_with("out.png: PNG image data"))
+        Dir.mktmpdir do |dir|
+          @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.png")
+          expect(%x(file #{dir}/out.png)).to(start_with("#{dir}/out.png: PNG image data"))
+        end
       end
     else
       it "raises an exception if Graphviz is not installed" do
         expect do
-          @commands.send(:render, "#{@fib_java}:0", "--out", "out.pdf")
+          Dir.mktmpdir do |dir|
+            @commands.send(:render, "#{@fib_java}:0", "--out", "#{dir}/out.pdf")
+          end
         end.to(raise_error(RuntimeError, /Could not run Graphviz - is it installed?/))
       end
     end
@@ -373,11 +391,9 @@ describe Seafoam::Commands do
       it "prints a description of a particular graph index" do
         @commands.send(:describe, "#{@fib_java}:4", Seafoam::Formatters::Text)
         expect(@out.string).to(eq(<<~EXPECTED))
-          20 nodes, branches, calls
+          16 nodes, branches, calls
           AddNode: 3
           ConstantNode: 3
-          BeginNode: 2
-          FrameState: 2
           HotSpotDirectCallTargetNode: 2
           InvokeNode: 2
           ReturnNode: 2
@@ -403,12 +419,10 @@ describe Seafoam::Commands do
           "loops" => false,
           "deopts" => false,
           "linear" => false,
-          "node_count" => 20,
+          "node_count" => 16,
           "node_counts" => {
             "AddNode" => 3,
             "ConstantNode" => 3,
-            "BeginNode" => 2,
-            "FrameState" => 2,
             "HotSpotDirectCallTargetNode" => 2,
             "InvokeNode" => 2,
             "ReturnNode" => 2,
