@@ -17,6 +17,7 @@ module Seafoam
       def apply(graph)
         simplify_truffle_args(graph) if @options[:simplify_truffle_args]
         simplify_alloc(graph) if @options[:simplify_alloc]
+        hide_reachability_fences(graph) if @options[:hide_reachability_fences]
       end
 
       private
@@ -147,6 +148,22 @@ module Seafoam
           graph.create_edge(prev, control_flow_next.to, control_flow_next.props)
 
           commit_allocation_node.props[:hidden] = true
+        end
+      end
+
+      # Hide reachability fences - they're just really boring.
+      def hide_reachability_fences(graph)
+        graph.nodes.each_value do |node|
+          next unless node.node_class == "org.graalvm.compiler.nodes.java.ReachabilityFenceNode"
+
+          pred = node.inputs.find { |edge| edge.props[:name] == "next" }
+          succ = node.outputs.find { |edge| edge.props[:name] == "next" }
+
+          graph.create_edge(pred.from, succ.to, pred.props.merge({ synthetic: true }))
+
+          node.props[:hidden] = true
+          pred.props[:hidden] = true
+          succ.props[:hidden] = true
         end
       end
 

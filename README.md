@@ -460,6 +460,7 @@ graph0 = # 2:Fib.fib(int)/After phase org.graalvm.compiler.java.GraphBuilderPhas
 * `--full-truffle-args` shows full Truffle argument nodes, which are simplified by default
 * `--show-frame-state` shows frame state nodes, which are hidden by default
 * `--no-simplify-alloc` turns off the pass to create synthetic allocation nodes
+* `--show-reachability-fences` turns off the pass to hide reachability fences
 * `--show-null-fields` shows null fields to allocations, which are hidden by default
 * `--show-pi` shows *pi* nodes, which are hidden by default
 * `--show-begin-end` shows *begin* and *end* nodes, which are hidden by default

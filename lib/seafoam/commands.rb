@@ -464,6 +464,8 @@ module Seafoam
           spotlight_nodes = spotlight_arg.split(",").map { |n| Integer(n) }
         when "--full-truffle-args"
           pass_options[:simplify_truffle_args] = false
+        when "--show-reachability-fences"
+          pass_options[:hide_reachability_fences] = false
         when "--no-simplify-alloc"
           pass_options[:simplify_alloc] = false
         when "--show-null-fields"
@@ -707,6 +709,7 @@ module Seafoam
 
     DEFAULT_PASS_OPTIONS = {
       simplify_truffle_args: true,
+      hide_reachability_fences: true,
       hide_frame_state: true,
       hide_pi: true,
       hide_begin_end: true,
@@ -718,6 +721,7 @@ module Seafoam
 
     NO_SIMPLIFY_PASS_OPTIONS = {
       simplify_truffle_args: false,
+      hide_reachability_fences: false,
       simplify_alloc: false,
       hide_null_fields: false,
       hide_pi: false,
