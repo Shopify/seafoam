@@ -417,7 +417,7 @@ module Seafoam
       end
 
       # If we see these in the graph properties it's probably a Graal graph.
-      TRIGGERS = ["HostedGraphBuilderPhase", "GraalCompiler", "TruffleCompiler"]
+      TRIGGERS = ["HostedGraphBuilderPhase", "GraalCompiler", "TruffleCompiler", "SubstrateCompilation"]
 
       # Simple input node classes that may be inlined.
       SIMPLE_INPUTS = ["org.graalvm.compiler.nodes.ConstantNode", "org.graalvm.compiler.nodes.ParameterNode"]
