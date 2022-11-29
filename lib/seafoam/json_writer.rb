@@ -16,14 +16,14 @@ module Seafoam
       graph.nodes.each_value do |node|
         nodes.push(
           id: node.id,
-          props: node.props
+          props: node.props,
         )
 
         node.outputs.each do |edge|
           edges.push(
             from: edge.from.id,
             to: edge.to.id,
-            props: edge.props
+            props: edge.props,
           )
         end
       end

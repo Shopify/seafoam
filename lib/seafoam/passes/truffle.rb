@@ -110,7 +110,7 @@ module Seafoam
                 usage = virtual_to_object[value_id]
                 b.call(usage) if usage
               end
-            end
+            end,
           ).reduce(:concat)
 
           prev = control_flow_pred.from
