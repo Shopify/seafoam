@@ -1,8 +1,6 @@
 # truffleruby_primitives: true
 
-# We're using Graal with graal.patch, to disable some inlining.
-
-# % ruby --jvm --experimental-options --engine.OSR=false --engine.MultiTier=false --engine.TraceCompilation --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
+# % ruby --jvm --experimental-options --engine.OSR=false --engine.MultiTier=false --engine.TraceCompilation --engine.InlineOnly=~Object#opaque_,~Object#static_call,~ExampleObject#instance_call --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
 
 RANDOM = Random.new
 EXCEPTION = Exception.new
