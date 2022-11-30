@@ -46,8 +46,8 @@ describe Seafoam::Passes::TrufflePass do
 
     describe "with :simplify_truffle_args" do
       before :each do
-        @filename = File.expand_path("../../../examples/ruby/example_if.bgv", __dir__)
-        @phase_index = 4
+        @filename = File.expand_path("../../../examples/ruby/example_polymorphic_receiver.bgv", __dir__)
+        @phase_index = 2
         @graph = Seafoam::SpecHelpers.example_graph(@filename, @phase_index)
       end
 
