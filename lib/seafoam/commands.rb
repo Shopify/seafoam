@@ -489,7 +489,7 @@ module Seafoam
           raise ArgumentError, "no key for --option" unless key
 
           value = args.shift
-          raise ArgumentError, "no value for --option #{key}" unless out_file
+          raise ArgumentError, "no value for --option #{key}" unless value
 
           value = { "true" => true, "false" => "false" }.fetch(key, value)
           pass_options[key.to_sym] = value
