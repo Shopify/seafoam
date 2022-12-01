@@ -1,8 +1,6 @@
 # truffleruby_primitives: true
 
-# We're using Graal with graal.patch, to disable some inlining.
-
-# % ruby --jvm --experimental-options --engine.OSR=false --engine.MultiTier=false --engine.TraceCompilation --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
+# % ruby --jvm --experimental-options --engine.OSR=false --engine.MultiTier=false --engine.TraceCompilation --engine.InlineOnly=~Object#opaque_,~Object#static_call,~ExampleObject#instance_call --vm.Dgraal.Dump=Truffle:1 ruby_examples.rb
 
 RANDOM = Random.new
 EXCEPTION = Exception.new
@@ -204,6 +202,10 @@ def example_instance_of(x)
   x.is_a?(ExampleObject)
 end
 
+def example_polymorphic_receiver(receiver)
+  receiver.to_i
+end
+
 # no inline
 def opaque_call
   RANDOM.rand(1000)
@@ -227,6 +229,11 @@ end
 # no inline
 def static_call(x)
   x
+end
+
+def opaque_polymorphic_value
+  @polymorphic_value_flip = !@polymorphic_value_flip
+  @polymorphic_value_flip ? RANDOM.rand(100) : RANDOM.rand(100).to_s
 end
 
 class ExampleObject
@@ -275,4 +282,5 @@ loop do
   example_array_write [RANDOM.rand(1000), RANDOM.rand(1000), RANDOM.rand(1000)], RANDOM.rand(3), RANDOM.rand(1000)
   example_array_read [RANDOM.rand(1000), RANDOM.rand(1000), RANDOM.rand(1000)], RANDOM.rand(3)
   example_instance_of [Object.new, ExampleObject.new(0)].sample
+  example_polymorphic_receiver(opaque_polymorphic_value)
 end

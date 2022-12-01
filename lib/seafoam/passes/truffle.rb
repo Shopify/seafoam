@@ -41,12 +41,16 @@ module Seafoam
           arg_node = graph.create_node(graph.new_id,
             { synthetic: true, synthetic_class: "TruffleArgument", inlined: true, label: "T(#{index})", kind: "input" })
 
+          edges_to_remove = []
+
           node.outputs.each do |output|
             next if output.props[:name] == "next"
 
             graph.create_edge(arg_node, output.to, output.props.dup)
-            graph.remove_edge(output)
+            edges_to_remove << output
           end
+
+          edges_to_remove.each { |edge| graph.remove_edge(edge) }
         end
 
         graph.nodes.each_value.select { |node| node.props[:truffle_arg_load] }.each do |node|
@@ -110,7 +114,7 @@ module Seafoam
                 usage = virtual_to_object[value_id]
                 b.call(usage) if usage
               end
-            end
+            end,
           ).reduce(:concat)
 
           prev = control_flow_pred.from
