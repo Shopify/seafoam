@@ -36,7 +36,8 @@ module Seafoam
 
           node.props[:truffle_arg_load] = true
 
-          index = index_node.props["rawvalue"]
+          lang_formatter = Seafoam::Passes::TruffleTranslators.get_translator(node)
+          index = lang_formatter.translate_argument_load(index_node.props["rawvalue"].to_i)
 
           arg_node = graph.create_node(
             graph.new_id,
