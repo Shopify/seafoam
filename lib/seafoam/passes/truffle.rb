@@ -83,7 +83,12 @@ module Seafoam
 
             virtual_id = m[1].to_i
 
-            (m = /^(\w+(?:\[\])?)\[([0-9,]+)\]$/.match(value)) || raise(value)
+            m = /^([[:alnum:]$]+(?:\[\])?)\[([0-9,]+)\]$/.match(value)
+
+            unless m
+              raise "Unexpected value in allocation node: '#{value}'"
+            end
+
             class_name, values = m.captures
             values = values.split(",").map(&:to_i)
             virtual_node = graph.nodes[virtual_id]
