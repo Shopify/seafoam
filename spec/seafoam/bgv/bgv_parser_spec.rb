@@ -27,8 +27,10 @@ describe Seafoam::BGV::BGVParser do
   end
 
   it "can read full gzipped files" do
-    parser = Seafoam::BGV::BGVParser.new(File.expand_path("../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz",
-      __dir__))
+    parser = Seafoam::BGV::BGVParser.new(File.expand_path(
+      "../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz",
+      __dir__,
+    ))
     parser.read_file_header
     parser.skip_document_props
     loop do
@@ -56,8 +58,10 @@ describe Seafoam::BGV::BGVParser do
   end
 
   it "can read basic blocks" do
-    parser = Seafoam::BGV::BGVParser.new(File.expand_path("../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz",
-      __dir__))
+    parser = Seafoam::BGV::BGVParser.new(File.expand_path(
+      "../../../examples/graalvm-ce-java11-21.2.0/fib-java.bgv.gz",
+      __dir__,
+    ))
     parser.read_file_header
     parser.skip_document_props
     parser.read_graph_preheader
