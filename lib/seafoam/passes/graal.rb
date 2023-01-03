@@ -212,9 +212,13 @@ module Seafoam
           "#{node.props.dig("field", :field_class).split(".").last}.#{node.props.dig("field", :name)}"
         end
         string = string.gsub(/\{x#state\}/) do |_|
-          "#{node.props.dig("code",
-            :declaring_class)}##{node.props.dig("code",
-              :method_name)} #{node.props["sourceFile"]}:#{node.props["sourceLine"]}"
+          "#{node.props.dig(
+            "code",
+            :declaring_class,
+          )}##{node.props.dig(
+            "code",
+            :method_name,
+          )} #{node.props["sourceFile"]}:#{node.props["sourceLine"]}"
         end
         string = string.gsub(/\{x#simpleStamp\}/) do |_|
           stamp = node.props.dig("checkedStamp")
@@ -423,8 +427,10 @@ module Seafoam
       SIMPLE_INPUTS = ["org.graalvm.compiler.nodes.ConstantNode", "org.graalvm.compiler.nodes.ParameterNode"]
 
       # Nodes just to maintain frame state.
-      FRAME_STATE_NODES = ["org.graalvm.compiler.nodes.FrameState",
-                           "org.graalvm.compiler.virtual.nodes.MaterializedObjectState",]
+      FRAME_STATE_NODES = [
+        "org.graalvm.compiler.nodes.FrameState",
+        "org.graalvm.compiler.virtual.nodes.MaterializedObjectState",
+      ]
 
       BEGIN_END_NODES = ["org.graalvm.compiler.nodes.BeginNode", "org.graalvm.compiler.nodes.EndNode"]
     end

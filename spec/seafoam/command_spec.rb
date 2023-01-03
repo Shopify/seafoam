@@ -62,19 +62,34 @@ describe Seafoam::Commands do
         @commands.send(:list, @fib_java, Seafoam::Formatters::Json)
         decoded = JSON.parse(@out.string)
         expect(decoded).to(eq([
-          { "graph_index" => 0, "graph_file" => @fib_java,
-            "graph_name_components" => ["17:Fib.fib(int)", "After parsing"], },
-          { "graph_index" => 1, "graph_file" => @fib_java,
+          {
+            "graph_index" => 0,
+            "graph_file" => @fib_java,
+            "graph_name_components" => ["17:Fib.fib(int)", "After parsing"],
+          },
+          {
+            "graph_index" => 1,
+            "graph_file" => @fib_java,
             "graph_name_components" => [
               "17:Fib.fib(int)",
               "Before phase org.graalvm.compiler.phases.common.LoweringPhase",
-            ], },
-          { "graph_index" => 2, "graph_file" => @fib_java,
-            "graph_name_components" => ["17:Fib.fib(int)", "After high tier"], },
-          { "graph_index" => 3, "graph_file" => @fib_java,
-            "graph_name_components" => ["17:Fib.fib(int)", "After mid tier"], },
-          { "graph_index" => 4, "graph_file" => @fib_java,
-            "graph_name_components" => ["17:Fib.fib(int)", "After low tier"], },
+            ],
+          },
+          {
+            "graph_index" => 2,
+            "graph_file" => @fib_java,
+            "graph_name_components" => ["17:Fib.fib(int)", "After high tier"],
+          },
+          {
+            "graph_index" => 3,
+            "graph_file" => @fib_java,
+            "graph_name_components" => ["17:Fib.fib(int)", "After mid tier"],
+          },
+          {
+            "graph_index" => 4,
+            "graph_file" => @fib_java,
+            "graph_name_components" => ["17:Fib.fib(int)", "After low tier"],
+          },
         ]))
       end
     end
@@ -281,8 +296,10 @@ describe Seafoam::Commands do
         expect(decoded).to(eq([
           { "class" => "java.lang.Math", "method" => "addExact" },
           { "class" => "org.truffleruby.core.numeric.IntegerNodes$AddNode", "method" => "add" },
-          { "class" => "org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen",
-            "method" => "executeAdd", },
+          {
+            "class" => "org.truffleruby.core.numeric.IntegerNodesFactory$AddNodeFactory$AddNodeGen",
+            "method" => "executeAdd",
+          },
           { "class" => "org.truffleruby.core.inlined.InlinedAddNode", "method" => "intAdd" },
           { "class" => "org.truffleruby.core.inlined.InlinedAddNodeGen", "method" => "execute" },
           { "class" => "org.truffleruby.language.control.IfElseNode", "method" => "execute" },
