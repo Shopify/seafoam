@@ -93,6 +93,25 @@ describe Seafoam::Passes::TrufflePass do
           expect(arg_node.outputs.map(&:to).map(&:id)).to(eq(rewritten_edges.map(&:to).map(&:id)))
         end
       end
+
+      it "uses symbolic Truffle argument names for TruffleRuby" do
+        # Run the Truffle argument simplification pass.
+        pass = Seafoam::Passes::TrufflePass.new(simplify_truffle_args: true, hide_null_fields: true)
+        pass.apply(@graph)
+
+        # Verify graph state after the pass has run.
+        after_truffle_argument_nodes = @graph.nodes.values.select { |n| n.props[:synthetic_class] == "TruffleArgument" }
+        expect(after_truffle_argument_nodes).not_to(be_empty)
+
+        truffleruby_arg_pattern = Regexp.union(
+          *Seafoam::Passes::TruffleTranslators::TruffleRuby::TRUFFLERUBY_ARGS,
+          /args\[\d+\]/,
+        )
+
+        after_truffle_argument_nodes.each do |node|
+          expect(node.props[:label]).to(match(truffleruby_arg_pattern))
+        end
+      end
     end
   end
 end

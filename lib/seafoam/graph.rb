@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "set"
+
 module Seafoam
   # A graph, with properties, nodes, and edges. We don't encapsulate the graph
   # too much - be careful.
@@ -86,6 +88,18 @@ module Seafoam
     # Inspect.
     def inspect
       "<Node #{id} #{node_class}>"
+    end
+
+    def visit(&block)
+      block.call(self)
+    end
+
+    def visit_outputs(search_strategy, &block)
+      if search_strategy == :bfs
+        BFS.new(self).search(&block)
+      else
+        raise "Unknown search strategy: #{search_strategy}"
+      end
     end
   end
 
