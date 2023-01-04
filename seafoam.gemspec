@@ -10,6 +10,12 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/Shopify/seafoam"
   spec.license = "MIT"
 
+  spec.metadata = {
+    "bug_tracker_uri" => "https://github.com/Shopify/seafoam/issues",
+    "source_code_uri" => "https://github.com/Shopify/seafoam",
+    "allowed_push_host" => "https://rubygems.org",
+  }
+
   spec.files = %x(git ls-files bin lib).split("\n")
   spec.bindir = "bin"
   spec.executables = ["seafoam", "bgv2json", "bgv2isabelle"]
