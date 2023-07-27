@@ -38,22 +38,20 @@ module Seafoam
       @out.puts JSON.pretty_generate(prepare_json(object))
     end
 
-    class << self
-      def prepare_json(object)
-        case object
-        when Float
-          if object.nan?
-            "[NaN]"
-          else
-            object
-          end
-        when Array
-          object.map { |o| prepare_json(o) }
-        when Hash
-          object.transform_values { |v| prepare_json(v) }
+    def self.prepare_json(object)
+      case object
+      when Float
+        if object.nan?
+          "[NaN]"
         else
           object
         end
+      when Array
+        object.map { |o| prepare_json(o) }
+      when Hash
+        object.transform_values { |v| prepare_json(v) }
+      else
+        object
       end
     end
   end
