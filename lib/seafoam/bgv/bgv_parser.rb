@@ -59,7 +59,7 @@ module Seafoam
       # Move to the next graph in the file, and return its index and ID, or nil if
       # there are no more graphs.
       def read_graph_preheader
-        return nil unless read_groups
+        return unless read_groups
 
         # Already read BEGIN_GRAPH
         index = @index
@@ -161,7 +161,7 @@ module Seafoam
       def graph_name(graph_header)
         groups_names = graph_header[:group].map { |g| g[:short_name] }
         count = 0
-        name = graph_header[:format].sub(/%s/) do
+        name = graph_header[:format].sub("%s") do
           arg = graph_header[:args][count]
           count += 1
           arg
