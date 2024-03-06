@@ -23,7 +23,7 @@ describe Seafoam::Passes::TrufflePass do
     describe "with :simplify_alloc" do
       before :all do
         @graph = Seafoam::SpecHelpers.example_graph(
-          File.expand_path("../../../examples/ruby/example_object_allocation.bgv", __dir__), 4
+          File.expand_path("../../../examples/ruby/example_object_allocation.bgv", __dir__), "After TruffleTier"
         )
         pass = Seafoam::Passes::TrufflePass.new(simplify_alloc: true, hide_null_fields: true)
         pass.apply(@graph)
@@ -47,7 +47,7 @@ describe Seafoam::Passes::TrufflePass do
     describe "with :simplify_truffle_args" do
       before :each do
         @filename = File.expand_path("../../../examples/ruby/example_polymorphic_receiver.bgv", __dir__)
-        @phase_index = 2
+        @phase_index = "After TruffleTier"
         @graph = Seafoam::SpecHelpers.example_graph(@filename, @phase_index)
       end
 

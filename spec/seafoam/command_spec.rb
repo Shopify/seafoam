@@ -250,7 +250,7 @@ describe Seafoam::Commands do
   describe "#props" do
     it "prints properties for a file" do
       @commands.send(:props, @fib_java)
-      expect(@out.string.gsub(/\n\n/, "\n")).to(eq("{\n  \"vm.uuid\": \"21734\"\n}\n"))
+      expect(@out.string.gsub("\n\n", "\n")).to(eq("{\n  \"vm.uuid\": \"21734\"\n}\n"))
     end
 
     it "prints properties for a graph" do

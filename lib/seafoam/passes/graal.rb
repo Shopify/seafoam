@@ -208,10 +208,10 @@ module Seafoam
             e.props[:name] == Regexp.last_match(1)
           end.map { |e| e.from.id }.join(", ")
         end
-        string = string.gsub(/\{x#field\}/) do |_|
+        string = string.gsub("{x#field}") do |_|
           "#{node.props.dig("field", :field_class).split(".").last}.#{node.props.dig("field", :name)}"
         end
-        string = string.gsub(/\{x#state\}/) do |_|
+        string = string.gsub("{x#state}") do |_|
           "#{node.props.dig(
             "code",
             :declaring_class,
@@ -220,7 +220,7 @@ module Seafoam
             :method_name,
           )} #{node.props["sourceFile"]}:#{node.props["sourceLine"]}"
         end
-        string = string.gsub(/\{x#simpleStamp\}/) do |_|
+        string = string.gsub("{x#simpleStamp}") do |_|
           stamp = node.props.dig("checkedStamp")
           if stamp =~ /a!?# L(.*);/
             Regexp.last_match(1)

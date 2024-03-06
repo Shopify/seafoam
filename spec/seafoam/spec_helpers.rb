@@ -20,11 +20,17 @@ module Seafoam
           index, = parser.read_graph_preheader
           raise unless index
 
-          if index == graph_index
+          if graph_index.is_a?(Integer) && index == graph_index
             parser.read_graph_header
             break parser.read_graph
           else
-            parser.skip_graph_header
+            graph_header = parser.read_graph_header
+            graph_name = parser.graph_name(graph_header)
+
+            if graph_index == graph_name.last
+              break parser.read_graph
+            end
+
             parser.skip_graph
           end
         end
