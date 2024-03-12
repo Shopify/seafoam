@@ -35,7 +35,7 @@ module Seafoam
         edges: edges,
       }
 
-      @out.puts JSON.pretty_generate(prepare_json(object))
+      @out.puts JSON.pretty_generate(self.class.prepare_json(object))
     end
 
     class << self
