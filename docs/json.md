@@ -33,5 +33,5 @@ Each edge is of the format:
 }
 ```
 
-Note that `bgv2json` runs annotatiors, so for example all nodes have a `"label"`
+Note that `bgv2json` runs annotators, so for example all nodes have a `"label"`
 property with an easy-to-use name.
