@@ -77,19 +77,11 @@ def process_examples(graalvm, language, pattern)
 
     system 'cp', bgv_file, "#{method}.bgv"
 
-    if language == 'java'
-      system 'gzip', '-f', "#{method}.bgv"
-      system 'cp', "#{method}.bgv.gz", "../../examples/#{graalvm.name}/#{language}"
-    else
-      system 'cp', "#{method}.bgv", "../../examples/#{graalvm.name}/#{language}"
-    end
+    system 'gzip', '-f', "#{method}.bgv"
+    system 'cp', "#{method}.bgv.gz", "../../examples/#{graalvm.name}/#{language}"
 
     if graalvm == GRAAL_VMS.first
-      if language == 'java'
-        system 'cp', "#{method}.bgv.gz", "../../examples/#{language}"
-      else
-        system 'cp', "#{method}.bgv", "../../examples/#{language}"
-      end
+      system 'cp', "#{method}.bgv.gz", "../../examples/#{language}"
     end
   end
 end
