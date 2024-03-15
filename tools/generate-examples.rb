@@ -81,7 +81,7 @@ def process_examples(graalvm, language, pattern)
     system 'cp', "#{method}.bgv.gz", "../../examples/#{graalvm.name}/#{language}"
 
     if graalvm == GRAAL_VMS.first
-      system 'cp', "#{method}.bgv.gz", "../../examples/#{language}"
+      FileUtils.ln_sf "../../examples/#{graalvm.name}/#{language}/#{method}.bgv.gz", "../../examples/#{language}"
     end
   end
 end
@@ -132,7 +132,7 @@ Dir.chdir 'tools' do
       system 'cp', 'fib-java.bgv.gz', "../../examples/#{graalvm.name}"
 
       if graalvm == GRAAL_VMS.first
-        system 'cp', 'fib-java.bgv.gz', '../../examples'
+        FileUtils.ln_sf "../../examples/#{graalvm.name}/fib-java.bgv.gz", '../../examples'
       end
 
 
@@ -183,8 +183,8 @@ Dir.chdir 'tools' do
       system 'cp', 'fib-js-ast.bgv.gz', "../../examples/#{graalvm.name}"
 
       if graalvm == GRAAL_VMS.first
-        system 'cp', 'fib-js.bgv.gz', '../../examples/fib-js.bgv.gz'
-        system 'cp', 'fib-js-ast.bgv.gz', '../../examples/fib-js-ast.bgv.gz'
+        FileUtils.ln_sf "../../examples/#{graalvm.name}/fib-js.bgv.gz", '../../examples/'
+        FileUtils.ln_sf  "../../examples/#{graalvm.name}/fib-js-ast.bgv.gz", '../../examples/'
       end
 
 
@@ -215,8 +215,8 @@ Dir.chdir 'tools' do
       system 'cp', 'fib-ruby-ast.bgv.gz', "../../examples/#{graalvm.name}"
 
       if graalvm == GRAAL_VMS.first
-        system 'cp', 'fib-ruby.bgv.gz', '../../examples'
-        system 'cp', 'fib-ruby-ast.bgv.gz', '../../examples'
+        FileUtils.ln_sf "../../examples/#{graalvm.name}/fib-ruby.bgv.gz", '../../examples'
+        FileUtils.ln_sf "../../examples/#{graalvm.name}/fib-ruby-ast.bgv.gz", '../../examples'
       end
 
 
