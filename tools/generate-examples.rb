@@ -24,9 +24,15 @@ GraalVM_22_3_1 = GraalVM.new(
 )
 
 GRAAL_VMS = [
-  GraalVM_21_2_0,
   GraalVM_22_3_1,
+  GraalVM_21_2_0,
 ]
+
+REFERENCE_GRAALVM = GraalVM_22_3_1
+
+def reference_graalvm?(graalvm)
+  graalvm == REFERENCE_GRAALVM
+end
 
 def run_java(bin, dump_level, *args)
   FileUtils.rm_rf("./graal_dumps")
@@ -107,7 +113,7 @@ def process_examples(graalvm, language, pattern)
     system("gzip", "-f", "#{method}.bgv")
     FileUtils.cp("#{method}.bgv.gz", "../../examples/#{graalvm.name}/#{language}")
 
-    if graalvm == GRAAL_VMS.first
+    if reference_graalvm?(graalvm)
       FileUtils.ln_sf("../../examples/#{graalvm.name}/#{language}/#{method}.bgv.gz", "../../examples/#{language}")
     end
   end
@@ -157,7 +163,7 @@ Dir.chdir("tools") do
       system("gzip", "-f", "fib-java.bgv")
       FileUtils.cp("fib-java.bgv.gz", "../../examples/#{graalvm.name}")
 
-      if graalvm == GRAAL_VMS.first
+      if reference_graalvm?(graalvm)
         FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-java.bgv.gz", "../../examples")
       end
 
@@ -204,7 +210,7 @@ Dir.chdir("tools") do
       FileUtils.cp("fib-js.bgv.gz", "../../examples/#{graalvm.name}")
       FileUtils.cp("fib-js-ast.bgv.gz", "../../examples/#{graalvm.name}")
 
-      if graalvm == GRAAL_VMS.first
+      if reference_graalvm?(graalvm)
         FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-js.bgv.gz", "../../examples/")
         FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-js-ast.bgv.gz", "../../examples/")
       end
@@ -234,7 +240,7 @@ Dir.chdir("tools") do
       FileUtils.cp("fib-ruby.bgv.gz", "../../examples/#{graalvm.name}")
       FileUtils.cp("fib-ruby-ast.bgv.gz", "../../examples/#{graalvm.name}")
 
-      if graalvm == GRAAL_VMS.first
+      if reference_graalvm?(graalvm)
         FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-ruby.bgv.gz", "../../examples")
         FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-ruby-ast.bgv.gz", "../../examples")
       end
