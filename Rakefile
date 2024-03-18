@@ -9,5 +9,5 @@ task :specs do
 end
 
 task :rubocop do
-  sh "rubocop", "bin", "demos", "lib", "spec"
+  sh "rubocop", "bin", "demos", "lib", "spec", "tools/generate-examples.rb"
 end
