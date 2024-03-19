@@ -4,7 +4,7 @@
 require "fileutils"
 require "pathname"
 
-GraalVM = Struct.new(:url, :dir) do
+GraalVMOld = Struct.new(:url, :dir) do
   def name
     dir
   end
@@ -12,23 +12,138 @@ GraalVM = Struct.new(:url, :dir) do
   def tarball
     @tarball ||= File.basename(url)
   end
+
+  def install
+    system("curl", "-OL", url) unless File.exist?(tarball)
+    FileUtils.mkdir_p(name)
+
+    Dir.chdir(name) do
+      FileUtils.mkdir_p("#{__dir__}/../examples/#{name}")
+
+      bin = "#{dir}/Contents/Home/bin"
+
+      log(self, "Installing Truffle languages.")
+
+      unless Dir.exist?(dir)
+        system("tar", "-zxf", "../#{tarball}")
+        system("#{bin}/gu", "install", "nodejs")
+        system("#{bin}/gu", "install", "ruby")
+      end
+    end
+  end
+
+  def java_context(&block)
+    Dir.chdir(name) do
+      block.call("#{dir}/Contents/Home/bin")
+    end
+  end
+
+  alias_method :js_context, :java_context
+  alias_method :ruby_context, :java_context
 end
 
-GraalVM_21_2_0 = GraalVM.new(
-  "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-darwin-amd64-21.2.0.tar.gz",
-  "graalvm-ce-java11-21.2.0",
-)
-GraalVM_22_3_1 = GraalVM.new(
+GraalVM = Struct.new(:java_version, :truffle_version, :community_edition, :dir) do
+  def name
+    dir
+  end
+
+  def install
+    FileUtils.mkdir_p(name)
+
+    Dir.chdir(name) do
+      FileUtils.mkdir_p("#{__dir__}/../examples/#{name}")
+
+      # Install the JDK.
+      log(self, "Installing JDK.")
+      system("curl", "-OL", java_download_url) unless File.exist?(File.basename(java_download_url))
+
+      unless Dir.exist?("jdk")
+        FileUtils.mkdir("jdk")
+        system("tar", "-zxf", File.basename(java_download_url), "-C", "jdk", "--strip-components=1")
+      end
+
+      # Install GraalJS.
+      log(self, "Installing GraalJS.")
+      system("curl", "-OL", js_download_url) unless File.exist?(File.basename(js_download_url))
+
+      unless Dir.exist?("js")
+        FileUtils.mkdir("js")
+        system("tar", "-zxf", File.basename(js_download_url), "-C", "js", "--strip-components=1")
+      end
+
+      # Install TruffleRuby.
+      log(self, "Installing TruffleRuby.")
+      system("curl", "-OL", ruby_download_url) unless File.exist?(File.basename(ruby_download_url))
+
+      unless Dir.exist?("ruby")
+        FileUtils.mkdir("ruby")
+        system("tar", "-zxf", File.basename(ruby_download_url), "-C", "ruby", "--strip-components=1")
+      end
+    end
+  end
+
+  def java_context(&block)
+    Dir.chdir(File.join(name, "jdk")) do
+      block.call(File.join(Dir.pwd, "Contents/Home/bin"))
+    end
+  end
+
+  def js_context(&block)
+    Dir.chdir(File.join(name, "js")) do
+      block.call(File.join(Dir.pwd, "bin"))
+    end
+  end
+
+  def ruby_context(&block)
+    Dir.chdir(File.join(name, "ruby")) do
+      block.call(File.join(Dir.pwd, "bin"))
+    end
+  end
+
+  private
+
+  def java_download_url
+    if community_edition
+      "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-#{java_version}/graalvm-community-jdk-#{java_version}_macos-aarch64_bin.tar.gz"
+    else
+      "https://download.oracle.com/graalvm/#{java_version}/latest/graalvm-jdk-#{java_version}_macos-aarch64_bin.tar.gz"
+    end
+  end
+
+  def js_download_url
+    # rubocop:disable Layout/LineLength
+    "https://github.com/oracle/graaljs/releases/download/graal-#{truffle_version}/graalnodejs#{community_edition ? "-community" : ""}-jvm-#{truffle_version}-macos-aarch64.tar.gz"
+    # rubocop:enable Layout/LineLength
+  end
+
+  def ruby_download_url
+    # rubocop:disable Layout/LineLength
+    "https://github.com/oracle/truffleruby/releases/download/graal-#{truffle_version}/truffleruby#{community_edition ? "-community" : ""}-jvm-#{truffle_version}-macos-aarch64.tar.gz"
+    # rubocop:enable Layout/LineLength
+  end
+end
+
+GraalVM_CE_23_1_2 = GraalVM.new("21.0.2", "23.1.2", true, "graalvm-ce-java21-23.1.2")
+GraalVM_GFTC_23_1_2 = GraalVM.new("21", "23.1.2", false, "graalvm-gftc-java21-23.1.2")
+
+GraalVM_CE_22_3_1 = GraalVMOld.new(
   "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.1/graalvm-ce-java17-darwin-amd64-22.3.1.tar.gz",
   "graalvm-ce-java17-22.3.1",
 )
 
+GraalVM_CE_21_2_0 = GraalVMOld.new(
+  "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.2.0/graalvm-ce-java11-darwin-amd64-21.2.0.tar.gz",
+  "graalvm-ce-java11-21.2.0",
+)
+
 GRAAL_VMS = [
-  GraalVM_22_3_1,
-  GraalVM_21_2_0,
+  GraalVM_CE_23_1_2,
+  GraalVM_GFTC_23_1_2,
+  GraalVM_CE_22_3_1,
+  GraalVM_CE_21_2_0,
 ]
 
-REFERENCE_GRAALVM = GraalVM_22_3_1
+REFERENCE_GRAALVM = GraalVM_GFTC_23_1_2
 
 def reference_graalvm?(graalvm)
   graalvm == REFERENCE_GRAALVM
@@ -85,7 +200,6 @@ def run_ruby(bin, *args)
       "--engine.TraceCompilation",
       "--engine.NodeSourcePositions",
       "--engine.MultiTier=false",
-      "--engine.Inlining=false",
       "--vm.Dgraal.Dump=Truffle:1",
     ] + args,
     { err: [:child, :out] },
@@ -100,7 +214,7 @@ end
 
 def process_examples(graalvm, language, pattern)
   FileUtils.mkdir_p(language)
-  FileUtils.mkdir_p("../../examples/#{graalvm.name}/#{language}")
+  FileUtils.mkdir_p("#{__dir__}/../examples/#{graalvm.name}/#{language}")
   Dir.glob("graal_dumps/**/*\\[#{Regexp.escape(pattern)}example*.bgv") do |bgv_file|
     # The AST graphs have the same name as the primary graph with a '_1' suffix. Skip them.
     next if bgv_file.end_with?("_1.bgv")
@@ -111,10 +225,13 @@ def process_examples(graalvm, language, pattern)
     FileUtils.cp(bgv_file, "#{method}.bgv")
 
     system("gzip", "-f", "#{method}.bgv")
-    FileUtils.cp("#{method}.bgv.gz", "../../examples/#{graalvm.name}/#{language}")
+    FileUtils.cp("#{method}.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}/#{language}")
 
     if reference_graalvm?(graalvm)
-      FileUtils.ln_sf("../../examples/#{graalvm.name}/#{language}/#{method}.bgv.gz", "../../examples/#{language}")
+      FileUtils.ln_sf(
+        "#{__dir__}/../examples/#{graalvm.name}/#{language}/#{method}.bgv.gz",
+        "#{__dir__}/../examples/#{language}",
+      )
     end
   end
 end
@@ -125,28 +242,16 @@ end
 
 Dir.chdir("tools") do
   GRAAL_VMS.each do |graalvm|
-    system("curl", "-OL", graalvm.url) unless File.exist?(graalvm.tarball)
-    FileUtils.mkdir_p(graalvm.name)
-    Dir.chdir(graalvm.name) do
-      FileUtils.mkdir_p("../../examples/#{graalvm.name}")
+    graalvm.install
 
-      bin = "#{graalvm.dir}/Contents/Home/bin"
+    ###########################
+    ##### Java: Fibonacci #####
+    ###########################
 
-      log(graalvm, "Installing Truffle languages.")
-
-      unless Dir.exist?(graalvm.dir)
-        system("tar", "-zxf", "../#{graalvm.tarball}")
-        system("#{bin}/gu", "install", "nodejs")
-        system("#{bin}/gu", "install", "ruby")
-      end
-
-      ###########################
-      ##### Java: Fibonacci #####
-      ###########################
-
+    graalvm.java_context do |bin|
       log(graalvm, "Running Fibonacci in Java.")
 
-      FileUtils.cp("../../examples/Fib.java", ".")
+      FileUtils.cp("#{__dir__}/../examples/Fib.java", ".")
       system("#{bin}/javac", "Fib.java")
 
       run_java(bin, 1, "-XX:CompileOnly=Fib::fib", "Fib", "14") do |pipe|
@@ -161,19 +266,21 @@ Dir.chdir("tools") do
 
       FileUtils.cp(bgv.first, "fib-java.bgv")
       system("gzip", "-f", "fib-java.bgv")
-      FileUtils.cp("fib-java.bgv.gz", "../../examples/#{graalvm.name}")
+      FileUtils.cp("fib-java.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}")
 
       if reference_graalvm?(graalvm)
-        FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-java.bgv.gz", "../../examples")
+        FileUtils.ln_sf("#{__dir__}/../examples/#{graalvm.name}/fib-java.bgv.gz", "#{__dir__}/../examples")
       end
+    end
 
-      ###########################
-      ##### Java: Examples  #####
-      ###########################
+    ###########################
+    ##### Java: Examples  #####
+    ###########################
 
+    graalvm.java_context do |bin|
       log(graalvm, "Running Java examples.")
 
-      FileUtils.cp("../../examples/java/JavaExamples.java", ".")
+      FileUtils.cp("#{__dir__}/../examples/java/JavaExamples.java", ".")
       system("#{bin}/javac", "JavaExamples.java")
 
       run_java(bin, 3, "-XX:-UseOnStackReplacement", "-XX:CompileCommand=dontinline,*::*", "JavaExamples") do |pipe|
@@ -184,14 +291,15 @@ Dir.chdir("tools") do
       end
 
       process_examples(graalvm, "java", "JavaExamples.")
+    end
 
-      #################################
-      ##### JavaScript: Fibonacci #####
-      #################################
-
+    #################################
+    ##### JavaScript: Fibonacci #####
+    #################################
+    graalvm.js_context do |bin|
       log(graalvm, "Running Fibonacci in JavaScript.")
 
-      run_js(bin, "../../examples/fib.js", "14") do |pipe|
+      run_js(bin, "#{__dir__}/../examples/fib.js", "14") do |pipe|
         loop do
           line = pipe.gets
           break if line =~ /opt done\s+(?:id=\d+\s+)?fib/
@@ -200,28 +308,43 @@ Dir.chdir("tools") do
 
       bgv = Dir.glob('graal_dumps/**/*_fib\\].bgv')
       bgv_ast = Dir.glob('graal_dumps/**/*\\[fib\\].bgv')
+      # At some point Graal stopped using separate AST files and instead inserted the AST graphs as phases into
+      # the primary graph.
+      has_separate_ast_file = bgv_ast.any?
+
       raise unless bgv.size == 1
-      raise unless bgv_ast.size == 1
+      raise if bgv_ast.size > 1
 
       FileUtils.cp(bgv.first, "fib-js.bgv")
-      FileUtils.cp(bgv_ast.first, "fib-js-ast.bgv")
+      FileUtils.cp(bgv_ast.first, "fib-js-ast.bgv") if has_separate_ast_file
       system("gzip", "-f", "fib-js.bgv")
-      system("gzip", "-f", "fib-js-ast.bgv")
-      FileUtils.cp("fib-js.bgv.gz", "../../examples/#{graalvm.name}")
-      FileUtils.cp("fib-js-ast.bgv.gz", "../../examples/#{graalvm.name}")
+      system("gzip", "-f", "fib-js-ast.bgv") if has_separate_ast_file
+      FileUtils.cp("fib-js.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}")
+      FileUtils.cp("fib-js-ast.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}") if has_separate_ast_file
 
       if reference_graalvm?(graalvm)
-        FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-js.bgv.gz", "../../examples/")
-        FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-js-ast.bgv.gz", "../../examples/")
+        FileUtils.ln_sf("#{__dir__}/../examples/#{graalvm.name}/fib-js.bgv.gz", "#{__dir__}/../examples/")
+        FileUtils.ln_sf(
+          "#{__dir__}/../examples/#{graalvm.name}/fib-js-ast.bgv.gz",
+          "#{__dir__}/../examples/",
+        ) if has_separate_ast_file
       end
+    end
 
-      ###########################
-      ##### Ruby: Fibonacci #####
-      ###########################
+    ###########################
+    ##### Ruby: Fibonacci #####
+    ###########################
 
+    graalvm.ruby_context do |bin|
       log(graalvm, "Running Fibonacci in Ruby.")
 
-      run_ruby(bin, "--engine.CompileOnly=fib", "../../examples/fib.rb", "14") do |pipe|
+      run_ruby(
+        bin,
+        "--engine.CompileOnly=fib",
+        "--engine.Inlining=false",
+        "#{__dir__}/../examples/fib.rb",
+        "14",
+      ) do |pipe|
         loop do
           line = pipe.gets
           break if line =~ /opt done\s+(?:id=\d+\s+)?Object#fib/
@@ -230,43 +353,55 @@ Dir.chdir("tools") do
 
       bgv = Dir.glob('graal_dumps/**/*\\[Object#fib\\].bgv')
       bgv_ast = Dir.glob('graal_dumps/**/*\\[Object#fib\\]_1.bgv')
+
+      # At some point Graal stopped using separate AST files and instead inserted the AST graphs as phases into
+      # the primary graph.
+      has_separate_ast_file = bgv_ast.any?
+
       raise unless bgv.size == 1
-      raise unless bgv_ast.size == 1
+      raise if bgv_ast.size > 1
 
       FileUtils.cp(bgv.first, "fib-ruby.bgv")
-      FileUtils.cp(bgv_ast.first, "fib-ruby-ast.bgv")
+      FileUtils.cp(bgv_ast.first, "fib-ruby-ast.bgv") if has_separate_ast_file
       system("gzip", "-f", "fib-ruby.bgv")
-      system("gzip", "-f", "fib-ruby-ast.bgv")
-      FileUtils.cp("fib-ruby.bgv.gz", "../../examples/#{graalvm.name}")
-      FileUtils.cp("fib-ruby-ast.bgv.gz", "../../examples/#{graalvm.name}")
+      system("gzip", "-f", "fib-ruby-ast.bgv") if has_separate_ast_file
+      FileUtils.cp("fib-ruby.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}")
+      FileUtils.cp("fib-ruby-ast.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}") if has_separate_ast_file
 
       if reference_graalvm?(graalvm)
-        FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-ruby.bgv.gz", "../../examples")
-        FileUtils.ln_sf("../../examples/#{graalvm.name}/fib-ruby-ast.bgv.gz", "../../examples")
+        FileUtils.ln_sf("#{__dir__}/../examples/#{graalvm.name}/fib-ruby.bgv.gz", "#{__dir__}/../examples")
+        FileUtils.ln_sf(
+          "#{__dir__}/../examples/#{graalvm.name}/fib-ruby-ast.bgv.gz",
+          "#{__dir__}/../examples",
+        ) if has_separate_ast_file
       end
+    end
 
-      ###########################
-      ##### Ruby: Examples  #####
-      ###########################
+    ###########################
+    ##### Ruby: Examples  #####
+    ###########################
 
-      # Older GraalVM instances did not support the `--engine.InlineOnly` option. We had to manually patch Graal to
-      # add the inlining support. This script does not manually build GraalVM. Rather, the older graphs were manually
-      # created and added to this repo. They can be retrieved via git.
-      unless graalvm == GraalVM_21_2_0
-        run_ruby(
-          bin,
-          "--engine.OSR=false",
-          "--engine.InlineOnly=~Object#opaque_,~Object#static_call,~ExampleObject#instance_call",
-          "../../examples/ruby/ruby_examples.rb",
-        ) do |pipe|
-          loop do
-            line = pipe.gets if select([pipe], nil, nil, 5)
-            break if line.nil?
-          end
+    # Older GraalVM instances did not support the `--engine.InlineOnly` option. We had to manually patch Graal to
+    # add the inlining support. This script does not manually build GraalVM. Rather, the older graphs were manually
+    # created and added to this repo. They can be retrieved via git.
+    next if graalvm == GraalVM_CE_21_2_0
+
+    log(graalvm, "Running Ruby examples.")
+
+    graalvm.ruby_context do |bin|
+      run_ruby(
+        bin,
+        "--engine.OSR=false",
+        "--engine.InlineOnly=~Object#opaque_,~Object#static_call,~ExampleObject#instance_call",
+        "#{__dir__}/../examples/ruby/ruby_examples.rb",
+      ) do |pipe|
+        loop do
+          line = pipe.gets if select([pipe], nil, nil, 5)
+          break if line.nil?
         end
-
-        process_examples(graalvm, "ruby", "Object#")
       end
+
+      process_examples(graalvm, "ruby", "Object#")
     end
   end
 end
