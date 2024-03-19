@@ -16,13 +16,12 @@ GraalVMOld = Struct.new(:url, :dir) do
   def install
     system("curl", "-OL", url) unless File.exist?(tarball)
     FileUtils.mkdir_p(name)
+    FileUtils.mkdir_p("#{__dir__}/../examples/#{name}")
 
     Dir.chdir(name) do
-      FileUtils.mkdir_p("#{__dir__}/../examples/#{name}")
+      log(self, "Installing Truffle languages.")
 
       bin = "#{dir}/Contents/Home/bin"
-
-      log(self, "Installing Truffle languages.")
 
       unless Dir.exist?(dir)
         system("tar", "-zxf", "../#{tarball}")
@@ -55,35 +54,20 @@ GraalVM = Struct.new(:java_version, :truffle_version, :community_edition, :dir) 
 
       # Install the JDK.
       log(self, "Installing JDK.")
-      system("curl", "-OL", java_download_url) unless File.exist?(File.basename(java_download_url))
-
-      unless Dir.exist?("jdk")
-        FileUtils.mkdir("jdk")
-        system("tar", "-zxf", File.basename(java_download_url), "-C", "jdk", "--strip-components=1")
-      end
+      install_distribution("java")
 
       # Install GraalJS.
       log(self, "Installing GraalJS.")
-      system("curl", "-OL", js_download_url) unless File.exist?(File.basename(js_download_url))
-
-      unless Dir.exist?("js")
-        FileUtils.mkdir("js")
-        system("tar", "-zxf", File.basename(js_download_url), "-C", "js", "--strip-components=1")
-      end
+      install_distribution("js")
 
       # Install TruffleRuby.
       log(self, "Installing TruffleRuby.")
-      system("curl", "-OL", ruby_download_url) unless File.exist?(File.basename(ruby_download_url))
-
-      unless Dir.exist?("ruby")
-        FileUtils.mkdir("ruby")
-        system("tar", "-zxf", File.basename(ruby_download_url), "-C", "ruby", "--strip-components=1")
-      end
+      install_distribution("ruby")
     end
   end
 
   def java_context(&block)
-    Dir.chdir(File.join(name, "jdk")) do
+    Dir.chdir(File.join(name, "java")) do
       block.call(File.join(Dir.pwd, "Contents/Home/bin"))
     end
   end
@@ -101,6 +85,16 @@ GraalVM = Struct.new(:java_version, :truffle_version, :community_edition, :dir) 
   end
 
   private
+
+  def install_distribution(language)
+    download_url = send("#{language}_download_url")
+    system("curl", "-OL", download_url) unless File.exist?(File.basename(download_url))
+
+    unless Dir.exist?(language)
+      FileUtils.mkdir(language)
+      system("tar", "-zxf", File.basename(download_url), "-C", language, "--strip-components=1")
+    end
+  end
 
   def java_download_url
     if community_edition
@@ -213,7 +207,6 @@ def run_ruby(bin, *args)
 end
 
 def process_examples(graalvm, language, pattern)
-  FileUtils.mkdir_p(language)
   FileUtils.mkdir_p("#{__dir__}/../examples/#{graalvm.name}/#{language}")
   Dir.glob("graal_dumps/**/*\\[#{Regexp.escape(pattern)}example*.bgv") do |bgv_file|
     # The AST graphs have the same name as the primary graph with a '_1' suffix. Skip them.
@@ -228,10 +221,12 @@ def process_examples(graalvm, language, pattern)
     FileUtils.cp("#{method}.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}/#{language}")
 
     if reference_graalvm?(graalvm)
-      FileUtils.ln_sf(
-        "#{__dir__}/../examples/#{graalvm.name}/#{language}/#{method}.bgv.gz",
-        "#{__dir__}/../examples/#{language}",
-      )
+      Dir.chdir("#{__dir__}/../examples") do
+        FileUtils.ln_sf(
+          "../#{graalvm.name}/#{language}/#{method}.bgv.gz",
+          "#{language}/#{method}.bgv.gz",
+        )
+      end
     end
   end
 end
@@ -269,7 +264,7 @@ Dir.chdir("tools") do
       FileUtils.cp("fib-java.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}")
 
       if reference_graalvm?(graalvm)
-        FileUtils.ln_sf("#{__dir__}/../examples/#{graalvm.name}/fib-java.bgv.gz", "#{__dir__}/../examples")
+        FileUtils.ln_sf("#{graalvm.name}/fib-java.bgv.gz", "#{__dir__}/../examples")
       end
     end
 
@@ -323,9 +318,9 @@ Dir.chdir("tools") do
       FileUtils.cp("fib-js-ast.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}") if has_separate_ast_file
 
       if reference_graalvm?(graalvm)
-        FileUtils.ln_sf("#{__dir__}/../examples/#{graalvm.name}/fib-js.bgv.gz", "#{__dir__}/../examples/")
+        FileUtils.ln_sf("#{graalvm.name}/fib-js.bgv.gz", "#{__dir__}/../examples/")
         FileUtils.ln_sf(
-          "#{__dir__}/../examples/#{graalvm.name}/fib-js-ast.bgv.gz",
+          "#{graalvm.name}/fib-js-ast.bgv.gz",
           "#{__dir__}/../examples/",
         ) if has_separate_ast_file
       end
@@ -369,9 +364,9 @@ Dir.chdir("tools") do
       FileUtils.cp("fib-ruby-ast.bgv.gz", "#{__dir__}/../examples/#{graalvm.name}") if has_separate_ast_file
 
       if reference_graalvm?(graalvm)
-        FileUtils.ln_sf("#{__dir__}/../examples/#{graalvm.name}/fib-ruby.bgv.gz", "#{__dir__}/../examples")
+        FileUtils.ln_sf("#{graalvm.name}/fib-ruby.bgv.gz", "#{__dir__}/../examples")
         FileUtils.ln_sf(
-          "#{__dir__}/../examples/#{graalvm.name}/fib-ruby-ast.bgv.gz",
+          "#{graalvm.name}/fib-ruby-ast.bgv.gz",
           "#{__dir__}/../examples",
         ) if has_separate_ast_file
       end
