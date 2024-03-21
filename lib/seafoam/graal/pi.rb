@@ -16,6 +16,8 @@ module Seafoam
       PI_NODES = [
         "org.graalvm.compiler.nodes.PiNode",
         "org.graalvm.compiler.nodes.PiArrayNode",
+        "jdk.graal.compiler.nodes.PiNode",
+        "jdk.graal.compiler.nodes.PiArrayNode",
       ]
     end
   end

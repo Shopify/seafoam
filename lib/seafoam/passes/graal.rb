@@ -42,7 +42,7 @@ module Seafoam
           # For constant nodes, the rawvalue is a truncated version of the
           # actual value, which is fully qualified. Instead, produce a simple
           # version of the value and don't truncate it.
-          if node_class == "org.graalvm.compiler.nodes.ConstantNode"
+          if node_class.end_with?(".compiler.nodes.ConstantNode")
             if node.props["value"] =~ /Object\[Instance<(\w+\.)+(\w*)>\]/
               node.props["rawvalue"] = "instance:#{Regexp.last_match(2)}"
             end
@@ -59,63 +59,63 @@ module Seafoam
           end
 
           # The template for InvokeNode could be simpler.
-          if node_class == "org.graalvm.compiler.nodes.InvokeNode"
+          if node_class.end_with?(".compiler.nodes.InvokeNode")
             name_template = "Call {p#targetMethod/s}"
           end
 
           # The template for InvokeWithExceptionNode could be simpler.
-          if node_class == "org.graalvm.compiler.nodes.InvokeWithExceptionNode"
+          if node_class.end_with?(".compiler.nodes.InvokeWithExceptionNode")
             name_template = "Call {p#targetMethod/s} !"
           end
 
           # The template for CommitAllocationNode could be simpler.
-          if node_class == "org.graalvm.compiler.nodes.virtual.CommitAllocationNode"
+          if node_class.end_with?(".compiler.nodes.virtual.CommitAllocationNode")
             name_template = "Alloc"
           end
 
           # The template for org.graalvm.compiler.nodes.virtual.VirtualArrayNode
           # includes an ID that we don't normally need.
-          if node_class == "org.graalvm.compiler.nodes.virtual.VirtualArrayNode"
+          if node_class.end_with?(".compiler.nodes.virtual.VirtualArrayNode")
             name_template = "VirtualArray {p#componentType/s}[{p#length}]"
           end
 
           # The template for LoadField could be simpler.
-          if node_class == "org.graalvm.compiler.nodes.java.LoadFieldNode"
+          if node_class.end_with?(".compiler.nodes.java.LoadFieldNode")
             name_template = "LoadField {x#field}"
           end
 
           # The template for StoreField could be simpler.
-          if node_class == "org.graalvm.compiler.nodes.java.StoreFieldNode"
+          if node_class.end_with?(".compiler.nodes.java.StoreFieldNode")
             name_template = "StoreField {x#field}"
           end
 
           # We want to see keys for IntegerSwitchNode.
-          if node_class == "org.graalvm.compiler.nodes.extended.IntegerSwitchNode"
+          if node_class.end_with?(".compiler.nodes.extended.IntegerSwitchNode")
             name_template = "IntegerSwitch {p#keys}"
           end
 
           # Use a symbol for PiNode.
-          if node_class == "org.graalvm.compiler.nodes.PiNode"
+          if node_class.end_with?(".compiler.nodes.PiNode")
             name_template = "π"
           end
 
           # Use a symbol for PiArrayNode.
-          if node_class == "org.graalvm.compiler.nodes.PiArrayNode"
+          if node_class.end_with?(".compiler.nodes.PiArrayNode")
             name_template = "[π]"
           end
 
           # Use a symbol for PhiNode.
-          if node_class == "org.graalvm.compiler.nodes.ValuePhiNode"
+          if node_class.end_with?(".compiler.nodes.ValuePhiNode")
             name_template = "ϕ"
           end
 
           # Better template for frame states.
-          if node_class == "org.graalvm.compiler.nodes.FrameState"
+          if node_class.end_with?(".compiler.nodes.FrameState")
             name_template = "FrameState {x#state}"
           end
 
           # Show the stamp in an InstanceOfNode.
-          if node_class == "org.graalvm.compiler.nodes.java.InstanceOfNode"
+          if node_class.end_with?(".compiler.nodes.java.InstanceOfNode")
             name_template = "InstanceOf {x#simpleStamp}"
           end
 
@@ -194,6 +194,49 @@ module Seafoam
         "org.graalvm.compiler.replacements.nodes.ReadRegisterNode" => "memory",
         "org.graalvm.compiler.replacements.nodes.WriteRegisterNode" => "memory",
         "org.graalvm.compiler.word.WordCastNode" => "memory",
+        "jdk.graal.compiler.nodes.BeginNode" => "control",
+        "jdk.graal.compiler.nodes.ConstantNode" => "input",
+        "jdk.graal.compiler.nodes.DeoptimizeNode" => "control",
+        "jdk.graal.compiler.nodes.EndNode" => "control",
+        "jdk.graal.compiler.nodes.extended.IntegerSwitchNode" => "control",
+        "jdk.graal.compiler.nodes.extended.UnsafeMemoryLoadNode" => "memory",
+        "jdk.graal.compiler.nodes.extended.UnsafeMemoryStoreNode" => "memory",
+        "jdk.graal.compiler.nodes.FixedGuardNode" => "guard",
+        "jdk.graal.compiler.nodes.FrameState" => "info",
+        "jdk.graal.compiler.nodes.GuardNode" => "guard",
+        "jdk.graal.compiler.nodes.IfNode" => "control",
+        "jdk.graal.compiler.nodes.InvokeNode" => "call",
+        "jdk.graal.compiler.nodes.InvokeWithExceptionNode" => "call",
+        "jdk.graal.compiler.nodes.java.ArrayLengthNode" => "memory",
+        "jdk.graal.compiler.nodes.java.LoadFieldNode" => "memory",
+        "jdk.graal.compiler.nodes.java.LoadIndexedNode" => "memory",
+        "jdk.graal.compiler.nodes.java.MonitorEnterNode" => "sync",
+        "jdk.graal.compiler.nodes.java.MonitorExitNode" => "sync",
+        "jdk.graal.compiler.nodes.java.NewArrayNode" => "alloc",
+        "jdk.graal.compiler.nodes.java.NewInstanceNode" => "alloc",
+        "jdk.graal.compiler.nodes.java.RawMonitorEnterNode" => "sync",
+        "jdk.graal.compiler.nodes.java.StoreFieldNode" => "memory",
+        "jdk.graal.compiler.nodes.java.StoreIndexedNode" => "memory",
+        "jdk.graal.compiler.nodes.KillingBeginNode" => "control",
+        "jdk.graal.compiler.nodes.LoopBeginNode" => "control",
+        "jdk.graal.compiler.nodes.LoopEndNode" => "control",
+        "jdk.graal.compiler.nodes.LoopExitNode" => "control",
+        "jdk.graal.compiler.nodes.memory.ReadNode" => "memory",
+        "jdk.graal.compiler.nodes.memory.WriteNode" => "memory",
+        "jdk.graal.compiler.nodes.MergeNode" => "control",
+        "jdk.graal.compiler.nodes.ParameterNode" => "input",
+        "jdk.graal.compiler.nodes.PrefetchAllocateNode" => "alloc",
+        "jdk.graal.compiler.nodes.ReturnNode" => "control",
+        "jdk.graal.compiler.nodes.StartNode" => "control",
+        "jdk.graal.compiler.nodes.UnwindNode" => "control",
+        "jdk.graal.compiler.nodes.virtual.AllocatedObjectNode" => "virtual",
+        "jdk.graal.compiler.nodes.virtual.CommitAllocationNode" => "alloc",
+        "jdk.graal.compiler.nodes.virtual.VirtualArrayNode" => "virtual",
+        "jdk.graal.compiler.nodes.VirtualObjectState" => "info",
+        "jdk.graal.compiler.replacements.nodes.ArrayEqualsNode" => "memory",
+        "jdk.graal.compiler.replacements.nodes.ReadRegisterNode" => "memory",
+        "jdk.graal.compiler.replacements.nodes.WriteRegisterNode" => "memory",
+        "jdk.graal.compiler.word.WordCastNode" => "memory",
       }
 
       # Render a Graal 'name template'.
@@ -234,7 +277,7 @@ module Seafoam
       # Annotate edges with their label and kind.
       def apply_edges(graph)
         graph.edges.each do |edge|
-          if edge.to.node_class == "org.graalvm.compiler.nodes.ValuePhiNode" && edge.props[:name] == "values"
+          if edge.to.node_class.end_with?(".compiler.nodes.ValuePhiNode") && edge.props[:name] == "values"
             merge_node = edge.to.edges.find { |e| e.props[:name] == "merge" }.from
             control_into_merge = ["ends", "loopBegin"]
             merge_node_control_edges_in = merge_node.edges.select do |e|
@@ -282,11 +325,11 @@ module Seafoam
           # (break) to the LoopBeginNode. Both are drawn reversed.
           when "loopBegin"
             case edge.to.node_class
-            when "org.graalvm.compiler.nodes.LoopEndNode"
+            when "org.graalvm.compiler.nodes.LoopEndNode", "jdk.graal.compiler.nodes.LoopEndNode"
               # If it's from the LoopEnd then it's the control edge to follow.
               edge.props[:kind] = "loop"
               edge.props[:reverse] = true
-            when "org.graalvm.compiler.nodes.LoopExitNode"
+            when "org.graalvm.compiler.nodes.LoopExitNode", "jdk.graal.compiler.nodes.LoopExitNode"
               # If it's from the LoopExit then it's just for information - it's
               # not control flow to follow.
               edge.props[:kind] = "info"
@@ -424,15 +467,27 @@ module Seafoam
       TRIGGERS = ["HostedGraphBuilderPhase", "GraalCompiler", "TruffleCompiler", "SubstrateCompilation"]
 
       # Simple input node classes that may be inlined.
-      SIMPLE_INPUTS = ["org.graalvm.compiler.nodes.ConstantNode", "org.graalvm.compiler.nodes.ParameterNode"]
+      SIMPLE_INPUTS = [
+        "org.graalvm.compiler.nodes.ConstantNode",
+        "org.graalvm.compiler.nodes.ParameterNode",
+        "jdk.graal.compiler.nodes.ConstantNode",
+        "jdk.graal.compiler.nodes.ParameterNode",
+      ]
 
       # Nodes just to maintain frame state.
       FRAME_STATE_NODES = [
         "org.graalvm.compiler.nodes.FrameState",
         "org.graalvm.compiler.virtual.nodes.MaterializedObjectState",
+        "jdk.graal.compiler.nodes.FrameState",
+        "jdk.graal.compiler.virtual.nodes.MaterializedObjectState",
       ]
 
-      BEGIN_END_NODES = ["org.graalvm.compiler.nodes.BeginNode", "org.graalvm.compiler.nodes.EndNode"]
+      BEGIN_END_NODES = [
+        "org.graalvm.compiler.nodes.BeginNode",
+        "org.graalvm.compiler.nodes.EndNode",
+        "jdk.graal.compiler.nodes.BeginNode",
+        "jdk.graal.compiler.nodes.EndNode",
+      ]
     end
   end
 end
