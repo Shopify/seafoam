@@ -4,12 +4,22 @@ New Features:
 
 Bug Fixes:
 
+Changes:
+
+
+# 0.16
+
+New Features:
+
+Bug Fixes:
+
 * Fixed an invalid method call in `bgv2json` (#79, @nirvdrum).
 * Fixed a character escape issue with the Mermaid formatter that could result in invalid syntax (#87, @nirvdrum).
 
 Changes:
 
 * Support running with GraalVM 24.0+ (#86, @nirvdrum).
+
 
 # 0.15
 
