@@ -4,7 +4,7 @@ New Features:
 
 Bug Fixes:
 
-* Fixed an invalid method call in `bgv2json` (#82, @nirvdrum).
+* Fixed an invalid method call in `bgv2json` (#79, @nirvdrum).
 * Fixed a character escape issue with the Mermaid formatter that could result in invalid syntax (#87, @nirvdrum).
 
 Changes:
@@ -29,7 +29,7 @@ Changes:
 * Removed hidden nodes from the `describe` command output (#66, @chrisseaton).
 * Improved the `describe` command output to ignore hidden nodes (@chrisseaton).
 * Added more “triggers” to detect if we’re looking at Graal or Truffle graphs (as opposed to regular JVM graphs) (@chrisseaton).
-* Support simplifying more allocation node classes (#73, @nirvdrum).
+* Support simplifying more allocation node classes (#67, @nirvdrum).
 
 
 # 0.14
