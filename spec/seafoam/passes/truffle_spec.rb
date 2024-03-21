@@ -46,7 +46,9 @@ describe Seafoam::Passes::TrufflePass do
 
     describe "with :simplify_truffle_args" do
       before :each do
-        @filename = File.expand_path("../../../examples/ruby/example_polymorphic_receiver.bgv.gz", __dir__)
+        @filename = File.expand_path(
+          "../../../examples/graalvm-ce-java11-21.2.0/ruby/example_polymorphic_receiver.bgv.gz", __dir__
+        )
         @phase_index = "After TruffleTier"
         @graph = Seafoam::SpecHelpers.example_graph(@filename, @phase_index)
       end

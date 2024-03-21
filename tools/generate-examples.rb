@@ -128,6 +128,9 @@ GraalVM = Struct.new(:java_version, :truffle_version, :community_edition, :dir) 
   end
 end
 
+GraalVM_CE_24_0_0 = GraalVM.new("22.0.0", "24.0.0", true, "graalvm-ce-java22-24.0.0")
+GraalVM_GFTC_24_0_0 = GraalVM.new("22", "24.0.0", false, "graalvm-gftc-java22-24.0.0")
+
 GraalVM_CE_23_1_2 = GraalVM.new("21.0.2", "23.1.2", true, "graalvm-ce-java21-23.1.2")
 GraalVM_GFTC_23_1_2 = GraalVM.new("21", "23.1.2", false, "graalvm-gftc-java21-23.1.2")
 
@@ -142,13 +145,15 @@ GraalVM_CE_21_2_0 = GraalVMOld.new(
 )
 
 GRAAL_VMS = [
+  GraalVM_CE_24_0_0,
+  GraalVM_GFTC_24_0_0,
   GraalVM_CE_23_1_2,
   GraalVM_GFTC_23_1_2,
   GraalVM_CE_22_3_1,
   GraalVM_CE_21_2_0,
 ]
 
-REFERENCE_GRAALVM = GraalVM_GFTC_23_1_2
+REFERENCE_GRAALVM = GraalVM_GFTC_24_0_0
 
 def reference_graalvm?(graalvm)
   graalvm == REFERENCE_GRAALVM
@@ -278,7 +283,7 @@ Dir.chdir("tools") do
       end
 
       bgv = Dir.glob("graal_dumps/**/*.bgv")
-      raise unless bgv.size == 1
+      raise "Java Fibonacci graph not found" unless bgv.size == 1
 
       FileUtils.cp(bgv.first, "fib-java.bgv")
       system("gzip", "-f", "fib-java.bgv")
@@ -329,14 +334,27 @@ Dir.chdir("tools") do
         end
       end
 
+      log(graalvm, "Finished with JS.")
+
       bgv = Dir.glob('graal_dumps/**/*_fib\\].bgv')
       bgv_ast = Dir.glob('graal_dumps/**/*\\[fib\\].bgv')
+
       # At some point Graal stopped using separate AST files and instead inserted the AST graphs as phases into
       # the primary graph.
       has_separate_ast_file = bgv_ast.any?
 
-      raise unless bgv.size == 1
-      raise if bgv_ast.size > 1
+      # This is a little ugly. Between changes in Graal and GraalJS, the name and structure of the BGV file has changed
+      # over the years. Older versions of Graal/GraalJS use separate files for the compilation and AST graphs.
+      # Eventually those were merged into a single file. The new file name now matches the same pattern as the old AST
+      # file. As a result, we need to fix things up in order to support multiple GraalVM releases.
+      if bgv.empty? && has_separate_ast_file
+        bgv = bgv_ast
+        bgv_ast = []
+        has_separate_ast_file = false
+      end
+
+      raise "JS Fibonacci graph not found" unless bgv.size == 1
+      raise "Too many JS Fibonacci AST graphs" if bgv_ast.size > 1
 
       FileUtils.cp(bgv.first, "fib-js.bgv")
       FileUtils.cp(bgv_ast.first, "fib-js-ast.bgv") if has_separate_ast_file
@@ -381,8 +399,8 @@ Dir.chdir("tools") do
       # the primary graph.
       has_separate_ast_file = bgv_ast.any?
 
-      raise unless bgv.size == 1
-      raise if bgv_ast.size > 1
+      raise "Ruby Fibonacci graph not found" unless bgv.size == 1
+      raise "Too many Ruby Fibonacci AST graphs" if bgv_ast.size > 1
 
       FileUtils.cp(bgv.first, "fib-ruby.bgv")
       FileUtils.cp(bgv_ast.first, "fib-ruby-ast.bgv") if has_separate_ast_file
