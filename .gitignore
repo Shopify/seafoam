@@ -1,2 +1,4 @@
 /Gemfile.lock
 /.idea
+graal_dumps/
+tools/graalvm-*
