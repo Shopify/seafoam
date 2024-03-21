@@ -394,11 +394,12 @@ module Seafoam
             description.node_counts[simple_node_class] += 1
 
             case node_class
-            when "org.graalvm.compiler.nodes.IfNode"
+            when "org.graalvm.compiler.nodes.IfNode", "jdk.graal.compiler.nodes.IfNode"
               description.branches = true
-            when "org.graalvm.compiler.nodes.LoopBeginNode"
+            when "org.graalvm.compiler.nodes.LoopBeginNode", "jdk.graal.compiler.nodes.LoopBeginNode"
               description.loops = true
-            when "org.graalvm.compiler.nodes.InvokeNode", "org.graalvm.compiler.nodes.InvokeWithExceptionNode"
+            when "org.graalvm.compiler.nodes.InvokeNode", "org.graalvm.compiler.nodes.InvokeWithExceptionNode",
+              "jdk.graal.compiler.nodes.InvokeNode", "jdk.graal.compiler.nodes.InvokeWithExceptionNode"
               description.calls = true
             end
           elsif node.props[:synthetic_class]
@@ -406,7 +407,7 @@ module Seafoam
           end
 
           description.deopts = graph.nodes[0].outputs.map(&:to)
-            .all? { |t| t.node_class == "org.graalvm.compiler.nodes.DeoptimizeNode" }
+            .all? { |t| t.node_class.end_with?(".compiler.nodes.DeoptimizeNode") }
         end
 
         formatter = formatter_module::DescribeFormatter.new(graph, description)

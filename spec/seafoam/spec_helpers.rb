@@ -2,6 +2,15 @@
 
 module Seafoam
   module SpecHelpers
+    GRAALVM_VERSIONS = [
+      "graalvm-ce-java11-21.2.0",
+      "graalvm-ce-java17-22.3.1",
+      "graalvm-ce-java21-23.1.2",
+      "graalvm-gftc-java21-23.1.2",
+      "graalvm-ce-java22-24.0.0",
+      "graalvm-gftc-java22-24.0.0",
+    ].freeze
+
     SAMPLE_BGV = [
       "fib-java.bgv.gz",
       "fib-js.bgv.gz",

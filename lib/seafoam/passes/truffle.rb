@@ -26,13 +26,13 @@ module Seafoam
       # like a Graal parameter node.
       def simplify_truffle_args(graph)
         graph.nodes.dup.each_value do |node|
-          next unless node.node_class == "org.graalvm.compiler.nodes.java.LoadIndexedNode"
+          next unless node.node_class.end_with?(".compiler.nodes.java.LoadIndexedNode")
 
           index_node = node.inputs.find { |edge| edge.props[:name] == "index" }.from
           array_node = Graal::Pi.follow_pi_object(node.inputs.find { |edge| edge.props[:name] == "array" }.from)
 
-          next unless index_node.node_class == "org.graalvm.compiler.nodes.ConstantNode"
-          next unless array_node.node_class == "org.graalvm.compiler.nodes.ParameterNode"
+          next unless index_node.node_class.end_with?(".compiler.nodes.ConstantNode")
+          next unless array_node.node_class.end_with?(".compiler.nodes.ParameterNode")
 
           node.props[:truffle_arg_load] = true
 
@@ -69,7 +69,7 @@ module Seafoam
       # are constants that are null or 0.
       def simplify_alloc(graph)
         commit_allocation_nodes = graph.nodes.each_value.select do |node|
-          node.node_class == "org.graalvm.compiler.nodes.virtual.CommitAllocationNode"
+          node.node_class.end_with?(".compiler.nodes.virtual.CommitAllocationNode")
         end
 
         commit_allocation_nodes.each do |commit_allocation_node|
@@ -95,7 +95,7 @@ module Seafoam
             class_name, values = m.captures
             values = values.split(",").map(&:to_i)
             virtual_node = graph.nodes[virtual_id]
-            if virtual_node.node_class == "org.graalvm.compiler.nodes.virtual.VirtualArrayNode"
+            if virtual_node.node_class.end_with?(".compiler.nodes.virtual.VirtualArrayNode")
               label = "New #{class_name[0...-1]}#{virtual_node.props["length"]}]"
               fields = values.size.times.to_a
             else
@@ -132,7 +132,7 @@ module Seafoam
             graph.create_edge(prev, new_node, control_flow_pred.props)
 
             allocated_object_node = virtual_node.outputs.find do |output|
-              output.to.node_class == "org.graalvm.compiler.nodes.virtual.AllocatedObjectNode"
+              output.to.node_class.end_with?(".compiler.nodes.virtual.AllocatedObjectNode")
             end
             if allocated_object_node
               allocated_object_node = allocated_object_node.to
@@ -147,7 +147,7 @@ module Seafoam
             fields.zip(values) do |field, value_id|
               value_node = virtual_to_object[value_id]&.first || graph.nodes[value_id]
               if @options[:hide_null_fields] &&
-                  (value_node.node_class == "org.graalvm.compiler.nodes.ConstantNode") &&
+                  value_node.node_class.end_with?(".compiler.nodes.ConstantNode") &&
                   ["Object[null]", "0"].include?(value_node.props["rawvalue"])
                 value_node.props[:hidden] = true
               else
@@ -168,7 +168,7 @@ module Seafoam
       # Hide reachability fences - they're just really boring.
       def hide_reachability_fences(graph)
         graph.nodes.each_value do |node|
-          next unless node.node_class == "org.graalvm.compiler.nodes.java.ReachabilityFenceNode"
+          next unless node.node_class.end_with?(".compiler.nodes.java.ReachabilityFenceNode")
 
           pred = node.inputs.find { |edge| edge.props[:name] == "next" }
           succ = node.outputs.find { |edge| edge.props[:name] == "next" }
