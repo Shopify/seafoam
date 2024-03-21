@@ -5,6 +5,7 @@ New Features:
 Bug Fixes:
 
 * Fixed an invalid method call in `bgv2json` (#82, @nirvdrum).
+* Fixed a character escape issue with the Mermaid formatter that could result in invalid syntax (#87, @nirvdrum).
 
 Changes:
 

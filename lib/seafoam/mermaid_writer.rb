@@ -38,7 +38,7 @@ module Seafoam
       when "diamond"
         shape = ["{{", "}}"]
       end
-      @stream.puts "#{indent}#{id}#{shape[0]}#{attrs[:label].inspect}#{shape[1]}"
+      @stream.puts "#{indent}#{id}#{shape[0]}#{attrs[:label].gsub('"', "#quot;").inspect}#{shape[1]}"
       @stream.puts "#{indent}style #{id} fill:#{attrs[:fillcolor]},stroke:#{attrs[:color]},color:#{attrs[:fontcolor]};"
     end
 
