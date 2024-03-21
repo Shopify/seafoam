@@ -44,5 +44,20 @@ describe Seafoam::MermaidWriter do
         end
       end
     end
+
+    it "escapes quotes in labels" do
+      attrs = {
+        color: "black",
+        fillcolor: "#f9f9f9",
+        fontcolor: "#1a1919",
+        fontname: "Arial",
+        label: "\"abc\"",
+        shape: "rectangle",
+        style: "filled",
+      }
+
+      @writer.send(:output_node, "", "node0", attrs)
+      expect(@stream.string).to(include("node0(\"#quot;abc#quot;\")"))
+    end
   end
 end
