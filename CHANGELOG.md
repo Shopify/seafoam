@@ -8,6 +8,7 @@ Bug Fixes:
 
 Changes:
 
+* Support running with GraalVM 24.0+ (#86, @nirvdrum).
 
 # 0.15
 
