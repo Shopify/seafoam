@@ -4,6 +4,8 @@ New Features:
 
 Bug Fixes:
 
+* Fixed an error calling `describe` on graphs with Truffle arg simplification (#90, @nirvdrum).
+
 Changes:
 
 
