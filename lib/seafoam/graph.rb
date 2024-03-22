@@ -63,7 +63,11 @@ module Seafoam
     end
 
     def node_class
-      @props.dig(:node_class, :node_class) || ""
+      if @props[:synthetic] == true
+        @props[:synthetic_class]
+      else
+        @props.dig(:node_class, :node_class)
+      end
     end
 
     # All edges - input and output.

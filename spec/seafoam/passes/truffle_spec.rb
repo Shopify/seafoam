@@ -90,6 +90,9 @@ describe Seafoam::Passes::TrufflePass do
           expect(after_truffle_argument_nodes).not_to(be_empty)
 
           after_truffle_argument_nodes.each_with_index do |arg_node, index|
+            # The node_class should be the synthetic class value.
+            expect(arg_node.node_class).to(eq("TruffleArgument"))
+
             # The "next" edges are never connected to the TruffleArgument node.
             rewritten_edges = before_load_indexed_nodes[index].outputs.select { |edge| edge.props[:name] != "next" }
 
