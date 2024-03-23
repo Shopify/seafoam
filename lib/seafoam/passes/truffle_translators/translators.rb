@@ -21,6 +21,16 @@ module Seafoam
               subpackage = declaring_class[:declaring_class].match(/^(\w+\.\w+)\./)[1]
               translator = TRUFFLE_LANGUAGES[subpackage]
 
+              unless translator
+                Seafoam::Graal::Source.walk(entry.props.dig("nodeSourcePosition")) do |method|
+                  declaring_class = method[:declaring_class]
+                  subpackage = declaring_class.match(/^(\w+\.\w+)\./)[1]
+                  translator = TRUFFLE_LANGUAGES[subpackage]
+
+                  break if translator
+                end
+              end
+
               break const_get(translator).new if translator
             end
           end
