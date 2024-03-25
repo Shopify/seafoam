@@ -4,11 +4,21 @@ New Features:
 
 Bug Fixes:
 
+Changes:
+
+
+# 0.17
+
+New Features:
+
+Bug Fixes:
+
 * Fixed an error calling `describe` on graphs with Truffle arg simplification (#90, @nirvdrum).
 
 Changes:
 
 * Improve Truffle language detection by looking deeper into a node's source position (@nirvdrum).
+
 
 # 0.16
 
