@@ -8,6 +8,7 @@ Bug Fixes:
 
 Changes:
 
+* Improve Truffle language detection by looking deeper into a node's source position (@nirvdrum).
 
 # 0.16
 
