@@ -6,8 +6,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
+    - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
       with:
         bundler-cache: true
     - name: Install dependencies
@@ -17,7 +17,7 @@ jobs:
     - name: Build
       run: gem build seafoam.gemspec
     - name: Upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3.2.1
       with:
         name: release-build
         path: 'seafoam-*.gem'
