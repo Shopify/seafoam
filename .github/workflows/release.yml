@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
-    - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
+    - uses: ruby/setup-ruby@ab177d40ee5483edb974554986f56b33477e21d0 # v1.265.0
       with:
         bundler-cache: true
     - name: Install dependencies
