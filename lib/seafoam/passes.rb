@@ -44,7 +44,8 @@ module Seafoam
   # The base class for all passes. You must subclass this to be recognized
   # as an pass.
   class Pass
-    SUBCLASSES = []
+    # Subclasses register themselves here as they are defined, so this cannot be frozen.
+    SUBCLASSES = [] # rubocop:disable Style/MutableConstant
 
     def initialize(options = {})
       @options = options

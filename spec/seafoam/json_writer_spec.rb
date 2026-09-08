@@ -30,12 +30,8 @@ describe Seafoam::JSONWriter do
           "props": {
             "a": 12
           },
-          "nodes": [
-
-          ],
-          "edges": [
-
-          ]
+          "nodes": [],
+          "edges": []
         }
       JSON
 

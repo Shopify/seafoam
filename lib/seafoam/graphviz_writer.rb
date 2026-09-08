@@ -246,7 +246,7 @@ module Seafoam
       "loop" => AMARANTH,
       "data" => KEPPEL,
       "other" => BLACK,
-    }
+    }.freeze
 
     NODE_COLORS = {
       "info" => [DUST, BLACK],
@@ -260,6 +260,6 @@ module Seafoam
       "guard" => [ORANGE, BLACK],
       "calc" => [KEPPEL, BLACK],
       "other" => [DUST, BLACK],
-    }
+    }.freeze
   end
 end

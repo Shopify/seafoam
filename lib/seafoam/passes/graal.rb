@@ -237,7 +237,7 @@ module Seafoam
         "jdk.graal.compiler.replacements.nodes.ReadRegisterNode" => "memory",
         "jdk.graal.compiler.replacements.nodes.WriteRegisterNode" => "memory",
         "jdk.graal.compiler.word.WordCastNode" => "memory",
-      }
+      }.freeze
 
       # Render a Graal 'name template'.
       def render_name_template(template, node)
@@ -464,7 +464,7 @@ module Seafoam
       end
 
       # If we see these in the graph properties it's probably a Graal graph.
-      TRIGGERS = ["HostedGraphBuilderPhase", "GraalCompiler", "TruffleCompiler", "SubstrateCompilation"]
+      TRIGGERS = ["HostedGraphBuilderPhase", "GraalCompiler", "TruffleCompiler", "SubstrateCompilation"].freeze
 
       # Simple input node classes that may be inlined.
       SIMPLE_INPUTS = [
@@ -472,7 +472,7 @@ module Seafoam
         "org.graalvm.compiler.nodes.ParameterNode",
         "jdk.graal.compiler.nodes.ConstantNode",
         "jdk.graal.compiler.nodes.ParameterNode",
-      ]
+      ].freeze
 
       # Nodes just to maintain frame state.
       FRAME_STATE_NODES = [
@@ -480,14 +480,14 @@ module Seafoam
         "org.graalvm.compiler.virtual.nodes.MaterializedObjectState",
         "jdk.graal.compiler.nodes.FrameState",
         "jdk.graal.compiler.virtual.nodes.MaterializedObjectState",
-      ]
+      ].freeze
 
       BEGIN_END_NODES = [
         "org.graalvm.compiler.nodes.BeginNode",
         "org.graalvm.compiler.nodes.EndNode",
         "jdk.graal.compiler.nodes.BeginNode",
         "jdk.graal.compiler.nodes.EndNode",
-      ]
+      ].freeze
     end
   end
 end

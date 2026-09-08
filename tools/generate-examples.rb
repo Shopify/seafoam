@@ -116,15 +116,11 @@ GraalVM = Struct.new(:java_version, :truffle_version, :community_edition, :dir) 
   end
 
   def js_download_url
-    # rubocop:disable Layout/LineLength
     "https://github.com/oracle/graaljs/releases/download/graal-#{truffle_version}/graalnodejs#{community_edition ? "-community" : ""}-jvm-#{truffle_version}-macos-aarch64.tar.gz"
-    # rubocop:enable Layout/LineLength
   end
 
   def ruby_download_url
-    # rubocop:disable Layout/LineLength
     "https://github.com/oracle/truffleruby/releases/download/graal-#{truffle_version}/truffleruby#{community_edition ? "-community" : ""}-jvm-#{truffle_version}-macos-aarch64.tar.gz"
-    # rubocop:enable Layout/LineLength
   end
 end
 
@@ -151,7 +147,7 @@ GRAAL_VMS = [
   GraalVM_GFTC_23_1_2,
   GraalVM_CE_22_3_1,
   GraalVM_CE_21_2_0,
-]
+].freeze
 
 REFERENCE_GRAALVM = GraalVM_GFTC_24_0_0
 
