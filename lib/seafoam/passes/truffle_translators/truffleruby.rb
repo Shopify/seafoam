@@ -13,7 +13,7 @@ module Seafoam
           "SELF",
           "BLOCK",
           "DESCRIPTOR",
-        ]
+        ].freeze
 
         def translate_argument_load(index)
           index >= TRUFFLERUBY_ARGS.size ? "args[#{index - TRUFFLERUBY_ARGS.size}]" : TRUFFLERUBY_ARGS[index]

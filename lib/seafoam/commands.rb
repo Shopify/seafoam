@@ -281,8 +281,6 @@ module Seafoam
 
     # seafoam file.bgv... props
     def props(name, *args)
-      # rubocop:disable Metrics/BlockNesting
-
       file, graph_index, node_id, edge_id = parse_name(name)
       raise ArgumentError, "props does not take arguments" unless args.empty?
 
@@ -324,8 +322,6 @@ module Seafoam
         document_props = parser.read_document_props
         pretty_print(document_props || {})
       end
-
-      # rubocop:enable Metrics/BlockNesting
     end
 
     # seafoam file.bgv:n:n source
@@ -718,7 +714,7 @@ module Seafoam
       reduce_edges: true,
       simplify_alloc: true,
       hide_null_fields: true,
-    }
+    }.freeze
 
     NO_SIMPLIFY_PASS_OPTIONS = {
       simplify_truffle_args: false,
@@ -728,6 +724,6 @@ module Seafoam
       hide_pi: false,
       hide_begin_end: false,
       reduce_edges: false,
-    }
+    }.freeze
   end
 end

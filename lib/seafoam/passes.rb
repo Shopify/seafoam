@@ -44,7 +44,7 @@ module Seafoam
   # The base class for all passes. You must subclass this to be recognized
   # as an pass.
   class Pass
-    SUBCLASSES = []
+    SUBCLASSES = [] # rubocop:disable Style/MutableConstant -- Intentionally mutable: Pass.inherited pushes subclasses here.
 
     def initialize(options = {})
       @options = options

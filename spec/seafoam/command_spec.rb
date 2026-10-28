@@ -99,8 +99,6 @@ describe Seafoam::Commands do
     end
   end
 
-  # rubocop:disable Layout/LineLength
-
   describe "#search" do
     it "finds terms in files" do
       @commands.send(:search, @fib_java, "MethodCallTarget")
@@ -135,8 +133,6 @@ describe Seafoam::Commands do
       expect { @commands.send(:search, "#{@fib_java}:0:0") }.to(raise_error(ArgumentError))
     end
   end
-
-  # rubocop:enable Layout/LineLength
 
   describe "#edges" do
     describe "txt format" do
@@ -500,9 +496,7 @@ describe Seafoam::Commands do
     end
 
     it "parses a realistic knarly BGV file name" do
-      # rubocop:disable Layout/LineLength
       file_name = "../graal_dumps/2019.11.03.19.35.03.828/TruffleHotSpotCompilation-13320[while_loop_at__Users_chrisseaton_src_github.com_Shopify_truffleruby-shopify_src_main_ruby_truffleruby_core_kernel.rb:360<OSR>].bgv"
-      # rubocop:enable Layout/LineLength
       file, graph, node, edge = @commands.send(:parse_name, "#{file_name}:14:12-81")
       expect(file).to(eq(file_name))
       expect(graph).to(eq(14))

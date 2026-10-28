@@ -591,7 +591,7 @@ module Seafoam
       SUPPORTED_VERSIONS = [
         [6, 1],
         [7, 0],
-      ]
+      ].freeze
 
       BEGIN_GROUP = 0x00
       BEGIN_GRAPH = 0x01

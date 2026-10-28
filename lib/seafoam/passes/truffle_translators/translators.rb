@@ -10,7 +10,7 @@ module Seafoam
 
       TRUFFLE_LANGUAGES = {
         "org.truffleruby" => "TruffleRuby",
-      }
+      }.freeze
 
       class << self
         def get_translator(node)
