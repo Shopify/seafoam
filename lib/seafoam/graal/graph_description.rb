@@ -4,7 +4,7 @@ module Seafoam
   module Graal
     # Provides a high level description of a Graal graph's features.
     class GraphDescription
-      ATTRIBUTES = [:branches, :calls, :deopts, :linear, :loops]
+      ATTRIBUTES = [:branches, :calls, :deopts, :linear, :loops].freeze
 
       ATTRIBUTES.each { |attr| attr_accessor(attr) unless attr == :linear }
       attr_reader :node_counts

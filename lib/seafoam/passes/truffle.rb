@@ -182,7 +182,7 @@ module Seafoam
       end
 
       # If we see these in the graph properties it's probably a Truffle graph.
-      TRIGGERS = ["TruffleCompiler", "TruffleFinal"]
+      TRIGGERS = ["TruffleCompiler", "TruffleFinal"].freeze
     end
   end
 end

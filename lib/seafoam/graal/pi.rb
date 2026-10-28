@@ -18,7 +18,7 @@ module Seafoam
         "org.graalvm.compiler.nodes.PiArrayNode",
         "jdk.graal.compiler.nodes.PiNode",
         "jdk.graal.compiler.nodes.PiArrayNode",
-      ]
+      ].freeze
     end
   end
 end
